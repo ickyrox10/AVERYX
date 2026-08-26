@@ -1,0 +1,2005 @@
+const { pool } = require("../db");
+
+
+/* ==================================================
+   AVERYX DAILY REWARD CONFIGURATION
+================================================== */
+
+const INDIA_OFFSET_MINUTES = 330;
+
+
+const TIERS = [
+
+    {
+        level: 1,
+        name: "The Fool",
+        deposit: 0,
+        daily: 0
+    },
+
+    {
+        level: 2,
+        name: "The Prodigy",
+        deposit: 3.5,
+        daily: 1
+    },
+
+    {
+        level: 3,
+        name: "The Magician",
+        deposit: 16,
+        daily: 5
+    },
+
+    {
+        level: 4,
+        name: "The Conqueror",
+        deposit: 60,
+        daily: 18
+    },
+
+    {
+        level: 5,
+        name: "The Emperor",
+        deposit: 165,
+        daily: 49.5
+    },
+
+    {
+        level: 6,
+        name: "The Shadow Monarch",
+        deposit: 550,
+        daily: 165
+    },
+
+    {
+        level: 7,
+        name: "The Berserk",
+        deposit: 1440,
+        daily: 432
+    }
+
+];
+
+
+/* ==================================================
+   REFERRAL CONFIGURATION
+================================================== */
+
+const REFERRAL_PERCENTAGE = 0.05;
+
+
+/* ==================================================
+   HELPERS
+================================================== */
+
+function roundUSDT(value) {
+
+    return (
+        Math.round(
+            Number(value) * 100000000
+        ) / 100000000
+    );
+
+}
+
+
+function getCurrentTier(depositedUSDT) {
+
+    const amount =
+        Number(depositedUSDT) || 0;
+
+
+    let current =
+        TIERS[0];
+
+
+    for (
+        const tier of TIERS
+    ) {
+
+        if (
+            amount >=
+            Number(tier.deposit)
+        ) {
+
+            current =
+                tier;
+
+        }
+
+    }
+
+
+    return current;
+
+}
+
+
+/* ==================================================
+   INDIA 4:30 PM RESET
+================================================== */
+
+function getLatestResetBoundary(
+    now = new Date()
+) {
+
+    const ist =
+        new Date(
+            now.getTime() +
+            INDIA_OFFSET_MINUTES *
+            60 *
+            1000
+        );
+
+
+    const year =
+        ist.getUTCFullYear();
+
+
+    const month =
+        ist.getUTCMonth();
+
+
+    const day =
+        ist.getUTCDate();
+
+
+    const resetUTC =
+        Date.UTC(
+            year,
+            month,
+            day,
+            16,
+            30,
+            0,
+            0
+        ) -
+        INDIA_OFFSET_MINUTES *
+        60 *
+        1000;
+
+
+    const reset =
+        new Date(
+            resetUTC
+        );
+
+
+    if (
+        now.getTime() <
+        reset.getTime()
+    ) {
+
+        return new Date(
+            reset.getTime() -
+            24 *
+            60 *
+            60 *
+            1000
+        );
+
+    }
+
+
+    return reset;
+
+}
+
+
+function getNextResetAfter(reset) {
+
+    return new Date(
+        new Date(reset).getTime() +
+        24 *
+        60 *
+        60 *
+        1000
+    );
+
+}
+
+
+/* ==================================================
+   SETTLE DUE DAILY REWARDS
+================================================== */
+
+async function settleDueRewardsForUser(
+    userId,
+    client = null
+) {
+
+    const ownClient =
+        !client;
+
+
+    const db =
+        client ||
+        await pool.connect();
+
+
+    try {
+
+        if (ownClient) {
+
+            await db.query(
+                "BEGIN"
+            );
+
+        }
+
+
+        const walletResult =
+            await db.query(
+                `
+                SELECT
+                    id,
+                    user_id,
+                    balance_usdt,
+                    withdrawable_usdt,
+                    last_reward_reset_at,
+                    created_at,
+                    updated_at
+                FROM wallets
+                WHERE user_id = $1
+                FOR UPDATE
+                `,
+                [
+                    userId
+                ]
+            );
+
+
+        if (
+            walletResult.rows.length === 0
+        ) {
+
+            if (ownClient) {
+
+                await db.query(
+                    "ROLLBACK"
+                );
+
+            }
+
+
+            return {
+
+                credited: 0,
+
+                cycles: 0,
+
+                tier: TIERS[0],
+
+                withdrawableUSDT: 0
+
+            };
+
+        }
+
+
+        const wallet =
+            walletResult.rows[0];
+
+
+        const deposited =
+            Number(
+                wallet.balance_usdt
+            ) || 0;
+
+
+        const currentTier =
+            getCurrentTier(
+                deposited
+            );
+
+
+        const now =
+            new Date();
+
+
+        const currentReset =
+            getLatestResetBoundary(
+                now
+            );
+
+
+        let lastReset =
+            wallet.last_reward_reset_at
+                ? new Date(
+                    wallet.last_reward_reset_at
+                )
+                : new Date(
+                    wallet.updated_at ||
+                    wallet.created_at ||
+                    now
+                );
+
+
+        let nextDue =
+            getNextResetAfter(
+                lastReset
+            );
+
+
+        let dueCycles = 0;
+
+
+        while (
+            nextDue.getTime() <=
+            currentReset.getTime()
+        ) {
+
+            dueCycles += 1;
+
+
+            nextDue =
+                getNextResetAfter(
+                    nextDue
+                );
+
+
+            if (
+                dueCycles >= 3660
+            ) {
+
+                break;
+
+            }
+
+        }
+
+
+        let rewardAmount = 0;
+
+
+        if (
+            dueCycles > 0 &&
+            currentTier.daily > 0
+        ) {
+
+            rewardAmount =
+                roundUSDT(
+                    currentTier.daily *
+                    dueCycles
+                );
+
+        }
+
+
+        const oldWithdrawable =
+            Number(
+                wallet.withdrawable_usdt
+            ) || 0;
+
+
+        const newWithdrawable =
+            roundUSDT(
+                oldWithdrawable +
+                rewardAmount
+            );
+
+
+        const updatedWallet =
+            await db.query(
+                `
+                UPDATE wallets
+                SET
+                    withdrawable_usdt = $1,
+                    last_reward_reset_at = $2,
+                    updated_at = NOW()
+                WHERE id = $3
+                RETURNING
+                    balance_usdt,
+                    withdrawable_usdt,
+                    last_reward_reset_at,
+                    updated_at
+                `,
+                [
+                    newWithdrawable,
+                    currentReset,
+                    wallet.id
+                ]
+            );
+
+
+        if (
+            rewardAmount > 0
+        ) {
+
+            let rewardReset =
+                getNextResetAfter(
+                    lastReset
+                );
+
+
+            for (
+                let cycle = 0;
+                cycle < dueCycles;
+                cycle += 1
+            ) {
+
+                const reference =
+                    `DAILY-REWARD-${rewardReset
+                        .toISOString()
+                        .replace(
+                            /[-:.TZ]/g,
+                            ""
+                        )}`;
+
+
+                await db.query(
+                    `
+                    INSERT INTO transactions (
+                        user_id,
+                        type,
+                        amount_usdt,
+                        status,
+                        reference
+                    )
+                    VALUES (
+                        $1,
+                        'reward',
+                        $2,
+                        'completed',
+                        $3
+                    )
+                    `,
+                    [
+                        userId,
+                        currentTier.daily,
+                        reference
+                    ]
+                );
+
+
+                rewardReset =
+                    getNextResetAfter(
+                        rewardReset
+                    );
+
+            }
+
+        }
+
+
+        if (ownClient) {
+
+            await db.query(
+                "COMMIT"
+            );
+
+        }
+
+
+        return {
+
+            credited:
+                rewardAmount,
+
+            cycles:
+                dueCycles,
+
+            tier:
+                currentTier,
+
+            withdrawableUSDT:
+                Number(
+                    updatedWallet.rows[0]
+                        .withdrawable_usdt
+                ),
+
+            lastRewardResetAt:
+                updatedWallet.rows[0]
+                    .last_reward_reset_at
+
+        };
+
+
+    } catch (error) {
+
+        if (ownClient) {
+
+            try {
+
+                await db.query(
+                    "ROLLBACK"
+                );
+
+            } catch (rollbackError) {
+
+                console.error(
+                    "Reward rollback error:",
+                    rollbackError
+                );
+
+            }
+
+        }
+
+
+        throw error;
+
+
+    } finally {
+
+        if (ownClient) {
+
+            db.release();
+
+        }
+
+    }
+
+}
+
+
+/* ==================================================
+   SETTLE ALL USERS
+================================================== */
+
+async function settleAllDueRewards() {
+
+    const client =
+        await pool.connect();
+
+
+    try {
+
+        const walletsResult =
+            await client.query(
+                `
+                SELECT
+                    user_id
+                FROM wallets
+                ORDER BY user_id
+                `
+            );
+
+
+        for (
+            const row of
+            walletsResult.rows
+        ) {
+
+            try {
+
+                await settleDueRewardsForUser(
+                    row.user_id
+                );
+
+            } catch (userError) {
+
+                console.error(
+                    `Daily reward settlement failed for user ${row.user_id}:`,
+                    userError
+                );
+
+            }
+
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "Daily reward settlement failed:",
+            error
+        );
+
+
+    } finally {
+
+        client.release();
+
+    }
+
+}
+
+
+/* ==================================================
+   GET WALLET
+================================================== */
+
+async function getWallet(
+    req,
+    res
+) {
+
+    try {
+
+        const userId =
+            req.user.userId;
+
+
+        await settleDueRewardsForUser(
+            userId
+        );
+
+
+        const result =
+            await pool.query(
+                `
+                SELECT
+                    id,
+                    user_id,
+                    balance_usdt,
+                    withdrawable_usdt,
+                    created_at,
+                    updated_at,
+                    last_reward_reset_at
+                FROM wallets
+                WHERE user_id = $1
+                LIMIT 1
+                `,
+                [
+                    userId
+                ]
+            );
+
+
+        if (
+            result.rows.length === 0
+        ) {
+
+            return res.status(404).json({
+
+                success: false,
+
+                message:
+                    "Wallet not found."
+
+            });
+
+        }
+
+
+        const wallet =
+            result.rows[0];
+
+
+        const tier =
+            getCurrentTier(
+                wallet.balance_usdt
+            );
+
+
+        return res.status(200).json({
+
+            success: true,
+
+            wallet: {
+
+                id:
+                    wallet.id,
+
+                userId:
+                    wallet.user_id,
+
+                balanceUSDT:
+                    Number(
+                        wallet.balance_usdt
+                    ),
+
+                withdrawableUSDT:
+                    Number(
+                        wallet.withdrawable_usdt
+                    ),
+
+                currentTier:
+                    tier.name,
+
+                dailyRewardUSDT:
+                    Number(
+                        tier.daily
+                    ),
+
+                createdAt:
+                    wallet.created_at,
+
+                updatedAt:
+                    wallet.updated_at,
+
+                lastRewardResetAt:
+                    wallet.last_reward_reset_at
+
+            }
+
+        });
+
+
+    } catch (error) {
+
+        console.error(
+            "Get wallet error:",
+            error
+        );
+
+
+        return res.status(500).json({
+
+            success: false,
+
+            message:
+                "Unable to load wallet."
+
+        });
+
+    }
+
+}
+
+
+/* ==================================================
+   CREATE DEPOSIT
+================================================== */
+
+async function createDeposit(
+    req,
+    res
+) {
+
+    const client =
+        await pool.connect();
+
+
+    try {
+
+        const userId =
+            req.user.userId;
+
+
+        const {
+            amount,
+            reference
+        } = req.body;
+
+
+        const numericAmount =
+            Number(amount);
+
+
+        if (
+            !Number.isFinite(
+                numericAmount
+            )
+        ) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "Please enter a valid deposit amount."
+
+            });
+
+        }
+
+
+        if (
+            numericAmount <= 0
+        ) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "Deposit amount must be greater than 0."
+
+            });
+
+        }
+
+
+        if (
+            numericAmount > 1000000
+        ) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "Deposit amount is too large."
+
+            });
+
+        }
+
+
+        const roundedAmount =
+            roundUSDT(
+                numericAmount
+            );
+
+
+        await client.query(
+            "BEGIN"
+        );
+
+
+        const walletResult =
+            await client.query(
+                `
+                SELECT
+                    id,
+                    balance_usdt,
+                    last_reward_reset_at
+                FROM wallets
+                WHERE user_id = $1
+                FOR UPDATE
+                `,
+                [
+                    userId
+                ]
+            );
+
+
+        if (
+            walletResult.rows.length === 0
+        ) {
+
+            await client.query(
+                "ROLLBACK"
+            );
+
+
+            return res.status(404).json({
+
+                success: false,
+
+                message:
+                    "Wallet not found."
+
+            });
+
+        }
+
+
+        const wallet =
+            walletResult.rows[0];
+
+
+        const currentReset =
+            getLatestResetBoundary(
+                new Date()
+            );
+
+
+        let lastRewardReset =
+            wallet.last_reward_reset_at
+                ? new Date(
+                    wallet.last_reward_reset_at
+                )
+                : currentReset;
+
+
+        if (
+            lastRewardReset.getTime() <
+            currentReset.getTime()
+        ) {
+
+            lastRewardReset =
+                currentReset;
+
+        }
+
+
+        const oldBalance =
+            Number(
+                wallet.balance_usdt
+            ) || 0;
+
+
+        const newBalance =
+            roundUSDT(
+                oldBalance +
+                roundedAmount
+            );
+
+
+        /* ==================================================
+           CREATE DEPOSIT TRANSACTION
+        ================================================== */
+
+        const transactionResult =
+            await client.query(
+                `
+                INSERT INTO transactions (
+                    user_id,
+                    type,
+                    amount_usdt,
+                    status,
+                    reference
+                )
+                VALUES (
+                    $1,
+                    'deposit',
+                    $2,
+                    'completed',
+                    $3
+                )
+                RETURNING
+                    id,
+                    type,
+                    amount_usdt,
+                    status,
+                    reference,
+                    created_at
+                `,
+                [
+                    userId,
+                    roundedAmount,
+                    reference || null
+                ]
+            );
+
+
+        const depositTransaction =
+            transactionResult.rows[0];
+
+
+        /* ==================================================
+           UPDATE DEPOSITED BALANCE
+        ================================================== */
+
+        const updatedWallet =
+            await client.query(
+                `
+                UPDATE wallets
+                SET
+                    balance_usdt = $1,
+                    last_reward_reset_at = $2,
+                    updated_at = NOW()
+                WHERE id = $3
+                RETURNING
+                    balance_usdt,
+                    withdrawable_usdt,
+                    updated_at,
+                    last_reward_reset_at
+                `,
+                [
+                    newBalance,
+                    lastRewardReset,
+                    wallet.id
+                ]
+            );
+
+
+        /* ==================================================
+           REFERRAL REWARD
+           
+           The user who registered using another user's
+           referral code has users.referred_by pointing
+           to the referrer.
+
+           Every completed deposit generates 5% reward
+           for the referrer.
+        ================================================== */
+
+        const referralResult =
+            await client.query(
+                `
+                SELECT
+                    referred_by
+                FROM users
+                WHERE id = $1
+                LIMIT 1
+                `,
+                [
+                    userId
+                ]
+            );
+
+
+        if (
+            referralResult.rows.length > 0 &&
+            referralResult.rows[0].referred_by
+        ) {
+
+            const referrerId =
+                referralResult.rows[0].referred_by;
+
+
+            const referralReward =
+                roundUSDT(
+                    roundedAmount *
+                    REFERRAL_PERCENTAGE
+                );
+
+
+            if (
+                referralReward > 0
+            ) {
+
+                const referralReference =
+                    `REFERRAL-REWARD-${depositTransaction.id}`;
+
+
+                /*
+                   Prevent duplicate referral reward
+                   for the same deposit.
+                */
+
+                const existingReward =
+                    await client.query(
+                        `
+                        SELECT
+                            id
+                        FROM transactions
+                        WHERE
+                            user_id = $1
+                            AND type = 'referral'
+                            AND reference = $2
+                        LIMIT 1
+                        `,
+                        [
+                            referrerId,
+                            referralReference
+                        ]
+                    );
+
+
+                if (
+                    existingReward.rows.length === 0
+                ) {
+
+                    /*
+                       Lock the referrer's wallet before
+                       changing withdrawable balance.
+                    */
+
+                    const referrerWalletResult =
+                        await client.query(
+                            `
+                            SELECT
+                                id,
+                                withdrawable_usdt
+                            FROM wallets
+                            WHERE user_id = $1
+                            FOR UPDATE
+                            `,
+                            [
+                                referrerId
+                            ]
+                        );
+
+
+                    if (
+                        referrerWalletResult.rows.length > 0
+                    ) {
+
+                        const referrerWallet =
+                            referrerWalletResult
+                                .rows[0];
+
+
+                        const oldReferrerWithdrawable =
+                            Number(
+                                referrerWallet
+                                    .withdrawable_usdt
+                            ) || 0;
+
+
+                        const newReferrerWithdrawable =
+                            roundUSDT(
+                                oldReferrerWithdrawable +
+                                referralReward
+                            );
+
+
+                        await client.query(
+                            `
+                            UPDATE wallets
+                            SET
+                                withdrawable_usdt = $1,
+                                updated_at = NOW()
+                            WHERE id = $2
+                            `,
+                            [
+                                newReferrerWithdrawable,
+                                referrerWallet.id
+                            ]
+                        );
+
+
+                        /*
+                           Save referral reward in
+                           transaction history.
+                        */
+
+                        await client.query(
+                            `
+                            INSERT INTO transactions (
+                                user_id,
+                                type,
+                                amount_usdt,
+                                status,
+                                reference
+                            )
+                            VALUES (
+                                $1,
+                                'referral',
+                                $2,
+                                'completed',
+                                $3
+                            )
+                            `,
+                            [
+                                referrerId,
+                                referralReward,
+                                referralReference
+                            ]
+                        );
+
+                    }
+
+                }
+
+            }
+
+        }
+
+
+        /* ==================================================
+           COMMIT EVERYTHING
+        ================================================== */
+
+        await client.query(
+            "COMMIT"
+        );
+
+
+        const transaction =
+            depositTransaction;
+
+
+        const finalWallet =
+            updatedWallet.rows[0];
+
+
+        return res.status(201).json({
+
+            success: true,
+
+            message:
+                "Deposit recorded successfully.",
+
+            transaction: {
+
+                id:
+                    transaction.id,
+
+                type:
+                    transaction.type,
+
+                amountUSDT:
+                    Number(
+                        transaction.amount_usdt
+                    ),
+
+                status:
+                    transaction.status,
+
+                reference:
+                    transaction.reference,
+
+                createdAt:
+                    transaction.created_at
+
+            },
+
+            wallet: {
+
+                balanceUSDT:
+                    Number(
+                        finalWallet.balance_usdt
+                    ),
+
+                withdrawableUSDT:
+                    Number(
+                        finalWallet.withdrawable_usdt
+                    ),
+
+                updatedAt:
+                    finalWallet.updated_at
+
+            }
+
+        });
+
+
+    } catch (error) {
+
+        try {
+
+            await client.query(
+                "ROLLBACK"
+            );
+
+        } catch (rollbackError) {
+
+            console.error(
+                "Wallet rollback error:",
+                rollbackError
+            );
+
+        }
+
+
+        console.error(
+            "Create deposit error:",
+            error
+        );
+
+
+        return res.status(500).json({
+
+            success: false,
+
+            message:
+                "Unable to process deposit."
+
+        });
+
+
+    } finally {
+
+        client.release();
+
+    }
+
+}
+
+
+/* ==================================================
+   CREATE WITHDRAWAL
+================================================== */
+
+async function createWithdrawal(
+    req,
+    res
+) {
+
+    const userId =
+        req.user.userId;
+
+
+    const {
+        amount,
+        network,
+        address
+    } = req.body;
+
+
+    /*
+       Settle any due daily reward first.
+    */
+
+    try {
+
+        await settleDueRewardsForUser(
+            userId
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Reward settlement before withdrawal failed:",
+            error
+        );
+
+
+        return res.status(500).json({
+
+            success: false,
+
+            message:
+                "Unable to update withdrawable balance."
+
+        });
+
+    }
+
+
+    const client =
+        await pool.connect();
+
+
+    try {
+
+        const numericAmount =
+            Number(amount);
+
+
+        const allowedNetworks = [
+
+            "BEP20",
+
+            "TRC20",
+
+            "TON",
+
+            "ERC20",
+
+            "POLYGON"
+
+        ];
+
+
+        const selectedNetwork =
+            String(
+                network || ""
+            )
+            .trim()
+            .toUpperCase();
+
+
+        if (
+            !Number.isFinite(
+                numericAmount
+            ) ||
+            numericAmount <= 0
+        ) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "Please enter a valid withdrawal amount."
+
+            });
+
+        }
+
+
+        const withdrawalAmount =
+            roundUSDT(
+                numericAmount
+            );
+
+
+        if (
+            !allowedNetworks.includes(
+                selectedNetwork
+            )
+        ) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "Please select a valid address type."
+
+            });
+
+        }
+
+
+        if (
+            !address ||
+            typeof address !== "string" ||
+            !address.trim()
+        ) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "Please enter a wallet address."
+
+            });
+
+        }
+
+
+        const walletAddress =
+            address.trim();
+
+
+        await client.query(
+            "BEGIN"
+        );
+
+
+        const walletResult =
+            await client.query(
+                `
+                SELECT
+                    id,
+                    balance_usdt,
+                    withdrawable_usdt
+                FROM wallets
+                WHERE user_id = $1
+                FOR UPDATE
+                `,
+                [
+                    userId
+                ]
+            );
+
+
+        if (
+            walletResult.rows.length === 0
+        ) {
+
+            await client.query(
+                "ROLLBACK"
+            );
+
+
+            return res.status(404).json({
+
+                success: false,
+
+                message:
+                    "Wallet not found."
+
+            });
+
+        }
+
+
+        const wallet =
+            walletResult.rows[0];
+
+
+        const availableWithdrawable =
+            Number(
+                wallet.withdrawable_usdt
+            ) || 0;
+
+
+        if (
+            withdrawalAmount >
+            availableWithdrawable
+        ) {
+
+            await client.query(
+                "ROLLBACK"
+            );
+
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    `Insufficient withdrawable balance. Available: ${roundUSDT(
+                        availableWithdrawable
+                    )} USDT.`
+
+            });
+
+        }
+
+
+        const newWithdrawable =
+            roundUSDT(
+                availableWithdrawable -
+                withdrawalAmount
+            );
+
+
+        const shortAddress =
+            walletAddress.length > 18
+                ? `${walletAddress.slice(
+                    0,
+                    9
+                )}...${walletAddress.slice(
+                    -9
+                )}`
+                : walletAddress;
+
+
+        const reference =
+            `WITHDRAWAL-${selectedNetwork}-${shortAddress}`;
+
+
+        const transactionResult =
+            await client.query(
+                `
+                INSERT INTO transactions (
+                    user_id,
+                    type,
+                    amount_usdt,
+                    status,
+                    reference
+                )
+                VALUES (
+                    $1,
+                    'withdrawal',
+                    $2,
+                    'pending',
+                    $3
+                )
+                RETURNING
+                    id,
+                    type,
+                    amount_usdt,
+                    status,
+                    reference,
+                    created_at
+                `,
+                [
+                    userId,
+                    withdrawalAmount,
+                    reference
+                ]
+            );
+
+
+        const updatedWallet =
+            await client.query(
+                `
+                UPDATE wallets
+                SET
+                    withdrawable_usdt = $1,
+                    updated_at = NOW()
+                WHERE id = $2
+                RETURNING
+                    balance_usdt,
+                    withdrawable_usdt,
+                    updated_at
+                `,
+                [
+                    newWithdrawable,
+                    wallet.id
+                ]
+            );
+
+
+        await client.query(
+            "COMMIT"
+        );
+
+
+        const transaction =
+            transactionResult.rows[0];
+
+
+        const finalWallet =
+            updatedWallet.rows[0];
+
+
+        return res.status(201).json({
+
+            success: true,
+
+            message:
+                "Withdrawal request recorded successfully.",
+
+            transaction: {
+
+                id:
+                    transaction.id,
+
+                type:
+                    transaction.type,
+
+                amountUSDT:
+                    Number(
+                        transaction.amount_usdt
+                    ),
+
+                status:
+                    transaction.status,
+
+                reference:
+                    transaction.reference,
+
+                network:
+                    selectedNetwork,
+
+                address:
+                    walletAddress,
+
+                createdAt:
+                    transaction.created_at
+
+            },
+
+            wallet: {
+
+                balanceUSDT:
+                    Number(
+                        finalWallet.balance_usdt
+                    ),
+
+                withdrawableUSDT:
+                    Number(
+                        finalWallet.withdrawable_usdt
+                    ),
+
+                updatedAt:
+                    finalWallet.updated_at
+
+            }
+
+        });
+
+
+    } catch (error) {
+
+        try {
+
+            await client.query(
+                "ROLLBACK"
+            );
+
+        } catch (rollbackError) {
+
+            console.error(
+                "Withdrawal rollback error:",
+                rollbackError
+            );
+
+        }
+
+
+        console.error(
+            "Create withdrawal error:",
+            error
+        );
+
+
+        return res.status(500).json({
+
+            success: false,
+
+            message:
+                "Unable to process withdrawal."
+
+        });
+
+
+    } finally {
+
+        client.release();
+
+    }
+
+}
+
+
+/* ==================================================
+   GET TRANSACTION RECORDS
+================================================== */
+
+async function getTransactions(
+    req,
+    res
+) {
+
+    try {
+
+        const userId =
+            req.user.userId;
+
+
+        await settleDueRewardsForUser(
+            userId
+        );
+
+
+        const result =
+            await pool.query(
+                `
+                SELECT
+                    id,
+                    type,
+                    amount_usdt,
+                    status,
+                    reference,
+                    created_at
+                FROM transactions
+                WHERE user_id = $1
+                ORDER BY created_at DESC
+                `,
+                [
+                    userId
+                ]
+            );
+
+
+        const transactions =
+            result.rows.map(
+                transaction => ({
+
+                    id:
+                        transaction.id,
+
+                    type:
+                        transaction.type,
+
+                    amountUSDT:
+                        Number(
+                            transaction.amount_usdt
+                        ),
+
+                    status:
+                        transaction.status,
+
+                    reference:
+                        transaction.reference,
+
+                    createdAt:
+                        transaction.created_at
+
+                })
+            );
+
+
+        return res.status(200).json({
+
+            success: true,
+
+            transactions
+
+        });
+
+
+    } catch (error) {
+
+        console.error(
+            "Get transactions error:",
+            error
+        );
+
+
+        return res.status(500).json({
+
+            success: false,
+
+            message:
+                "Unable to load transaction records."
+
+        });
+
+    }
+
+}
+
+
+/* ==================================================
+   GET REFERRAL STATISTICS
+================================================== */
+
+async function getReferralStats(
+    req,
+    res
+) {
+
+    try {
+
+        const userId =
+            req.user.userId;
+
+
+        /* ==================================================
+           TOTAL REFERRALS
+
+           Every account whose referred_by points
+           to the current user counts.
+        ================================================== */
+
+        const totalResult =
+            await pool.query(
+                `
+                SELECT
+                    COUNT(*)::int AS total
+                FROM users
+                WHERE referred_by = $1
+                `,
+                [
+                    userId
+                ]
+            );
+
+
+        const totalReferrals =
+            Number(
+                totalResult.rows[0].total
+            ) || 0;
+
+
+        /* ==================================================
+           QUALIFIED REFERRALS
+
+           A referral is qualified when that referred
+           account has at least one completed deposit.
+        ================================================== */
+
+        const qualifiedResult =
+            await pool.query(
+                `
+                SELECT
+                    COUNT(DISTINCT u.id)::int AS qualified
+                FROM users u
+
+                INNER JOIN transactions t
+                    ON t.user_id = u.id
+
+                WHERE
+                    u.referred_by = $1
+
+                    AND t.type = 'deposit'
+
+                    AND t.status = 'completed'
+
+                    AND t.amount_usdt > 0
+                `,
+                [
+                    userId
+                ]
+            );
+
+
+        const qualifiedReferrals =
+            Number(
+                qualifiedResult.rows[0].qualified
+            ) || 0;
+
+
+        /* ==================================================
+           TOTAL REFERRAL REWARDS
+        ================================================== */
+
+        const rewardResult =
+            await pool.query(
+                `
+                SELECT
+                    COALESCE(
+                        SUM(amount_usdt),
+                        0
+                    ) AS total_rewards
+
+                FROM transactions
+
+                WHERE
+                    user_id = $1
+
+                    AND type = 'referral'
+
+                    AND status = 'completed'
+                `,
+                [
+                    userId
+                ]
+            );
+
+
+        const totalRewardsUSDT =
+            roundUSDT(
+                Number(
+                    rewardResult
+                        .rows[0]
+                        .total_rewards
+                ) || 0
+            );
+
+
+        /* ==================================================
+           RECENT REFERRAL ACTIVITY
+        ================================================== */
+
+        const activityResult =
+            await pool.query(
+                `
+                SELECT
+                    t.id,
+                    t.type,
+                    t.amount_usdt,
+                    t.status,
+                    t.reference,
+                    t.created_at
+
+                FROM transactions t
+
+                WHERE
+                    t.user_id = $1
+
+                    AND t.type = 'referral'
+
+                ORDER BY
+                    t.created_at DESC
+
+                LIMIT 20
+                `,
+                [
+                    userId
+                ]
+            );
+
+
+        const recentActivity =
+            activityResult.rows.map(
+                transaction => ({
+
+                    id:
+                        transaction.id,
+
+                    type:
+                        transaction.type,
+
+                    amountUSDT:
+                        Number(
+                            transaction.amount_usdt
+                        ),
+
+                    status:
+                        transaction.status,
+
+                    reference:
+                        transaction.reference,
+
+                    createdAt:
+                        transaction.created_at
+
+                })
+            );
+
+
+        return res.status(200).json({
+
+            success: true,
+
+            totalReferrals,
+
+            qualifiedReferrals,
+
+            totalRewardsUSDT,
+
+            recentActivity
+
+        });
+
+
+    } catch (error) {
+
+        console.error(
+            "Get referral stats error:",
+            error
+        );
+
+
+        return res.status(500).json({
+
+            success: false,
+
+            message:
+                "Unable to load referral statistics."
+
+        });
+
+    }
+
+}
+
+
+/* ==================================================
+   EXPORT
+================================================== */
+
+module.exports = {
+
+    getWallet,
+
+    createDeposit,
+
+    createWithdrawal,
+
+    getTransactions,
+
+    settleDueRewardsForUser,
+
+    settleAllDueRewards,
+
+    getReferralStats
+
+};

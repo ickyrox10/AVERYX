@@ -1,0 +1,2076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>AVERYX | Wallet</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --bg: #070709;
+    --panel: #101014;
+    --border: #292930;
+    --border-soft: #202026;
+    --text: #f5f5f7;
+    --muted: #898992;
+    --soft: #606069;
+    --red: #e52249;
+    --green: #42c998;
+}
+
+body {
+    min-height: 100vh;
+    background:
+        radial-gradient(
+            circle at 82% 0%,
+            rgba(126, 20, 52, .18),
+            transparent 31%
+        ),
+        var(--bg);
+    color: var(--text);
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+button {
+    font: inherit;
+}
+
+.app {
+    width: 100%;
+    max-width: 850px;
+    margin: auto;
+    padding: 18px 18px 115px;
+}
+
+/* =========================
+   TOP BAR
+========================= */
+
+.topbar {
+    height: 62px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+
+.brand img {
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+}
+
+.brand-name {
+    font-family: Georgia, serif;
+    font-size: 22px;
+    letter-spacing: 3px;
+}
+
+.profile-button {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px solid rgba(229, 34, 73, .32);
+    border-radius: 50%;
+    background: #09090c;
+}
+
+.profile-button img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.wallet-profile {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 9px;
+    min-width: 145px;
+    height: 48px;
+    padding: 2px 0 2px 8px;
+    background: transparent;
+    border: none;
+}
+
+.wallet-profile-details {
+    min-width: 0;
+    flex: 1;
+    text-align: right;
+    line-height: 1.15;
+}
+
+.wallet-profile-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text);
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.wallet-profile-id {
+    margin-top: 4px;
+    color: var(--muted);
+    font-family: monospace;
+    font-size: 8px;
+    letter-spacing: .5px;
+}
+
+.wallet-profile-avatar {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+}
+
+.wallet-profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* =========================
+   PAGE HEADER
+========================= */
+
+.page-header {
+    padding: 29px 2px 21px;
+}
+
+.eyebrow {
+    color: var(--muted);
+    font-size: 10px;
+    letter-spacing: 2.4px;
+    text-transform: uppercase;
+}
+
+.page-header h1 {
+    margin-top: 7px;
+    font-family: Georgia, serif;
+    font-size: clamp(38px, 8vw, 48px);
+}
+
+.page-header p {
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+/* =========================
+   MAIN BALANCE
+========================= */
+
+.balance-card {
+    position: relative;
+    padding: 25px 23px;
+    overflow: hidden;
+    border: 1px solid rgba(229, 34, 73, .28);
+    border-radius: 22px;
+    background:
+        radial-gradient(
+            circle at 100% 0%,
+            rgba(229, 34, 73, .16),
+            transparent 42%
+        ),
+        radial-gradient(
+            circle at 0% 100%,
+            rgba(126, 20, 52, .09),
+            transparent 42%
+        ),
+        var(--panel);
+}
+
+.balance-card > * {
+    position: relative;
+    z-index: 1;
+}
+
+.balance-label {
+    color: var(--muted);
+    font-size: 9px;
+    letter-spacing: 1.7px;
+    text-transform: uppercase;
+}
+
+.balance {
+    margin-top: 5px;
+    font-family: Georgia, serif;
+    font-size: clamp(48px, 12vw, 72px);
+    line-height: 1;
+}
+
+.balance-unit {
+    margin-left: 5px;
+    color: var(--muted);
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+}
+
+.balance-sub {
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 10px;
+}
+
+.balance-sub strong {
+    color: var(--green);
+}
+
+.balance-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 19px;
+}
+
+.balance-box {
+    padding: 13px;
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    background: rgba(8, 8, 11, .65);
+}
+
+.balance-box-label {
+    color: var(--muted);
+    font-size: 8px;
+    letter-spacing: 1.2px;
+}
+
+.balance-box-value {
+    margin-top: 7px;
+    font-family: Georgia, serif;
+    font-size: 21px;
+}
+
+.balance-box-value.green {
+    color: var(--green);
+}
+
+.actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 13px;
+}
+
+.action {
+    min-height: 55px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--panel);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.action.primary {
+    border-color: rgba(229, 34, 73, .38);
+    background: rgba(229, 34, 73, .09);
+    color: #ef6380;
+}
+
+.action:hover {
+    background: #15151a;
+}
+
+.action.primary:hover {
+    background: rgba(229, 34, 73, .14);
+}
+
+.action.disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+/* =========================
+   NEXT TIER
+========================= */
+
+.section {
+    margin-top: 28px;
+}
+
+.section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.section-title {
+    font-family: Georgia, serif;
+    font-size: 22px;
+}
+
+.section-link {
+    color: var(--muted);
+    font-size: 9px;
+}
+
+.next-tier {
+    padding: 21px;
+    display: grid;
+    grid-template-columns: 82px 1fr auto;
+    align-items: center;
+    gap: 17px;
+    border: 1px solid var(--border);
+    border-radius: 19px;
+    background: var(--panel);
+}
+
+.next-tier-logo {
+    width: 82px;
+    height: 82px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px solid rgba(229, 34, 73, .25);
+    border-radius: 17px;
+    background: #09090c;
+}
+
+.next-tier-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.tier-label {
+    color: var(--muted);
+    font-size: 8px;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+}
+
+.next-tier-name {
+    margin-top: 5px;
+    font-family: Georgia, serif;
+    font-size: 24px;
+}
+
+.next-tier-copy {
+    margin-top: 7px;
+    color: var(--muted);
+    font-size: 10px;
+    line-height: 1.6;
+}
+
+.next-tier-copy strong {
+    color: white;
+}
+
+.next-tier-stats {
+    display: flex;
+    gap: 24px;
+    margin-top: 13px;
+}
+
+.next-tier-stat small {
+    display: block;
+    color: var(--soft);
+    font-size: 8px;
+    text-transform: uppercase;
+}
+
+.next-tier-stat strong {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+}
+
+.btn {
+    min-height: 43px;
+    padding: 0 16px;
+    border: 1px solid #3a3a42;
+    border-radius: 10px;
+    background: #111116;
+    color: #eee;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background: #17171d;
+}
+
+/* =========================
+   OVERVIEW
+========================= */
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.stat {
+    padding: 17px 12px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--panel);
+    text-align: center;
+}
+
+.stat-value {
+    font-family: Georgia, serif;
+    font-size: 23px;
+}
+
+.stat-label {
+    margin-top: 5px;
+    color: var(--soft);
+    font-size: 8px;
+    letter-spacing: .6px;
+    text-transform: uppercase;
+}
+
+.stat.green .stat-value {
+    color: var(--green);
+}
+
+/* =========================
+   RECENT TRANSACTIONS
+========================= */
+
+.records {
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 17px;
+    background: var(--panel);
+}
+
+.tabs {
+    display: flex;
+    gap: 8px;
+    padding: 11px 14px 6px;
+    border-bottom: 1px solid var(--border-soft);
+}
+
+.tabs button {
+    border: 0;
+    background: transparent;
+    color: var(--soft);
+    padding: 7px 10px;
+    font-size: 9px;
+    border-bottom: 1px solid transparent;
+    cursor: pointer;
+}
+
+.tabs button.active {
+    color: #fff;
+    border-color: var(--red);
+}
+
+.record {
+    min-height: 67px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-soft);
+}
+
+.record:last-child {
+    border-bottom: 0;
+}
+
+.record b {
+    font-size: 10px;
+}
+
+.record small {
+    display: block;
+    color: var(--soft);
+    font-size: 8px;
+    margin-top: 4px;
+}
+
+.amt {
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.in {
+    color: var(--green);
+}
+
+.out {
+    color: #f05265;
+}
+
+.status {
+    display: inline-block;
+    margin-top: 5px;
+    padding: 3px 6px;
+    border-radius: 99px;
+    font-size: 7px;
+    background: #11251f;
+    color: #4ed9aa;
+    text-transform: uppercase;
+}
+
+.empty {
+    padding: 27px 16px;
+    color: var(--soft);
+    font-size: 10px;
+    line-height: 1.6;
+    text-align: center;
+}
+
+/* =========================
+   BOTTOM NAV
+========================= */
+
+.bottom-nav {
+    position: fixed;
+    left: 50%;
+    bottom: 14px;
+    transform: translateX(-50%);
+    width: calc(100% - 28px);
+    max-width: 700px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    padding: 7px;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: rgba(11, 11, 15, .94);
+    backdrop-filter: blur(16px);
+    z-index: 20;
+}
+
+.nav-item {
+    min-height: 49px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border-radius: 12px;
+    color: #707078;
+    font-size: 9px;
+}
+
+.nav-icon {
+    font-size: 16px;
+}
+
+.nav-item.active {
+    color: white;
+    background: rgba(229, 34, 73, .12);
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 620px) {
+    .next-tier {
+        grid-template-columns: 72px 1fr;
+    }
+
+    .next-tier-logo {
+        width: 72px;
+        height: 72px;
+    }
+
+    .next-tier .btn {
+        grid-column: 1 / -1;
+        width: 100%;
+    }
+}
+
+@media (max-width: 430px) {
+    .app {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+    .balance-split,
+    .actions,
+    .stats {
+        grid-template-columns: 1fr;
+    }
+
+    .next-tier {
+        grid-template-columns: 64px 1fr;
+    }
+
+    .next-tier-logo {
+        width: 64px;
+        height: 64px;
+    }
+
+    .next-tier-name {
+        font-size: 20px;
+    }
+}
+
+/* =========================
+   COMPACT NEXT TIER
+========================= */
+
+.next-tier {
+    padding: 16px;
+    grid-template-columns: 56px 1fr auto;
+    gap: 13px;
+    border-radius: 16px;
+}
+
+.next-tier-logo {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+}
+
+.next-tier-name {
+    font-size: 20px;
+}
+
+.next-tier-copy {
+    margin-top: 5px;
+    font-size: 9px;
+}
+
+.next-tier-stats {
+    gap: 18px;
+    margin-top: 10px;
+}
+
+    </style>
+</head>
+
+<body>
+
+<main class="app">
+
+<header class="topbar">
+
+    <a href="dashboard.html" class="brand">
+
+        <img
+            src="logo.png"
+            alt="AVERYX Logo"
+        >
+
+        <span class="brand-name">
+            AVERYX
+        </span>
+
+    </a>
+
+    <a
+        href="profile.html"
+        class="wallet-profile"
+        id="topProfile"
+    >
+        <div class="wallet-profile-details">
+            <div
+                class="wallet-profile-name"
+                id="walletProfileName"
+            >
+                Your Nickname
+            </div>
+
+            <div
+                class="wallet-profile-id"
+                id="walletProfileId"
+            >
+                ID: 05031
+            </div>
+        </div>
+
+        <div
+            class="wallet-profile-avatar"
+            id="walletProfileAvatar"
+        ></div>
+    </a>
+
+</header>
+
+
+<section class="page-header">
+
+    <div class="eyebrow">
+        Wallet
+    </div>
+
+    <h1>
+        Your Wallet
+    </h1>
+
+    <p>
+        Manage your deposits, rewards and withdrawals from one place.
+    </p>
+
+</section>
+
+
+<section class="balance-card">
+
+    <div class="balance-label">
+        Deposited
+    </div>
+
+    <div class="balance">
+
+        <span id="depositedBalance">
+            0.00
+        </span>
+
+        <span class="balance-unit">
+            USDT
+        </span>
+
+    </div>
+
+    <div class="balance-sub">
+        Deposited funds remain locked.
+        <strong id="dailyReturn">
+            0 USDT/day
+        </strong>
+    </div>
+
+
+    <div class="balance-split">
+
+        <div class="balance-box">
+
+            <div class="balance-box-label">
+                Deposited
+            </div>
+
+            <div
+                class="balance-box-value"
+                id="totalDepositedMain"
+            >
+                0.00 USDT
+            </div>
+
+        </div>
+
+
+        <div class="balance-box">
+
+            <div class="balance-box-label">
+                Withdrawable
+            </div>
+
+            <div
+                class="balance-box-value green"
+                id="withdrawableMain"
+            >
+                0.00 USDT
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="actions">
+
+        <a
+            href="deposit.html"
+            class="action primary"
+        >
+            ↓&nbsp;&nbsp;Deposit
+        </a>
+
+        <a
+            href="withdraw.html"
+            class="action"
+            id="withdrawAction"
+        >
+            ↑&nbsp;&nbsp;Withdraw
+        </a>
+
+    </div>
+
+</section>
+
+
+<section class="section">
+
+    <div class="section-head">
+
+        <h2 class="section-title">
+            Next Tier
+        </h2>
+
+        <a
+            href="subscription.html"
+            class="section-link"
+        >
+            View all →
+        </a>
+
+    </div>
+
+
+    <div class="next-tier">
+
+        <div
+            class="next-tier-logo"
+            id="nextTierLogo"
+        ></div>
+
+
+        <div>
+
+            <div class="tier-label">
+                UPGRADE YOUR TIER
+            </div>
+
+            <div
+                class="next-tier-name"
+                id="nextTierName"
+            >
+                The Shadow Monarch
+            </div>
+
+            <div
+                class="next-tier-copy"
+                id="nextTierDescription"
+            >
+                Loading tier requirement...
+            </div>
+
+
+            <div class="next-tier-stats">
+
+                <div class="next-tier-stat">
+
+                    <small>
+                        Current Deposit
+                    </small>
+
+                    <strong id="currentDeposit">
+                        0.00 USDT
+                    </strong>
+
+                </div>
+
+
+                <div class="next-tier-stat">
+
+                    <small>
+                        Requirement
+                    </small>
+
+                    <strong id="nextRequirement">
+                        0.00 USDT
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <button
+            class="btn"
+            id="subscriptionButton"
+            type="button"
+        >
+            View Subscription
+        </button>
+
+    </div>
+
+</section>
+
+
+<section class="section">
+
+    <div class="section-head">
+
+        <h2 class="section-title">
+            Overview
+        </h2>
+
+    </div>
+
+
+    <div class="stats">
+
+        <div class="stat">
+
+            <div
+                class="stat-value"
+                id="totalDepositedCard"
+            >
+                0.00 USDT
+            </div>
+
+            <div class="stat-label">
+                Total Deposited
+            </div>
+
+        </div>
+
+
+        <div class="stat green">
+
+            <div
+                class="stat-value"
+                id="withdrawableCard"
+            >
+                0.00 USDT
+            </div>
+
+            <div class="stat-label">
+                Withdrawable
+            </div>
+
+        </div>
+
+
+        <div class="stat">
+
+            <div
+                class="stat-value"
+                id="totalWithdrawnCard"
+            >
+                0.00 USDT
+            </div>
+
+            <div class="stat-label">
+                Total Withdrawn
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<section class="section">
+
+    <div class="section-head">
+
+        <h2 class="section-title">
+            Recent Transactions
+        </h2>
+
+        <a
+            href="records.html"
+            class="section-link"
+        >
+            View all →
+        </a>
+
+    </div>
+
+
+    <div class="records">
+
+        <div class="tabs">
+
+            <button
+                class="active"
+                data-filter="deposit"
+            >
+                Deposits
+            </button>
+
+            <button
+                data-filter="withdrawal"
+            >
+                Withdrawals
+            </button>
+
+        </div>
+
+
+        <div id="transactions">
+
+            <div class="empty">
+                Loading transactions...
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+</main>
+
+
+<nav class="bottom-nav">
+
+    <a
+        href="dashboard.html"
+        class="nav-item"
+    >
+        <span class="nav-icon">⌂</span>
+        Home
+    </a>
+
+
+    <a
+        href="subscription.html"
+        class="nav-item"
+    >
+        <span class="nav-icon">◇</span>
+        Tiers
+    </a>
+
+
+    <a
+        href="Wallet.html"
+        class="nav-item active"
+    >
+        <span class="nav-icon">◈</span>
+        Wallet
+    </a>
+
+
+    <a
+        href="records.html"
+        class="nav-item"
+    >
+        <span class="nav-icon">≡</span>
+        Records
+    </a>
+
+
+    <a
+        href="profile.html"
+        class="nav-item"
+    >
+        <span class="nav-icon">○</span>
+        Profile
+    </a>
+
+</nav>
+
+
+<div id="toast"></div>
+
+
+<script>
+
+const API_BASE_URL =
+    "http://localhost:3000";
+
+
+const TIERS = [
+
+    {
+        level: 1,
+        name: "The Fool",
+        deposit: 0,
+        daily: 0,
+        logo: "tier-fool.png"
+    },
+
+    {
+        level: 2,
+        name: "The Prodigy",
+        deposit: 3.5,
+        daily: 1,
+        logo: "tier-prodigy.png"
+    },
+
+    {
+        level: 3,
+        name: "The Magician",
+        deposit: 16,
+        daily: 5,
+        logo: "tier-magician.png"
+    },
+
+    {
+        level: 4,
+        name: "The Conqueror",
+        deposit: 60,
+        daily: 18,
+        logo: "tier-conqueror.png"
+    },
+
+    {
+        level: 5,
+        name: "The Emperor",
+        deposit: 165,
+        daily: 49.5,
+        logo: "tier-emperor.png"
+    },
+
+    {
+        level: 6,
+        name: "The Shadow Monarch",
+        deposit: 550,
+        daily: 165,
+        logo: "shadow-monarch.png"
+    },
+
+    {
+        level: 7,
+        name: "The Berserk",
+        deposit: 1440,
+        daily: 432,
+        logo: "tier-berserk.png"
+    }
+
+];
+
+
+function getToken() {
+
+    return (
+        localStorage.getItem("averyx_token") ||
+        localStorage.getItem("token") ||
+        localStorage.getItem("authToken") ||
+        ""
+    );
+
+}
+
+
+function money(value) {
+
+    return (
+        Number(value) || 0
+    ).toFixed(2);
+
+}
+
+
+function getTier(balance) {
+
+    let current =
+        TIERS[0];
+
+    TIERS.forEach(
+        tier => {
+
+            if (
+                Number(balance) >=
+                Number(tier.deposit)
+            ) {
+
+                current =
+                    tier;
+
+            }
+
+        }
+    );
+
+    return current;
+
+}
+
+
+function getNextTier(currentTier) {
+
+    return (
+        TIERS.find(
+            tier =>
+                tier.level >
+                currentTier.level
+        ) || null
+    );
+
+}
+
+
+async function apiGet(endpoint) {
+
+    const token =
+        getToken();
+
+    if (!token) {
+
+        window.location.href =
+            "login.html";
+
+        return null;
+
+    }
+
+
+    const response =
+        await fetch(
+            `${API_BASE_URL}${endpoint}`,
+            {
+                headers: {
+                    Authorization:
+                        `Bearer ${token}`
+                }
+            }
+        );
+
+
+    const data =
+        await response.json();
+
+
+    if (
+        response.status === 401
+    ) {
+
+        localStorage.removeItem(
+            "averyx_token"
+        );
+
+        localStorage.removeItem(
+            "token"
+        );
+
+        localStorage.removeItem(
+            "authToken"
+        );
+
+        window.location.href =
+            "login.html";
+
+        return null;
+
+    }
+
+
+    if (
+        !response.ok ||
+        !data.success
+    ) {
+
+        throw new Error(
+            data.message ||
+            "Unable to load wallet."
+        );
+
+    }
+
+
+    return data;
+
+}
+
+
+function showToast(message) {
+
+    const toast =
+        document.getElementById(
+            "toast"
+        );
+
+    toast.textContent =
+        message;
+
+    toast.style.cssText = `
+        position:fixed;
+        left:50%;
+        bottom:85px;
+        transform:translateX(-50%);
+        background:#15151a;
+        border:1px solid #383840;
+        color:#fff;
+        padding:10px 16px;
+        border-radius:8px;
+        font-size:11px;
+        z-index:9999;
+    `;
+
+    setTimeout(
+        () => {
+            toast.style.display =
+                "none";
+        },
+        1600
+    );
+
+}
+
+
+function renderTransaction(
+    transaction
+) {
+
+    const row =
+        document.createElement(
+            "div"
+        );
+
+    row.className =
+        "record";
+
+    const type =
+        String(
+            transaction.type ||
+            transaction.transactionType ||
+            "activity"
+        ).toLowerCase();
+
+    const amount =
+        Number(
+            transaction.amountUSDT ??
+            transaction.amount_usdt ??
+            transaction.amount ??
+            transaction.value ??
+            0
+        ) || 0;
+
+    const rawDate =
+        transaction.createdAt ??
+        transaction.created_at ??
+        transaction.date ??
+        transaction.created ??
+        "";
+
+    const date =
+        rawDate
+            ? new Date(
+                rawDate
+            ).toLocaleString()
+            : "";
+
+    const isDeposit =
+        type.includes("deposit");
+
+    const isWithdrawal =
+        type.includes("withdraw");
+
+    const sign =
+        isDeposit
+            ? "+"
+            : isWithdrawal
+                ? "-"
+                : "";
+
+    const amountClass =
+        isDeposit
+            ? "in"
+            : "out";
+
+    const title =
+        isDeposit
+            ? "Deposit"
+            : isWithdrawal
+                ? "Withdrawal"
+                : (
+                    transaction.type ||
+                    transaction.transactionType ||
+                    "Activity"
+                );
+
+    const reference =
+        transaction.reference ??
+        transaction.txHash ??
+        transaction.transactionHash ??
+        "";
+
+    const status =
+        transaction.status ||
+        "COMPLETED";
+
+    row.innerHTML = `
+
+        <div>
+
+            <b>
+                ${title}
+            </b>
+
+            <small>
+                ${date}
+                ${
+                    reference
+                        ? ` · ${reference}`
+                        : ""
+                }
+            </small>
+
+        </div>
+
+        <div>
+
+            <span class="amt ${amountClass}">
+                ${sign}${money(amount)} USDT
+            </span>
+
+            <br>
+
+            <span class="status">
+                ${status}
+            </span>
+
+        </div>
+
+    `;
+
+    return row;
+
+}
+
+
+let allTransactions = [];
+
+
+function renderTransactions(
+    filter = "all"
+) {
+
+    const container =
+        document.getElementById(
+            "transactions"
+        );
+
+    let transactions =
+        [...allTransactions];
+
+    if (
+        filter !== "all"
+    ) {
+
+        transactions =
+            allTransactions.filter(
+                transaction => {
+
+                    const type =
+                        String(
+                            transaction.type ||
+                            transaction.transactionType ||
+                            ""
+                        ).toLowerCase();
+
+                    if (
+                        filter === "deposit"
+                    ) {
+                        return type.includes("deposit");
+                    }
+
+                    if (
+                        filter === "withdrawal"
+                    ) {
+                        return type.includes("withdraw");
+                    }
+
+                    return true;
+
+                }
+            );
+
+    }
+
+    transactions.sort(
+        (a, b) => {
+
+            const dateA =
+                new Date(
+                    a.createdAt ??
+                    a.created_at ??
+                    a.date ??
+                    0
+                ).getTime() || 0;
+
+            const dateB =
+                new Date(
+                    b.createdAt ??
+                    b.created_at ??
+                    b.date ??
+                    0
+                ).getTime() || 0;
+
+            return dateB - dateA;
+
+        }
+    );
+
+
+    container.innerHTML =
+        "";
+
+
+    if (
+        transactions.length === 0
+    ) {
+
+        container.innerHTML = `
+            <div class="empty">
+                No transactions found.
+            </div>
+        `;
+
+        return;
+
+    }
+
+
+    transactions
+        .slice(0, 10)
+        .forEach(
+            transaction => {
+
+                container.appendChild(
+                    renderTransaction(
+                        transaction
+                    )
+                );
+
+            }
+        );
+
+}
+
+
+function getLocalProfile() {
+
+    try {
+
+        const saved =
+            localStorage.getItem(
+                "averyx_profile"
+            );
+
+        return saved
+            ? JSON.parse(saved)
+            : {};
+
+    } catch (error) {
+
+        console.error(
+            "Wallet profile read error:",
+            error
+        );
+
+        return {};
+
+    }
+
+}
+
+
+function renderWalletProfile() {
+
+    const profile =
+        getLocalProfile();
+
+    const nickname =
+        profile.nickname ||
+        "Your Nickname";
+
+    const uniqueId =
+        String(
+            profile.uniqueId ||
+            profile.uid ||
+            "05031"
+        );
+
+    const selectedLevel =
+        Number(
+            profile.selectedProfileTier ||
+            profile.highestUnlockedTier ||
+            1
+        ) || 1;
+
+    const selectedTier =
+        TIERS.find(
+            tier =>
+                tier.level === selectedLevel
+        ) || TIERS[0];
+
+    const nameElement =
+        document.getElementById(
+            "walletProfileName"
+        );
+
+    const idElement =
+        document.getElementById(
+            "walletProfileId"
+        );
+
+    const avatarElement =
+        document.getElementById(
+            "walletProfileAvatar"
+        );
+
+    if (nameElement) {
+
+        nameElement.textContent =
+            nickname;
+
+    }
+
+    if (idElement) {
+
+        idElement.textContent =
+            `ID: ${uniqueId}`;
+
+    }
+
+    if (avatarElement) {
+
+        avatarElement.innerHTML =
+            `<img src="${selectedTier.logo}" alt="${selectedTier.name}">`;
+
+    }
+
+}
+
+
+async function initializeWallet() {
+
+    try {
+
+        /*
+           Use the exact same wallet endpoint and fields
+           as the Dashboard.
+
+           Source of truth:
+           /api/wallet/
+           wallet.balanceUSDT
+           wallet.withdrawableUSDT
+        */
+
+        const walletResponse =
+            await apiGet(
+                "/api/wallet/"
+            );
+
+
+        if (!walletResponse) {
+            return;
+        }
+
+
+        const wallet =
+            walletResponse.wallet ||
+            walletResponse.data ||
+            {};
+
+
+        const deposited =
+            Number(
+                wallet.balanceUSDT
+            ) || 0;
+
+
+        const currentTier =
+            getTier(
+                deposited
+            );
+
+
+        /*
+           Withdrawable comes directly from the backend.
+           There is NO daily-reward fallback.
+        */
+
+        const withdrawable =
+            Number(
+                wallet.withdrawableUSDT
+            ) || 0;
+
+
+        renderWalletProfile();
+
+
+        const nextTier =
+            getNextTier(
+                currentTier
+            );
+
+
+        const nextTierLogo =
+            document.getElementById(
+                "nextTierLogo"
+            );
+
+
+        if (nextTierLogo) {
+
+            if (nextTier) {
+
+                nextTierLogo.innerHTML = `
+                    <img
+                        src="${nextTier.logo || ""}"
+                        alt="${nextTier.name}"
+                    >
+                `;
+
+            } else {
+
+                nextTierLogo.innerHTML = "";
+
+            }
+
+        }
+
+
+        /*
+           Main balance
+        */
+
+        document.getElementById(
+            "depositedBalance"
+        ).textContent =
+            money(deposited);
+
+
+        document.getElementById(
+            "dailyReturn"
+        ).textContent =
+            `${money(currentTier.daily)} USDT/day`;
+
+
+        document.getElementById(
+            "totalDepositedMain"
+        ).textContent =
+            `${money(deposited)} USDT`;
+
+
+        document.getElementById(
+            "withdrawableMain"
+        ).textContent =
+            `${money(withdrawable)} USDT`;
+
+
+        /*
+           Overview cards
+        */
+
+        document.getElementById(
+            "totalDepositedCard"
+        ).textContent =
+            `${money(deposited)} USDT`;
+
+
+        document.getElementById(
+            "withdrawableCard"
+        ).textContent =
+            `${money(withdrawable)} USDT`;
+
+
+        /*
+           Transaction history
+        */
+
+        const transactionData =
+            await apiGet(
+                "/api/wallet/transactions"
+            );
+
+
+        if (!transactionData) {
+            return;
+        }
+
+
+        const transactionList =
+            Array.isArray(
+                transactionData.transactions
+            )
+                ? transactionData.transactions
+
+                : Array.isArray(
+                    transactionData.data?.transactions
+                )
+                    ? transactionData.data.transactions
+
+                    : Array.isArray(
+                        transactionData.data
+                    )
+                        ? transactionData.data
+
+                        : [];
+
+
+        allTransactions =
+            transactionList;
+
+
+        /*
+           Total deposits
+        */
+
+        const totalDeposits =
+            allTransactions
+                .filter(
+                    tx =>
+                        String(
+                            tx.type ||
+                            tx.transactionType ||
+                            ""
+                        )
+                            .toLowerCase()
+                            .includes("deposit")
+                )
+                .reduce(
+                    (sum, tx) =>
+                        sum +
+                        (
+                            Number(
+                                tx.amountUSDT ??
+                                tx.amount_usdt ??
+                                tx.amount ??
+                                tx.value
+                            ) || 0
+                        ),
+                    0
+                );
+
+
+        /*
+           Total withdrawals
+        */
+
+        const totalWithdrawals =
+            allTransactions
+                .filter(
+                    tx =>
+                        String(
+                            tx.type ||
+                            tx.transactionType ||
+                            ""
+                        )
+                            .toLowerCase()
+                            .includes("withdraw")
+                )
+                .reduce(
+                    (sum, tx) =>
+                        sum +
+                        (
+                            Number(
+                                tx.amountUSDT ??
+                                tx.amount_usdt ??
+                                tx.amount ??
+                                tx.value
+                            ) || 0
+                        ),
+                    0
+                );
+
+
+        /*
+           Use transaction deposits as the display
+           total when available.
+        */
+
+        const displayedDeposits =
+            totalDeposits > 0
+                ? totalDeposits
+                : deposited;
+
+
+        document.getElementById(
+            "totalDepositedMain"
+        ).textContent =
+            `${money(displayedDeposits)} USDT`;
+
+
+        document.getElementById(
+            "totalDepositedCard"
+        ).textContent =
+            `${money(displayedDeposits)} USDT`;
+
+
+        document.getElementById(
+            "totalWithdrawnCard"
+        ).textContent =
+            `${money(totalWithdrawals)} USDT`;
+
+
+        /*
+           Next tier
+        */
+
+        document.getElementById(
+            "currentDeposit"
+        ).textContent =
+            `${money(deposited)} USDT`;
+
+
+        if (nextTier) {
+
+            const required =
+                Math.max(
+                    0,
+                    Number(nextTier.deposit) -
+                    deposited
+                );
+
+
+            document.getElementById(
+                "nextTierName"
+            ).textContent =
+                nextTier.name;
+
+
+            document.getElementById(
+                "nextRequirement"
+            ).textContent =
+                `${money(nextTier.deposit)} USDT`;
+
+
+            document.getElementById(
+                "nextTierDescription"
+            ).innerHTML =
+                `Deposit <strong>${money(required)} USDT</strong> more to reach the <strong>${money(nextTier.deposit)} USDT</strong> requirement.`;
+
+        } else {
+
+            document.getElementById(
+                "nextTierName"
+            ).textContent =
+                "Maximum Tier";
+
+
+            document.getElementById(
+                "nextRequirement"
+            ).textContent =
+                "MAX";
+
+
+            document.getElementById(
+                "nextTierDescription"
+            ).textContent =
+                "You have reached the highest available tier.";
+
+        }
+
+
+        /*
+           Wallet shows only deposits and withdrawals.
+        */
+
+        renderTransactions(
+            "deposit"
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Wallet error:",
+            error
+        );
+
+
+        document.getElementById(
+            "transactions"
+        ).innerHTML = `
+            <div class="empty">
+                ${error.message}
+            </div>
+        `;
+
+    }
+
+}
+
+
+/* ==================================================
+   ACTIONS
+================================================== */
+
+const subscriptionButton =
+    document.getElementById("subscriptionButton");
+
+if (subscriptionButton) {
+    subscriptionButton.addEventListener("click", () => {
+        window.location.href = "subscription.html";
+    });
+}
+
+const withdrawAction =
+    document.getElementById("withdrawAction");
+
+if (withdrawAction) {
+    withdrawAction.addEventListener("click", event => {
+        // Keep the existing UI and route. Only prevent accidental
+        // suppression if another script changes the link behavior.
+        event.stopPropagation();
+    });
+}
+
+
+/* ==================================================
+   TRANSACTION FILTERS
+================================================== */
+
+document
+    .querySelectorAll(
+        ".tabs button"
+    )
+    .forEach(
+        button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    document
+                        .querySelectorAll(
+                            ".tabs button"
+                        )
+                        .forEach(
+                            item =>
+                                item.classList.remove(
+                                    "active"
+                                )
+                        );
+
+
+                    button.classList.add(
+                        "active"
+                    );
+
+
+                    renderTransactions(
+                        button.dataset.filter
+                    );
+
+                }
+            );
+
+        }
+    );
+
+
+renderWalletProfile();
+
+initializeWallet();
+
+
+</script>
+
+</body>
+</html>

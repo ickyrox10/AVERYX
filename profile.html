@@ -1,0 +1,1626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AVERYX | Profile</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #070709;
+            --panel: #101014;
+            --panel-2: #0c0c10;
+            --border: #292930;
+            --border-soft: #202026;
+            --text: #f5f5f7;
+            --muted: #898992;
+            --soft: #606069;
+            --red: #e52249;
+            --green: #42c998;
+        }
+
+        body {
+            min-height: 100vh;
+
+            background:
+                radial-gradient(
+                    circle at 82% 0%,
+                    rgba(126, 20, 52, .18),
+                    transparent 31%
+                ),
+                var(--bg);
+
+            color: var(--text);
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        button {
+            font: inherit;
+        }
+
+        .app {
+            width: 100%;
+            max-width: 850px;
+
+            margin: auto;
+
+            padding:
+                18px 18px 115px;
+        }
+
+        /* =========================
+           TOP BAR
+        ========================= */
+
+        .topbar {
+            height: 62px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+
+            gap: 11px;
+        }
+
+        .brand img {
+            width: 42px;
+            height: 42px;
+
+            object-fit: contain;
+        }
+
+        .brand-name {
+            font-family: Georgia, serif;
+
+            font-size: 22px;
+
+            letter-spacing: 3px;
+        }
+
+        .back {
+            color: var(--muted);
+
+            font-size: 13px;
+        }
+
+        /* =========================
+           PROFILE HERO
+        ========================= */
+        .profile-card {
+            margin-top: 27px;
+
+            padding: 24px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 18px;
+
+            border:
+                1px solid
+                rgba(229, 34, 73, .28);
+
+            border-radius: 21px;
+
+            background:
+                radial-gradient(
+                    circle at 100% 0%,
+                    rgba(229, 34, 73, .12),
+                    transparent 43%
+                ),
+                var(--panel);
+        }
+
+        .profile-dp {
+            width: 100px;
+            height: 100px;
+
+            flex-shrink: 0;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            overflow: hidden;
+
+            border:
+                1px solid
+                rgba(229, 34, 73, .3);
+
+            border-radius: 18px;
+
+            background: #08080b;
+        }
+
+        .profile-dp img {
+            width: 100%;
+            height: 100%;
+
+            object-fit: contain;
+        }
+
+        .profile-info {
+            flex: 1;
+
+            min-width: 0;
+        }
+
+        .profile-label {
+
+            color: var(--muted);
+
+            font-size: 8px;
+
+            letter-spacing: 1.7px;
+
+            text-transform: uppercase;
+        }
+
+        .profile-name {
+            margin-top: 5px;
+
+            font-family: Georgia, serif;
+
+            font-size: 27px;
+
+            white-space: nowrap;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+        }
+
+        .tier-badge {
+            display: inline-block;
+
+            margin-top: 9px;
+
+            padding:
+                5px 8px;
+
+            border:
+                1px solid
+                rgba(66, 201, 152, .2);
+
+            border-radius: 6px;
+
+            color: var(--green);
+
+            font-size: 7px;
+
+            letter-spacing: .9px;
+
+            text-transform: uppercase;
+        }
+
+        .profile-unique-id {
+            margin-top: 7px;
+            color: var(--soft);
+            font-family: monospace;
+            font-size: 8px;
+            letter-spacing: .5px;
+            white-space: nowrap;
+        }
+
+        .edit-button {
+            align-self: flex-start;
+
+            padding:
+                8px 10px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 8px;
+
+            background: #121217;
+
+            color: var(--muted);
+
+            font-size: 8px;
+        }
+
+        .edit-button:hover {
+            color: white;
+
+            border-color: #42424a;
+        }
+
+        /* =========================
+           SECTION
+        ========================= */
+
+        .section {
+            margin-top: 28px;
+        }
+
+        .section-title {
+            margin-bottom: 11px;
+
+            font-family: Georgia, serif;
+
+            font-size: 22px;
+        }
+
+        /* =========================
+           ACCOUNT DETAILS
+        ========================= */
+
+        .details {
+            overflow: hidden;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 17px;
+
+            background: var(--panel);
+        }
+
+        .detail-row {
+            min-height: 62px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 15px;
+
+            padding:
+                12px 16px;
+
+            border-bottom:
+                1px solid var(--border-soft);
+        }
+
+        .detail-row:last-child {
+            border-bottom: 0;
+        }
+
+        .detail-label {
+            color: var(--soft);
+
+            font-size: 8px;
+
+            letter-spacing: .8px;
+
+            text-transform: uppercase;
+        }
+
+        .detail-value {
+            max-width: 60%;
+
+            color: #dddde2;
+
+            font-size: 10px;
+
+            text-align: right;
+
+            overflow-wrap: anywhere;
+        }
+
+        /* =========================
+           SUBSCRIPTION
+        ========================= */
+
+        .subscription-card {
+            padding: 18px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 14px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 17px;
+
+            background: var(--panel);
+        }
+
+        .subscription-logo {
+            width: 68px;
+            height: 68px;
+
+            flex-shrink: 0;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            overflow: hidden;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 13px;
+
+            background: #08080b;
+        }
+
+        .subscription-logo img {
+            width: 100%;
+            height: 100%;
+
+            object-fit: contain;
+        }
+
+        .subscription-info {
+            flex: 1;
+        }
+
+        .subscription-label {
+            color: var(--muted);
+
+            font-size: 7px;
+
+            letter-spacing: 1.3px;
+
+            text-transform: uppercase;
+        }
+
+        .subscription-name {
+            margin-top: 4px;
+
+            font-family: Georgia, serif;
+
+            font-size: 21px;
+        }
+
+        .subscription-return {
+            margin-top: 5px;
+
+            color: var(--green);
+
+            font-size: 9px;
+        }
+
+        .subscription-link {
+            color: var(--muted);
+
+            font-size: 9px;
+        }
+
+        /* =========================
+           MENU
+        ========================= */
+
+        .menu {
+            overflow: hidden;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 17px;
+
+            background: var(--panel);
+        }
+
+        .menu-item {
+            min-height: 61px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 14px;
+
+            padding:
+                12px 16px;
+
+            border-bottom:
+                1px solid var(--border-soft);
+        }
+
+        .menu-item:last-child {
+            border-bottom: 0;
+        }
+
+        .menu-left {
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+        }
+
+        .menu-icon {
+            width: 35px;
+            height: 35px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 9px;
+
+            background: #18181d;
+
+            color: #9999a2;
+
+            font-size: 13px;
+        }
+
+        .menu-title {
+            font-size: 10px;
+        }
+
+        .menu-subtitle {
+            margin-top: 3px;
+
+            color: var(--soft);
+
+            font-size: 7px;
+        }
+
+        .menu-arrow {
+            color: #65656d;
+
+            font-size: 13px;
+        }
+
+        /* =========================
+           REFERRAL
+        ========================= */
+
+        .referral-card {
+            display: block;
+            color: inherit;
+            text-decoration: none;
+            cursor: pointer;
+            padding: 18px;
+
+            border:
+                1px solid
+                rgba(229, 34, 73, .22);
+
+            border-radius: 17px;
+
+            background:
+                radial-gradient(
+                    circle at 100% 0%,
+                    rgba(229, 34, 73, .08),
+                    transparent 45%
+                ),
+                var(--panel);
+        }
+
+        .referral-top {
+            display: flex;
+
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .referral-title {
+            font-family: Georgia, serif;
+
+            font-size: 20px;
+        }
+
+        .referral-percent {
+            color: #ed5875;
+
+            font-size: 10px;
+
+            font-weight: 600;
+        }
+
+        .referral-code {
+            margin-top: 12px;
+
+            padding: 12px;
+
+            border:
+                1px solid var(--border-soft);
+
+            border-radius: 10px;
+
+            background: #0b0b0f;
+        }
+
+        .referral-label {
+            color: var(--soft);
+
+            font-size: 7px;
+
+            letter-spacing: 1px;
+
+            text-transform: uppercase;
+        }
+
+        .referral-value {
+            margin-top: 5px;
+
+            color: #dddde2;
+
+            font-family: monospace;
+
+            font-size: 11px;
+
+            letter-spacing: 1px;
+        }
+
+        /* =========================
+           BOTTOM NAV
+        ========================= */
+
+        .bottom-nav {
+            position: fixed;
+
+            left: 50%;
+            bottom: 14px;
+
+            transform:
+                translateX(-50%);
+
+            width:
+                calc(100% - 28px);
+
+            max-width: 700px;
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(5, 1fr);
+
+            gap: 4px;
+
+            padding: 7px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 18px;
+
+            background:
+                rgba(11, 11, 15, .94);
+
+            backdrop-filter:
+                blur(16px);
+
+            z-index: 20;
+        }
+
+        .nav-item {
+            min-height: 49px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+            justify-content: center;
+
+            gap: 4px;
+
+            border-radius: 12px;
+
+            color: #707078;
+
+            font-size: 9px;
+        }
+
+        .nav-icon {
+            font-size: 16px;
+        }
+
+        .nav-item.active {
+            color: white;
+
+            background:
+                rgba(229, 34, 73, .12);
+        }
+
+        /* =========================
+           TOP PROFILE / ACCOUNT CARDS
+        ========================= */
+
+        .top-profile {
+            display: flex;
+            flex-direction: row-reverse;
+            align-items: center;
+            gap: 9px;
+            min-width: 0;
+        }
+
+        .top-profile-avatar {
+            width: 38px;
+            height: 38px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 1px solid rgba(229, 34, 73, .45);
+            border-radius: 50%;
+            background: #08080b;
+            box-shadow: 0 0 14px rgba(126, 20, 52, .16);
+        }
+
+        .top-profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        .top-profile-info {
+            min-width: 0;
+        }
+
+        .top-profile-name {
+            max-width: 145px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: #f5f5f7;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .top-profile-id {
+            margin-top: 3px;
+            color: #777780;
+            font-family: monospace;
+            font-size: 7px;
+            letter-spacing: .4px;
+            white-space: nowrap;
+        }
+
+        .referral-card {
+            border-color: rgba(82, 184, 160, .48);
+            background:
+                linear-gradient(135deg, rgba(32, 74, 116, .34) 0%, rgba(19, 42, 53, .30) 48%, rgba(58, 112, 78, .24) 100%),
+                var(--panel);
+            box-shadow:
+                inset 0 0 0 1px rgba(90, 190, 165, .06),
+                0 0 22px rgba(45, 130, 110, .06);
+        }
+
+        .referral-percent {
+            color: #91e1b9;
+        }
+
+        .referral-code {
+            border-color: rgba(93, 181, 157, .22);
+            background: rgba(7, 13, 16, .76);
+        }
+
+        .referral-value {
+            color: #d9f5e6;
+        }
+
+        .logout-card {
+            padding: 0;
+            overflow: hidden;
+            border: 1px solid rgba(229, 34, 73, .34);
+            border-radius: 17px;
+            background:
+                linear-gradient(135deg, rgba(105, 17, 39, .38), rgba(10, 8, 12, .98) 72%),
+                var(--panel);
+        }
+
+        .logout-button {
+            width: 100%;
+            min-height: 75px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            padding: 12px 16px;
+            border: 0;
+            background: transparent;
+            color: inherit;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .logout-button .menu-icon {
+            color: var(--red);
+            background: rgba(229, 34, 73, .10);
+        }
+
+        .logout-button .menu-title {
+            color: #f06a83;
+        }
+
+        .logout-button .menu-arrow {
+            color: #a54b5f;
+        }
+
+        /* =========================
+           MOBILE
+        ========================= */
+
+        @media (max-width: 560px) {
+
+            .app {
+                padding:
+                    15px 15px 115px;
+            }
+
+            .profile-card {
+                align-items: flex-start;
+
+                flex-wrap: wrap;
+            }
+
+            .edit-button {
+                margin-left: auto;
+            }
+        }
+
+        @media (max-width: 430px) {
+
+            .profile-card {
+                display: grid;
+
+                grid-template-columns:
+                    78px 1fr;
+
+                gap: 13px;
+            }
+
+            .profile-dp {
+                width: 78px;
+                height: 78px;
+            }
+
+            .profile-name {
+                font-size: 22px;
+            }
+
+            .edit-button {
+                grid-column: 1 / -1;
+
+                width: 100%;
+
+                text-align: center;
+            }
+
+            .subscription-card {
+                padding: 14px;
+            }
+
+            .subscription-logo {
+                width: 58px;
+                height: 58px;
+            }
+
+            .top-profile-avatar {
+                width: 34px;
+                height: 34px;
+            }
+
+            .top-profile-name {
+                max-width: 100px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<main class="app">
+
+    <!-- TOP BAR -->
+
+    <header class="topbar">
+
+        <a
+            href="dashboard.html"
+            class="brand"
+        >
+
+            <img
+                src="logo.png"
+                alt="AVERYX Logo"
+            >
+
+            <span class="brand-name">
+                AVERYX
+            </span>
+
+        </a>
+
+        <div class="top-profile" id="topProfile">
+
+            <div class="top-profile-avatar" id="topProfileAvatar"></div>
+
+            <div class="top-profile-info">
+                <div class="top-profile-name" id="topProfileName">Your Nickname</div>
+                <div class="top-profile-id" id="topProfileId">ID: AVX-000000</div>
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <!-- PROFILE -->
+    <section class="profile-card">
+
+        <div
+            class="profile-dp"
+            id="profileDP"
+        ></div>
+
+
+        <div class="profile-info">
+
+            <div class="profile-label">
+                Account
+            </div>
+
+            <div
+                class="profile-name"
+                id="profileName"
+            >
+                Your Nickname
+            </div>
+
+            <div
+                class="tier-badge"
+                id="tierBadge"
+            >
+                The Fool
+            </div>
+
+            <div
+                class="profile-unique-id"
+                id="profileUniqueId"
+            >
+                ID: 00000
+            </div>
+
+        </div>
+
+
+        <a
+            href="edit-profile.html"
+            class="edit-button"
+        >
+            Edit Profile
+        </a>
+
+    </section>
+
+
+
+    <!-- ACCOUNT DETAILS -->
+
+    <section class="section">
+
+        <h2 class="section-title">
+            Account Details
+        </h2>
+
+
+        <div class="details">
+
+            <div class="detail-row">
+
+                <div class="detail-label">
+                    Nickname
+                </div>
+
+                <div
+                    class="detail-value"
+                    id="nickname"
+                >
+                    Your Nickname
+                </div>
+
+            </div>
+
+
+            <div class="detail-row">
+
+                <div class="detail-label">
+                    Email
+                </div>
+
+                <div
+                    class="detail-value"
+                    id="email"
+                >
+                    Not added
+                </div>
+
+            </div>
+
+
+            <div class="detail-row">
+
+                <div class="detail-label">
+                    Phone
+                </div>
+
+                <div
+                    class="detail-value"
+                    id="phone"
+                >
+                    Not added
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- SUBSCRIPTION -->
+
+    <section class="section">
+
+        <h2 class="section-title">
+            Subscription
+        </h2>
+
+
+        <div class="subscription-card">
+
+            <div
+                class="subscription-logo"
+                id="subscriptionLogo"
+            ></div>
+
+
+            <div class="subscription-info">
+
+                <div class="subscription-label">
+                    Highest Unlocked Tier
+                </div>
+
+                <div
+                    class="subscription-name"
+                    id="subscriptionName"
+                >
+                    The Fool
+                </div>
+
+                <div
+                    class="subscription-return"
+                    id="subscriptionReturn"
+                >
+                    0 USDT/day
+                </div>
+
+            </div>
+
+
+            <a
+                href="subscription.html"
+                class="subscription-link"
+            >
+                View →
+            </a>
+
+        </div>
+
+    </section>
+
+
+    <!-- ACCOUNT MENU -->
+
+    <section class="section">
+
+        <h2 class="section-title">
+            Account
+        </h2>
+
+
+        <div class="menu">
+
+            <a
+                href="edit-profile.html"
+                class="menu-item"
+            >
+
+                <div class="menu-left">
+
+                    <div class="menu-icon">
+                        ✎
+                    </div>
+
+                    <div>
+
+                        <div class="menu-title">
+                            Edit Profile
+                        </div>
+
+                        <div class="menu-subtitle">
+                            Update your profile details
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="menu-arrow">
+                    →
+                </div>
+
+            </a>
+
+
+            <a
+                href="change-password.html"
+                class="menu-item"
+            >
+
+                <div class="menu-left">
+
+                    <div class="menu-icon">
+                        ◉
+                    </div>
+
+                    <div>
+
+                        <div class="menu-title">
+                            Change Password
+                        </div>
+
+                        <div class="menu-subtitle">
+                            Keep your account secure
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="menu-arrow">
+                    →
+                </div>
+
+            </a>
+
+
+            <a
+                href="support.html"
+                class="menu-item"
+            >
+
+                <div class="menu-left">
+
+                    <div class="menu-icon">
+                        ♢
+                    </div>
+
+                    <div>
+
+                        <div class="menu-title">
+                            Help & Support
+                        </div>
+
+                        <div class="menu-subtitle">
+                            Get help through Telegram
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="menu-arrow">
+                    →
+                </div>
+
+            </a>
+
+
+
+
+        </div>
+
+    </section>
+
+
+    <!-- REFERRAL -->
+
+    <section class="section">
+
+        <a href="referral.html" class="referral-card" aria-label="Open Refer & Earn">
+
+            <div class="referral-top">
+
+                <div class="referral-title">
+                    Refer & Earn
+                </div>
+
+                <div class="referral-percent">
+                    5%
+                </div>
+
+            </div>
+
+
+            <div class="referral-code">
+
+                <div class="referral-label">
+                    Your Referral Code
+                </div>
+
+                <div
+                    class="referral-value"
+                    id="referralCode"
+                >
+                    AVX-DEMO7K4M
+                </div>
+
+            </div>
+
+        </a>
+
+    </section>
+
+
+
+    <!-- LOG OUT -->
+
+    <section class="section">
+
+        <div class="logout-card">
+
+            <button type="button" class="logout-button" id="logoutButton">
+
+                <div class="menu-left">
+                    <div class="menu-icon">↪</div>
+
+                    <div>
+                        <div class="menu-title">Log Out</div>
+                        <div class="menu-subtitle">Sign out of your AVERYX account</div>
+                    </div>
+                </div>
+
+                <div class="menu-arrow">→</div>
+
+            </button>
+
+        </div>
+
+    </section>
+</main>
+
+
+<!-- BOTTOM NAV -->
+
+<nav class="bottom-nav">
+
+    <a
+        href="dashboard.html"
+        class="nav-item"
+    >
+        <span class="nav-icon">⌂</span>
+        Home
+    </a>
+
+
+    <a
+        href="subscription.html"
+        class="nav-item"
+    >
+        <span class="nav-icon">◇</span>
+        Tiers
+    </a>
+
+
+    <a
+        href="wallet.html"
+        class="nav-item"
+    >
+        <span class="nav-icon">◈</span>
+        Wallet
+    </a>
+
+
+    <a
+        href="records.html"
+        class="nav-item"
+    >
+        <span class="nav-icon">≡</span>
+        Records
+    </a>
+
+
+    <a
+        href="profile.html"
+        class="nav-item active"
+    >
+        <span class="nav-icon">○</span>
+        Profile
+    </a>
+
+</nav>
+
+
+<script>
+
+    /* ==================================================
+       AVERYX PROFILE
+       PROFILE STATE SYNC
+       ----------------
+       Edit Profile is the source for:
+       - nickname
+       - email
+       - phone
+       - referral code
+       - stable public ID
+       - selected profile PFP
+
+       Wallet/subscription state is used for:
+       - highest unlocked tier
+       - subscription return
+    ================================================== */
+
+    const API_BASE_URL = "";
+
+    const TIERS = [
+        { level: 1, name: "The Fool", deposit: 0, daily: 0, logo: "tier-fool.png" },
+        { level: 2, name: "The Prodigy", deposit: 3.5, daily: 1, logo: "tier-prodigy.png" },
+        { level: 3, name: "The Magician", deposit: 16, daily: 5, logo: "tier-magician.png" },
+        { level: 4, name: "The Conqueror", deposit: 60, daily: 18, logo: "tier-conqueror.png" },
+        { level: 5, name: "The Emperor", deposit: 165, daily: 49.5, logo: "tier-emperor.png" },
+        { level: 6, name: "The Shadow Monarch", deposit: 550, daily: 165, logo: "shadow-monarch.png" },
+        { level: 7, name: "The Berserk", deposit: 1440, daily: 432, logo: "tier-berserk.png" }
+    ];
+
+    const DEFAULT_PROFILE = {
+        nickname: "Your Nickname",
+        email: "",
+        phone: "",
+        referralCode: "AVX-DEMO7K4M",
+        uniqueId: "05031",
+        selectedProfileTier: 1,
+        highestUnlockedTier: 1
+    };
+
+    function readProfile() {
+        try {
+            const raw = localStorage.getItem("averyx_profile");
+            const saved =
+                raw
+                    ? JSON.parse(raw)
+                    : {};
+
+            const storedUser =
+                getStoredObject("averyx_user") || {};
+
+            const profile = {
+                ...DEFAULT_PROFILE,
+                ...(saved && typeof saved === "object"
+                    ? saved
+                    : {})
+            };
+
+            /*
+               A newly registered/logged-in account is stored in
+               averyx_user by the authentication flow.
+
+               Profile-specific settings such as the selected PFP
+               remain in averyx_profile.
+
+               If averyx_profile does not yet contain the account
+               identity, hydrate it from the authenticated user.
+            */
+
+            const hasSavedNickname =
+                typeof saved?.nickname === "string" &&
+                saved.nickname.trim() !== "" &&
+                saved.nickname !== DEFAULT_PROFILE.nickname;
+
+            const hasSavedEmail =
+                typeof saved?.email === "string" &&
+                saved.email.trim() !== "";
+
+            const hasSavedReferralCode =
+                typeof saved?.referralCode === "string" &&
+                saved.referralCode.trim() !== "" &&
+                saved.referralCode !== DEFAULT_PROFILE.referralCode;
+
+            if (!hasSavedNickname && storedUser.nickname) {
+                profile.nickname =
+                    String(storedUser.nickname).trim();
+            }
+
+            if (!hasSavedEmail && storedUser.email) {
+                profile.email =
+                    String(storedUser.email).trim();
+            }
+
+            if (!hasSavedReferralCode && storedUser.referralCode) {
+                profile.referralCode =
+                    String(storedUser.referralCode).trim();
+            }
+
+            if (
+                storedUser.publicUid !== undefined &&
+                storedUser.publicUid !== null
+            ) {
+                profile.uniqueId =
+                    normalizePublicId(
+                        storedUser.publicUid
+                    );
+            } else if (
+                storedUser.id !== undefined &&
+                storedUser.id !== null
+            ) {
+                profile.uniqueId =
+                    normalizePublicId(
+                        storedUser.id
+                    );
+            }
+
+            return profile;
+
+        } catch (error) {
+            return {
+                ...DEFAULT_PROFILE
+            };
+        }
+    }
+
+    function writeProfile(profile) {
+        localStorage.setItem("averyx_profile", JSON.stringify(profile));
+    }
+
+    function normalizePublicId(value) {
+        const text = String(value ?? "").trim();
+
+        if (/^\d{5}$/.test(text)) {
+            return text;
+        }
+
+        if (/^\d+$/.test(text)) {
+            const numeric = Number(text);
+            if (numeric >= 1) {
+                return String(5030 + numeric).padStart(5, "0");
+            }
+        }
+
+        return "05031";
+    }
+
+    function getStoredObject(key) {
+        try {
+            const raw = localStorage.getItem(key);
+            if (!raw) return null;
+            const parsed = JSON.parse(raw);
+            return parsed && typeof parsed === "object" ? parsed : null;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    function readTierValue(source) {
+        if (!source || typeof source !== "object") return 0;
+
+        const candidates = [
+            source.highestUnlockedTier,
+            source.highestTier,
+            source.unlockedTier,
+            source.currentTier,
+            source.subscriptionTier,
+            source.selectedTier,
+            source.tierLevel,
+            source.level,
+            source.tier
+        ];
+
+        for (const value of candidates) {
+            const number = Number(
+                value && typeof value === "object"
+                    ? (value.level ?? value.tier ?? value.id)
+                    : value
+            );
+
+            if (Number.isFinite(number) && number >= 1 && number <= TIERS.length) {
+                return Math.floor(number);
+            }
+        }
+
+        return 0;
+    }
+
+    function getHighestUnlocked(profile) {
+        const sources = [
+            profile,
+            getStoredObject("averyx_subscription"),
+            getStoredObject("averyx_subscription_data"),
+            getStoredObject("averyx_user"),
+            getStoredObject("averyx_account"),
+            getStoredObject("currentUser"),
+            getStoredObject("user"),
+            getStoredObject("averyx_auth")
+        ];
+
+        let highest = Math.max(1, Number(profile.highestUnlockedTier) || 0);
+
+        for (const source of sources) {
+            highest = Math.max(highest, readTierValue(source));
+        }
+
+        const wallet = getStoredObject("averyx_wallet");
+        const balance = Math.max(
+            0,
+            Number(wallet?.balanceUSDT) || 0,
+            Number(wallet?.totalDeposit) || 0
+        );
+
+        for (const tier of TIERS) {
+            if (balance >= tier.deposit) {
+                highest = Math.max(highest, tier.level);
+            }
+        }
+
+        return Math.min(TIERS.length, highest);
+    }
+
+    function getTier(level) {
+        return TIERS.find(tier => tier.level === Number(level)) || TIERS[0];
+    }
+
+    function setImage(element, tier) {
+        if (!element) return;
+
+        element.innerHTML = `
+            <img
+                src="${tier.logo}"
+                alt="${tier.name}"
+                draggable="false"
+            >
+        `;
+    }
+
+    function renderProfile() {
+        const profile = readProfile();
+
+        // Keep the same stable ID format established by Edit Profile.
+        profile.uniqueId = normalizePublicId(profile.uniqueId);
+
+        const highestUnlocked = getHighestUnlocked(profile);
+
+        // Selected PFP is independent from the highest unlocked tier.
+        // Never silently replace the user's selected unlocked PFP.
+        let selectedLevel = Number(profile.selectedProfileTier) || 1;
+
+        if (selectedLevel < 1 || selectedLevel > highestUnlocked) {
+            selectedLevel = Math.min(
+                Math.max(1, selectedLevel),
+                highestUnlocked
+            );
+        }
+
+        profile.selectedProfileTier = selectedLevel;
+        profile.highestUnlockedTier = highestUnlocked;
+        writeProfile(profile);
+
+        const selectedTier = getTier(selectedLevel);
+        const highestTier = getTier(highestUnlocked);
+
+        const nickname = profile.nickname || "Your Nickname";
+        const email = profile.email || "Not added";
+        const phone = profile.phone || "Not added";
+        const referralCode = profile.referralCode || "AVX-DEMO7K4M";
+        const id = profile.uniqueId;
+
+        const profileName = document.getElementById("profileName");
+        const nicknameElement = document.getElementById("nickname");
+        const emailElement = document.getElementById("email");
+        const phoneElement = document.getElementById("phone");
+        const referralElement = document.getElementById("referralCode");
+        const topName = document.getElementById("topProfileName");
+        const topId = document.getElementById("topProfileId");
+        const profileId = document.getElementById("profileUniqueId");
+        const tierBadge = document.getElementById("tierBadge");
+        const subscriptionName = document.getElementById("subscriptionName");
+        const subscriptionReturn = document.getElementById("subscriptionReturn");
+
+        if (profileName) profileName.textContent = nickname;
+        if (nicknameElement) nicknameElement.textContent = nickname;
+        if (emailElement) emailElement.textContent = email;
+        if (phoneElement) phoneElement.textContent = phone;
+        if (referralElement) referralElement.textContent = referralCode;
+
+        if (topName) topName.textContent = nickname;
+        if (topId) topId.textContent = `ID: ${id}`;
+        if (profileId) profileId.textContent = `ID: ${id}`;
+
+        if (tierBadge) tierBadge.textContent = selectedTier.name;
+
+        // Subscription remains the highest unlocked tier.
+        if (subscriptionName) subscriptionName.textContent = highestTier.name;
+        if (subscriptionReturn) {
+            subscriptionReturn.textContent = `${highestTier.daily} USDT/day`;
+        }
+
+        // The selected PFP is shown consistently everywhere on Profile.
+        setImage(document.getElementById("profileDP"), selectedTier);
+        setImage(document.getElementById("topProfileAvatar"), selectedTier);
+        setImage(document.getElementById("subscriptionLogo"), highestTier);
+
+        console.log("AVERYX PROFILE SYNC:", {
+            nickname,
+            id,
+            selectedProfileTier: selectedTier.name,
+            highestUnlockedTier: highestTier.name
+        });
+    }
+
+    // Render immediately from the same state used by Edit Profile.
+    renderProfile();
+
+    // If Edit Profile or another page updates the profile in another tab,
+    // refresh this page's visible state without changing the layout.
+    window.addEventListener("storage", function(event) {
+        const watchedKeys = [
+            "averyx_profile",
+            "averyx_subscription",
+            "averyx_subscription_data",
+            "averyx_wallet"
+        ];
+
+        if (watchedKeys.includes(event.key)) {
+            renderProfile();
+        }
+    });
+
+    // Re-render when this tab returns to the foreground.
+    window.addEventListener("pageshow", renderProfile);
+
+    /* ==================================================
+       LOG OUT
+    ================================================== */
+
+    const logoutButton =
+        document.getElementById("logoutButton");
+
+    if (logoutButton) {
+
+        logoutButton.addEventListener(
+            "click",
+            () => {
+                localStorage.removeItem("averyx_token");
+                localStorage.removeItem("token");
+                localStorage.removeItem("authToken");
+                window.location.href = "login.html";
+            }
+        );
+
+    }
+
+</script>
+
+</body>
+</html>

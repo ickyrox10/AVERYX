@@ -1,0 +1,2527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AVERYX | Dashboard</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #070709;
+            --panel: #101014;
+            --border: #292930;
+            --border-soft: #202026;
+            --text: #f5f5f7;
+            --muted: #898992;
+            --soft: #606069;
+            --red: #e52249;
+            --green: #42c998;
+        }
+
+        body {
+            min-height: 100vh;
+
+            background:
+                radial-gradient(
+                    circle at 82% 0%,
+                    rgba(126, 20, 52, .18),
+                    transparent 31%
+                ),
+                var(--bg);
+
+            color: var(--text);
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        button {
+            font: inherit;
+        }
+
+        .app {
+            width: 100%;
+            max-width: 850px;
+            margin: auto;
+
+            padding:
+                18px 18px 115px;
+        }
+
+        /* =========================
+           TOP BAR
+        ========================= */
+
+        .topbar {
+            height: 62px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+        }
+
+        .brand img {
+            width: 42px;
+            height: 42px;
+            object-fit: contain;
+        }
+
+        .brand-name {
+            font-family: Georgia, serif;
+            font-size: 22px;
+            letter-spacing: 3px;
+        }
+
+        .profile-button {
+            min-width: 176px;
+            height: 52px;
+
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+
+            gap: 9px;
+            padding: 4px 5px 4px 10px;
+
+            overflow: hidden;
+
+            border: none;
+            border-radius: 0;
+            background: transparent;
+        }
+
+        .top-profile-details {
+            min-width: 0;
+            flex: 1;
+            text-align: right;
+            line-height: 1.15;
+        }
+
+        .top-profile-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+
+            color: #f5f5f7;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .top-profile-id {
+            margin-top: 4px;
+
+            color: var(--muted);
+            font-family: monospace;
+            font-size: 8px;
+            letter-spacing: .5px;
+        }
+
+        .top-profile-avatar {
+            width: 42px;
+            height: 42px;
+
+            flex: 0 0 42px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            overflow: hidden;
+
+            border: none;
+            border-radius: 50%;
+            background: transparent;
+        }
+
+        .top-profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* =========================
+           WELCOME
+        ========================= */
+
+        .welcome {
+            padding:
+                29px 2px 21px;
+        }
+
+        .eyebrow {
+            color: var(--muted);
+
+            font-size: 10px;
+            letter-spacing: 2.4px;
+            text-transform: uppercase;
+        }
+
+        .welcome h1 {
+            margin-top: 7px;
+
+            font-family: Georgia, serif;
+
+            font-size:
+                clamp(34px, 8vw, 48px);
+        }
+
+        .welcome p {
+            margin-top: 8px;
+
+            color: var(--muted);
+
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        /* =========================
+           BALANCE
+        ========================= */
+        .balance-card {
+            position: relative;
+            padding: 26px 22px 20px;
+            overflow: hidden;
+            border: 1px solid rgba(229, 34, 73, .28);
+            border-radius: 22px;
+            background:
+                radial-gradient(circle at 100% 0%, rgba(229, 34, 73, .16), transparent 42%),
+                radial-gradient(circle at 0% 100%, rgba(126, 20, 52, .09), transparent 42%),
+                var(--panel);
+        }
+
+        .balance-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+        }
+
+        .balance-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 0;
+            padding: 5px 24px 2px;
+        }
+
+        .balance-column + .balance-column {
+            border-left: 1px solid rgba(255,255,255,.13);
+        }
+
+        .balance-label {
+            color: var(--muted);
+            font-size: 9px;
+            letter-spacing: 1.7px;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        .balance {
+            margin-top: 10px;
+            font-family: Georgia, serif;
+            font-size: clamp(42px, 8vw, 64px);
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .balance-unit {
+            margin-left: 5px;
+            color: var(--muted);
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+        }
+
+        .balance-action {
+            width: 100%;
+            margin-top: 23px;
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .balance-action.deposit {
+            color: #ff3d61;
+            background: rgba(229,34,73,.10);
+            border: 1px solid rgba(229,34,73,.65);
+        }
+
+        .balance-action.withdraw {
+            color: #777780;
+            background: rgba(255,255,255,.025);
+            border: 1px solid rgba(255,255,255,.13);
+            cursor: pointer;
+            pointer-events: auto;
+        }
+
+        .balance-note {
+            margin-top: 17px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 9px;
+        }
+
+        .balance-note strong {
+            color: #f0f0f3;
+        }
+
+
+        /* =========================
+           ACTIONS
+        ========================= */
+
+        .actions {
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, 1fr);
+
+            gap: 10px;
+
+            margin-top: 13px;
+        }
+
+        .action {
+            min-height: 59px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 12px;
+
+            background: var(--panel);
+
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .action.primary {
+            border-color:
+                rgba(229, 34, 73, .38);
+
+            background:
+                rgba(229, 34, 73, .09);
+
+            color: #ef6380;
+        }
+
+        .action:hover {
+            background: #15151a;
+        }
+
+        .action.primary:hover {
+            background:
+                rgba(229, 34, 73, .14);
+        }
+
+        /* =========================
+           SECTION
+        ========================= */
+
+        .section {
+            margin-top: 28px;
+        }
+
+        .section-head {
+            display: flex;
+
+            align-items: center;
+            justify-content: space-between;
+
+            margin-bottom: 12px;
+        }
+
+        .section-title {
+            font-family: Georgia, serif;
+            font-size: 22px;
+        }
+
+        .section-link {
+            color: var(--muted);
+            font-size: 9px;
+        }
+
+        /* =========================
+           CURRENT TIER
+        ========================= */
+
+        .tier-card {
+            padding: 21px;
+
+            display: flex;
+            align-items: center;
+
+            gap: 17px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 19px;
+
+            background: var(--panel);
+        }
+
+        .tier-logo {
+            width: 86px;
+            height: 86px;
+
+            flex-shrink: 0;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            overflow: hidden;
+
+            border:
+                1px solid
+                rgba(229, 34, 73, .25);
+
+            border-radius: 17px;
+
+            background: #09090c;
+        }
+
+        .tier-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .tier-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .tier-label {
+            color: var(--muted);
+
+            font-size: 8px;
+            letter-spacing: 1.4px;
+            text-transform: uppercase;
+        }
+
+        .tier-name {
+            margin-top: 5px;
+
+            font-family: Georgia, serif;
+
+            font-size: 24px;
+        }
+
+        .tier-return {
+            margin-top: 7px;
+
+            color: var(--green);
+
+            font-size: 10px;
+        }
+
+        .tier-return strong {
+            font-size: 13px;
+        }
+
+        .tier-status {
+            align-self: flex-start;
+
+            padding:
+                5px 8px;
+
+            border:
+                1px solid
+                rgba(66, 201, 152, .20);
+
+            border-radius: 6px;
+
+            color: var(--green);
+
+            font-size: 7px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* =========================
+           PROGRESS
+        ========================= */
+
+        .progress-card {
+            margin-top: 10px;
+
+            padding: 17px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 16px;
+
+            background: var(--panel);
+        }
+
+        .progress-top {
+            display: flex;
+
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 15px;
+        }
+
+        .progress-title {
+            font-size: 10px;
+        }
+
+        .progress-percent {
+            color: var(--muted);
+            font-size: 9px;
+        }
+
+        .progress-track {
+            height: 7px;
+
+            margin-top: 11px;
+
+            overflow: hidden;
+
+            border-radius: 99px;
+
+            background: #1b1b20;
+        }
+
+        .progress-fill {
+            height: 100%;
+
+            width: 0%;
+
+            border-radius: 99px;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #b90d31,
+                    #e52249
+                );
+
+            transition:
+                width .4s ease;
+        }
+
+        .progress-description {
+            margin-top: 8px;
+
+            color: var(--soft);
+
+            font-size: 8px;
+        }
+
+        /* =========================
+           STATS
+        ========================= */
+
+        .stats {
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 10px;
+        }
+
+        .stat {
+            padding: 17px 12px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 16px;
+
+            background: var(--panel);
+
+            text-align: center;
+        }
+
+        .stat-value {
+            font-family: Georgia, serif;
+
+            font-size: 23px;
+        }
+
+        .stat-label {
+            margin-top: 5px;
+
+            color: var(--soft);
+
+            font-size: 8px;
+            letter-spacing: .6px;
+            text-transform: uppercase;
+        }
+
+        /* =========================
+           RECORDS
+        ========================= */
+
+        .records {
+            overflow: hidden;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 17px;
+
+            background: var(--panel);
+        }
+
+        .record {
+            min-height: 67px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 15px;
+
+            padding:
+                12px 16px;
+
+            border-bottom:
+                1px solid var(--border-soft);
+        }
+
+        .record:last-child {
+            border-bottom: 0;
+        }
+
+        .record-left {
+            display: flex;
+            align-items: center;
+
+            gap: 12px;
+
+            min-width: 0;
+        }
+
+        .record-icon {
+            width: 37px;
+            height: 37px;
+
+            flex-shrink: 0;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 10px;
+
+            background: #18181d;
+
+            color: #96969f;
+
+            font-size: 13px;
+        }
+
+        .record-name {
+            font-size: 10px;
+        }
+
+        .record-date {
+            margin-top: 4px;
+
+            color: var(--soft);
+
+            font-size: 8px;
+        }
+
+        .record-right {
+            text-align: right;
+        }
+
+        .record-amount {
+            font-size: 10px;
+        }
+
+        .record-status {
+            margin-top: 4px;
+
+            color: var(--green);
+
+            font-size: 7px;
+            text-transform: uppercase;
+        }
+
+        .empty-records {
+            padding: 27px 16px;
+
+            color: var(--soft);
+
+            font-size: 10px;
+            line-height: 1.6;
+
+            text-align: center;
+        }
+
+        /* =========================
+           REFERRAL
+        ========================= */
+
+        .referral-card {
+            display: block;
+
+            padding: 19px;
+
+            border:
+                1px solid
+                rgba(229, 34, 73, .22);
+
+            border-radius: 18px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(229, 34, 73, .07),
+                    rgba(10, 10, 14, .9)
+                );
+        }
+
+        .referral-label {
+            color: var(--muted);
+
+            font-size: 8px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .referral-title {
+            margin-top: 5px;
+
+            font-family: Georgia, serif;
+
+            font-size: 21px;
+        }
+
+        .referral-description {
+            margin-top: 7px;
+
+            color: var(--muted);
+
+            font-size: 9px;
+            line-height: 1.6;
+        }
+
+        .referral-bottom {
+            margin-top: 13px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .referral-code {
+            color: #d5d5db;
+
+            font-family: monospace;
+
+            font-size: 10px;
+            letter-spacing: 1px;
+        }
+
+        .referral-rate {
+            color: #ed5875;
+
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        /* =========================
+           BOTTOM NAV
+        ========================= */
+
+        .bottom-nav {
+            position: fixed;
+
+            left: 50%;
+            bottom: 14px;
+
+            transform:
+                translateX(-50%);
+
+            width:
+                calc(100% - 28px);
+
+            max-width: 700px;
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(5, 1fr);
+
+            gap: 4px;
+
+            padding: 7px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 18px;
+
+            background:
+                rgba(11, 11, 15, .94);
+
+            backdrop-filter:
+                blur(16px);
+
+            z-index: 20;
+        }
+
+        .nav-item {
+            min-height: 49px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+            justify-content: center;
+
+            gap: 4px;
+
+            border-radius: 12px;
+
+            color: #707078;
+
+            font-size: 9px;
+        }
+
+        .nav-icon {
+            font-size: 16px;
+        }
+
+        .nav-item.active {
+            color: white;
+
+            background:
+                rgba(229, 34, 73, .12);
+        }
+
+        /* =========================
+           MOBILE
+        ========================= */
+
+        
+        /* =========================
+           DAILY REWARD COUNTDOWN
+        ========================= */
+
+        .reward-countdown {
+            margin-top: 12px;
+            padding: 15px 17px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            border: 1px solid rgba(229, 34, 73, .24);
+            border-radius: 16px;
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(229, 34, 73, .08),
+                    rgba(255,255,255,.015)
+                );
+        }
+
+        .reward-countdown-label {
+            color: var(--muted);
+            font-size: 9px;
+            letter-spacing: 1.3px;
+            text-transform: uppercase;
+        }
+
+        .reward-countdown-tier {
+            margin-top: 5px;
+            color: #f1f1f4;
+            font-family: Georgia, serif;
+            font-size: 17px;
+        }
+
+        .reward-countdown-value {
+            min-width: 115px;
+            text-align: right;
+            color: #42c998;
+            font-family: "Courier New", monospace;
+            font-size: 21px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .reward-countdown.ready {
+            border-color: rgba(66, 201, 152, .32);
+        }
+
+@media (max-width: 560px) {
+
+            .app {
+                padding:
+                    15px 15px 115px;
+            }
+
+            .tier-card {
+                align-items: flex-start;
+            }
+
+            .tier-status {
+                display: none;
+            }
+        }
+
+        @media (max-width: 430px) {
+
+            .stats {
+                grid-template-columns:
+                    1fr;
+            }
+
+            .actions {
+                grid-template-columns:
+                    1fr;
+            }
+
+            .tier-logo {
+                width: 72px;
+                height: 72px;
+            }
+
+            .tier-name {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<main class="app">
+
+    <!-- =========================
+         TOP BAR
+    ========================= -->
+
+    <header class="topbar">
+
+        <a
+            href="dashboard.html"
+            class="brand"
+        >
+
+            <img
+                src="logo.png"
+                alt="AVERYX Logo"
+            >
+
+            <span class="brand-name">
+                AVERYX
+            </span>
+
+        </a>
+
+
+        <a
+            href="profile.html"
+            class="profile-button"
+            id="topProfile"
+        >
+            <div class="top-profile-details">
+                <div
+                    class="top-profile-name"
+                    id="topProfileName"
+                >
+                    Your Nickname
+                </div>
+                <div
+                    class="top-profile-id"
+                    id="topProfileId"
+                >
+                    ID: 05031
+                </div>
+            </div>
+
+            <div
+                class="top-profile-avatar"
+                id="topProfileAvatar"
+            ></div>
+        </a>
+
+    </header>
+
+
+    <!-- =========================
+         WELCOME
+    ========================= -->
+
+    <section class="welcome">
+
+        <div class="eyebrow">
+            Dashboard
+        </div>
+
+        <h1>
+            Welcome Back
+        </h1>
+
+        <p id="welcomeText">
+            Your account overview at a glance.
+        </p>
+
+    </section>
+
+
+    <!-- =========================
+         BALANCE
+    ========================= -->
+    <section class="balance-card">
+
+        <div class="balance-columns">
+
+            <div class="balance-column">
+
+                <div class="balance-label">
+                    Deposited
+                </div>
+
+                <div class="balance">
+
+                    <span id="balanceAmount">
+                        0.00
+                    </span>
+
+                    <span class="balance-unit">
+                        USDT
+                    </span>
+
+                </div>
+
+                <a
+                    href="deposit.html"
+                    class="balance-action deposit"
+                >
+                    ↓ &nbsp; Deposit
+                </a>
+
+            </div>
+
+
+            <div class="balance-column">
+
+                <div class="balance-label">
+                    Withdrawable
+                </div>
+
+                <div class="balance">
+
+                    <span id="withdrawnAmount">
+                        0.00
+                    </span>
+
+                    <span class="balance-unit">
+                        USDT
+                    </span>
+
+                </div>
+
+                <a
+                    href="withdraw.html"
+                    id="withdrawAction"
+                    class="balance-action withdraw"
+                >
+                    ↑ &nbsp; Withdraw
+                </a>
+
+            </div>
+
+        </div>
+
+        <div class="balance-note">
+            Deposited balance is not withdrawable. Daily rewards are withdrawable.
+        </div>
+
+    </section>
+
+
+<!-- =========================
+         QUICK ACTIONS
+    ========================= -->
+
+    <section class="actions">
+
+        <a
+            href="subscription.html"
+            class="action primary"
+        >
+            Subscriptions
+        </a>
+
+        <a
+            href="records.html"
+            class="action"
+        >
+            Records
+        </a>
+
+    </section>
+
+
+    <!-- =========================
+         CURRENT TIER
+    ========================= -->
+
+    <section class="section">
+
+        <div class="section-head">
+
+            <h2 class="section-title">
+                Current Tier
+            </h2>
+
+            <a
+                href="subscription.html"
+                class="section-link"
+            >
+                View all →
+            </a>
+
+        </div>
+
+
+        <div class="tier-card">
+
+            <div
+                class="tier-logo"
+                id="tierLogo"
+            ></div>
+
+
+            <div class="tier-info">
+
+                <div class="tier-label">
+                    Active Subscription
+                </div>
+
+                <div
+                    class="tier-name"
+                    id="tierName"
+                >
+                    The Fool
+                </div>
+
+                <div
+                    class="tier-return"
+                    id="tierReturn"
+                >
+                    <strong>0</strong>
+                    USDT / day
+                </div>
+
+            </div>
+
+
+            <div class="tier-status">
+                Active
+            </div>
+
+        </div>
+
+
+        <div class="progress-card">
+
+            <div class="progress-top">
+
+                <div class="progress-title">
+                    Next Tier Progress
+                </div>
+
+                <div
+                    class="progress-percent"
+                    id="progressPercent"
+                >
+                    0%
+                </div>
+
+            </div>
+
+
+            <div class="progress-track">
+
+                <div
+                    class="progress-fill"
+                    id="progressFill"
+                ></div>
+
+            </div>
+
+
+            <div
+                class="progress-description"
+                id="progressDescription"
+            >
+                The Fool is your starting tier.
+            </div>
+
+        </div>
+
+    <!-- =========================
+         DAILY REWARD COUNTDOWN
+    ========================= -->
+
+    <section
+        class="reward-countdown"
+        id="rewardCountdown"
+        aria-live="polite"
+    >
+
+        <div>
+
+            <div class="reward-countdown-label">
+                Next Reward
+            </div>
+
+            <div
+                class="reward-countdown-tier"
+                id="rewardTierName"
+            >
+                Current Tier
+            </div>
+
+        </div>
+
+        <div
+            class="reward-countdown-value"
+            id="rewardCountdownValue"
+        >
+            --:--:--
+        </div>
+
+    </section>
+
+    </section>
+
+
+    <!-- =========================
+         OVERVIEW
+    ========================= -->
+
+    <section class="section">
+
+        <div class="section-head">
+
+            <h2 class="section-title">
+                Overview
+            </h2>
+
+        </div>
+
+
+        <div class="stats">
+
+            <div class="stat">
+
+                <div
+                    class="stat-value"
+                    id="totalDeposit"
+                >
+                    0.00
+                </div>
+
+                <div class="stat-label">
+                    Total Deposited
+                </div>
+
+            </div>
+
+
+            <div class="stat">
+
+                <div
+                    class="stat-value"
+                    id="withdrawableAmount"
+                >
+                    0.00
+                </div>
+
+                <div class="stat-label">
+                    Withdrawable
+                </div>
+
+            </div>
+
+
+            <div class="stat">
+
+                <div
+                    class="stat-value"
+                    id="totalWithdraw"
+                >
+                    0.00
+                </div>
+
+                <div class="stat-label">
+                    Total Withdrawn
+                </div>
+
+            </div>
+
+
+            <div class="stat">
+
+                <div
+                    class="stat-value"
+                    id="referralCount"
+                >
+                    0
+                </div>
+
+                <div class="stat-label">
+                    Referrals
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         RECENT ACTIVITY
+    ========================= -->
+
+    <section class="section">
+
+        <div class="section-head">
+
+            <h2 class="section-title">
+                Recent Activity
+            </h2>
+
+            <a
+                href="records.html"
+                class="section-link"
+            >
+                View all →
+            </a>
+
+        </div>
+
+
+        <div
+            class="records"
+            id="records"
+        >
+
+            <div class="empty-records">
+                No recent activity yet.
+                Your deposits, withdrawals and
+                subscription activity will appear here.
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         REFERRAL
+    ========================= -->
+
+    <section class="section">
+
+        <a
+            href="referral.html"
+            class="referral-card"
+        >
+
+            <div class="referral-label">
+                Refer & Earn
+            </div>
+
+            <div class="referral-title">
+                Grow Your Rewards
+            </div>
+
+            <div class="referral-description">
+                Earn 5% of qualifying deposits made
+                by referred users.
+            </div>
+
+            <div class="referral-bottom">
+
+                <div
+                    class="referral-code"
+                    id="referralCode"
+                >
+                    AVX-DEMO7K4M
+                </div>
+
+                <div class="referral-rate">
+                    5%
+                </div>
+
+            </div>
+
+        </a>
+
+    </section>
+
+</main>
+
+
+<!-- =========================
+     BOTTOM NAV
+========================= -->
+
+<nav class="bottom-nav">
+
+    <a
+        href="dashboard.html"
+        class="nav-item active"
+    >
+        <span class="nav-icon">⌂</span>
+        Home
+    </a>
+
+
+    <a
+        href="subscription.html"
+        class="nav-item"
+    >
+        <span class="nav-icon">◇</span>
+        Tiers
+    </a>
+
+
+    <a
+        href="wallet.html"
+        class="nav-item"
+    >
+        <span class="nav-icon">◈</span>
+        Wallet
+    </a>
+
+
+    <a
+        href="records.html"
+        class="nav-item"
+    >
+        <span class="nav-icon">≡</span>
+        Records
+    </a>
+
+
+    <a
+        href="profile.html"
+        class="nav-item"
+    >
+        <span class="nav-icon">○</span>
+        Profile
+    </a>
+
+</nav>
+
+
+<script>
+const API_BASE_URL = "http://localhost:3000";
+
+const TIERS = [
+    { level: 1, name: "The Fool", deposit: 0, daily: 0, logo: "tier-fool.png" },
+    { level: 2, name: "The Prodigy", deposit: 3.5, daily: 1, logo: "tier-prodigy.png" },
+    { level: 3, name: "The Magician", deposit: 16, daily: 5, logo: "tier-magician.png" },
+    { level: 4, name: "The Conqueror", deposit: 60, daily: 18, logo: "tier-conqueror.png" },
+    { level: 5, name: "The Emperor", deposit: 165, daily: 49.5, logo: "tier-emperor.png" },
+    { level: 6, name: "The Shadow Monarch", deposit: 550, daily: 165, logo: "shadow-monarch.png" },
+    { level: 7, name: "The Berserk", deposit: 1440, daily: 432, logo: "tier-berserk.png" }
+];
+
+function getToken() {
+    return (
+        localStorage.getItem("averyx_token") ||
+        localStorage.getItem("token") ||
+        localStorage.getItem("authToken") ||
+        ""
+    );
+}
+
+function money(value) {
+    return (Number(value) || 0).toFixed(2);
+}
+
+function getTier(level) {
+    return (
+        TIERS.find(
+            tier =>
+                tier.level === Number(level)
+        ) || TIERS[0]
+    );
+}
+
+async function apiRequest(endpoint) {
+
+    const token =
+        getToken();
+
+    if (!token) {
+        window.location.href =
+            "login.html";
+        return null;
+    }
+
+    const response =
+        await fetch(
+            `${API_BASE_URL}${endpoint}`,
+            {
+                headers: {
+                    Authorization:
+                        `Bearer ${token}`
+                }
+            }
+        );
+
+    const data =
+        await response.json();
+
+    if (response.status === 401) {
+
+        localStorage.removeItem(
+            "averyx_token"
+        );
+
+        localStorage.removeItem(
+            "token"
+        );
+
+        localStorage.removeItem(
+            "authToken"
+        );
+
+        window.location.href =
+            "login.html";
+
+        return null;
+    }
+
+    if (
+        !response.ok ||
+        !data.success
+    ) {
+        throw new Error(
+            data.message ||
+            "Request failed."
+        );
+    }
+
+    return data;
+}
+
+function renderRecord(record) {
+
+    const rawType =
+        String(
+            record.type ||
+            "activity"
+        ).toLowerCase();
+
+    const amount =
+        Number(
+            record.amountUSDT ||
+            record.amount ||
+            0
+        );
+
+    const date =
+        record.createdAt
+            ? new Date(
+                record.createdAt
+            ).toLocaleString()
+            : record.date || "";
+
+    let icon = "•";
+    let displayType =
+        record.type || "Activity";
+
+    /*
+       DAILY REWARD
+       Show reward credits in Dashboard
+       Recent Activity. Wallet UI is unchanged.
+    */
+    if (
+        rawType === "reward" ||
+        rawType.includes("daily-reward") ||
+        rawType.includes("daily reward")
+    ) {
+        icon = "✦";
+        displayType = "Daily Reward";
+    } else if (
+        rawType.includes("deposit")
+    ) {
+        icon = "↓";
+        displayType = "Deposit";
+    } else if (
+        rawType.includes("withdraw")
+    ) {
+        icon = "↑";
+        displayType = "Withdrawal";
+    } else if (
+        rawType.includes("subscription")
+    ) {
+        icon = "◇";
+        displayType = "Subscription";
+    }
+
+    const row =
+        document.createElement(
+            "div"
+        );
+
+    row.className =
+        "record";
+
+    row.innerHTML = `
+        <div class="record-left">
+
+            <div class="record-icon">
+                ${icon}
+            </div>
+
+            <div>
+
+                <div class="record-name">
+                    ${displayType}
+                </div>
+
+                <div class="record-date">
+                    ${date}
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="record-right">
+
+            <div class="record-amount">
+                ${rawType === "reward" ? "+" : ""}${money(amount)} USDT
+            </div>
+
+            <div class="record-status">
+                ${record.status || "Completed"}
+            </div>
+
+        </div>
+    `;
+
+    return row;
+}
+
+
+/* ==================================================
+   DAILY REWARD COUNTDOWN
+================================================== */
+
+function formatCountdown(totalSeconds) {
+
+    const safeSeconds =
+        Math.max(
+            0,
+            Math.floor(
+                Number(totalSeconds) || 0
+            )
+        );
+
+    const hours =
+        Math.floor(
+            safeSeconds / 3600
+        );
+
+    const minutes =
+        Math.floor(
+            (safeSeconds % 3600) / 60
+        );
+
+    const seconds =
+        safeSeconds % 60;
+
+    return [
+        hours,
+        minutes,
+        seconds
+    ]
+        .map(
+            value =>
+                String(value)
+                    .padStart(2, "0")
+        )
+        .join(":");
+}
+
+
+function getNextRewardBoundary() {
+
+    /*
+       India is fixed at UTC+05:30.
+       The UI only shows the remaining countdown.
+    */
+
+    const now =
+        new Date();
+
+    const istNow =
+        new Date(
+            now.getTime() +
+            (5.5 * 60 * 60 * 1000)
+        );
+
+    const year =
+        istNow.getUTCFullYear();
+
+    const month =
+        istNow.getUTCMonth();
+
+    const day =
+        istNow.getUTCDate();
+
+    const resetTodayUTC =
+        Date.UTC(
+            year,
+            month,
+            day,
+            16,
+            30,
+            0,
+            0
+        ) -
+        (5.5 * 60 * 60 * 1000);
+
+    const resetToday =
+        new Date(
+            resetTodayUTC
+        );
+
+    if (
+        now.getTime() <
+        resetToday.getTime()
+    ) {
+
+        return resetToday;
+
+    }
+
+    return new Date(
+        resetToday.getTime() +
+        24 * 60 * 60 * 1000
+    );
+}
+
+
+let rewardCountdownTimer =
+    null;
+
+
+function startRewardCountdown(
+    tierName
+) {
+
+    const wrapper =
+        document.getElementById(
+            "rewardCountdown"
+        );
+
+    const tierElement =
+        document.getElementById(
+            "rewardTierName"
+        );
+
+    const valueElement =
+        document.getElementById(
+            "rewardCountdownValue"
+        );
+
+
+    if (
+        !wrapper ||
+        !tierElement ||
+        !valueElement
+    ) {
+        return;
+    }
+
+
+    tierElement.textContent =
+        tierName ||
+        "Current Tier";
+
+
+    if (
+        rewardCountdownTimer
+    ) {
+
+        clearInterval(
+            rewardCountdownTimer
+        );
+
+    }
+
+
+    let refreshing =
+        false;
+
+
+    async function tick() {
+
+        const next =
+            getNextRewardBoundary();
+
+        const seconds =
+            Math.max(
+                0,
+                Math.ceil(
+                    (
+                        next.getTime() -
+                        Date.now()
+                    ) / 1000
+                )
+            );
+
+
+        if (
+            seconds <= 0
+        ) {
+
+            valueElement.textContent =
+                "00:00:00";
+
+
+            if (!refreshing) {
+
+                refreshing = true;
+
+                try {
+
+                    await initDashboard();
+
+                } finally {
+
+                    refreshing = false;
+
+                }
+
+            }
+
+            return;
+
+        }
+
+
+        valueElement.textContent =
+            formatCountdown(
+                seconds
+            );
+
+    }
+
+
+    tick();
+
+    rewardCountdownTimer =
+        setInterval(
+            tick,
+            1000
+        );
+
+}
+
+
+async function initDashboard() {
+
+    try {
+
+        /*
+           1. Authenticate using the existing token.
+        */
+
+        const account =
+            await apiRequest(
+                "/api/auth/me"
+            );
+
+        if (!account) {
+            return;
+        }
+
+
+        const user =
+            account.user || {};
+
+
+        /*
+           2. Get the wallet DIRECTLY from the wallet endpoint.
+
+           This is the same endpoint that already returned
+           your real balance in PowerShell.
+
+           Example:
+           231.98 USDT
+        */
+
+        const walletData =
+            await apiRequest(
+                "/api/wallet/"
+            );
+
+        if (!walletData) {
+            return;
+        }
+
+
+        const wallet =
+            walletData.wallet ||
+            walletData.data ||
+            {};
+
+
+        const balance =
+            Number(
+                wallet.balanceUSDT
+            ) || 0;
+
+
+        const withdrawable =
+            Number(
+                wallet.withdrawableUSDT
+            ) || 0;
+
+
+        /*
+           3. Get transactions BEFORE calculating
+              total withdrawn.
+        */
+
+        const transactionData =
+            await apiRequest(
+                "/api/wallet/transactions"
+            );
+
+
+        const transactions =
+            transactionData &&
+            Array.isArray(
+                transactionData.transactions
+            )
+                ? transactionData.transactions
+                : [];
+
+
+        /*
+           4. Calculate total withdrawn from
+              actual completed withdrawal transactions.
+        */
+
+        const totalWithdrawn =
+            transactions
+                .filter(
+                    transaction =>
+                        String(
+                            transaction.type ||
+                            ""
+                        ).toLowerCase() ===
+                        "withdrawal"
+                )
+                .reduce(
+                    (sum, transaction) =>
+                        sum +
+                        (
+                            Number(
+                                transaction.amountUSDT
+                            ) || 0
+                        ),
+                    0
+                );
+
+
+        /*
+           5. Determine the highest tier from
+              the LIVE PostgreSQL wallet balance.
+        */
+
+        const highestUnlocked =
+            [...TIERS]
+                .reverse()
+                .find(
+                    tier =>
+                        balance >=
+                        Number(
+                            tier.deposit
+                        )
+                ) || TIERS[0];
+
+
+        /*
+           The current dashboard tier follows
+           the qualifying deposited balance.
+
+           231.98 USDT -> The Emperor
+        */
+
+        const activeTier =
+            highestUnlocked;
+
+
+        const nextUnlock =
+            TIERS.find(
+                tier =>
+                    Number(
+                        tier.deposit
+                    ) >
+                    balance
+            ) || null;
+
+
+        startRewardCountdown(
+            activeTier.name
+        );
+
+
+        /* =========================
+           HEADER
+        ========================= */
+
+        document.getElementById(
+            "welcomeText"
+        ).textContent =
+            `Good to see you, ${
+                user.nickname ||
+                "there"
+            }.`;
+
+
+
+        /* =========================
+           MAIN SPLIT BALANCE
+        ========================= */
+
+        document.getElementById(
+            "balanceAmount"
+        ).textContent =
+            money(balance);
+
+
+        const withdrawnDisplay =
+            document.getElementById(
+                "withdrawnAmount"
+            );
+
+
+        if (withdrawnDisplay) {
+
+            withdrawnDisplay.textContent =
+                money(withdrawable);
+
+        }
+
+
+        /*
+           Deposited funds are NOT withdrawable.
+        */
+
+        const withdrawableLabel =
+            document.querySelector(
+                ".balance-subline"
+            );
+
+
+        if (withdrawableLabel) {
+
+            withdrawableLabel.textContent =
+                "Withdrawable: 0.00 USDT";
+
+        }
+
+
+        const dailyReturnElement =
+            document.getElementById(
+                "dailyReturn"
+            );
+
+        if (dailyReturnElement) {
+
+            dailyReturnElement.textContent =
+                `${activeTier.daily} USDT/day`;
+
+        }
+
+
+
+        /* =========================
+           CURRENT TIER
+        ========================= */
+
+        document.getElementById(
+            "tierName"
+        ).textContent =
+            activeTier.name;
+
+
+        document.getElementById(
+            "tierReturn"
+        ).innerHTML =
+            `<strong>${activeTier.daily}</strong> USDT / day`;
+
+
+        document.getElementById(
+            "tierLogo"
+        ).innerHTML =
+            `<img src="${activeTier.logo}" alt="${activeTier.name}">`;
+
+
+        /* =========================
+           PROFILE HEADER SYNC
+           Uses the same saved profile state
+           as Edit Profile.
+        ========================= */
+
+        /* =========================
+           PROFILE HEADER SYNC
+           Same profile state used by
+           Edit Profile / Profile.
+        ========================= */
+
+        let savedProfile = {};
+
+        try {
+            const rawProfile =
+                localStorage.getItem("averyx_profile");
+
+            if (rawProfile) {
+                savedProfile =
+                    JSON.parse(rawProfile) || {};
+            }
+        } catch (error) {
+            savedProfile = {};
+        }
+
+        const selectedProfileTier =
+            Number(
+                savedProfile.selectedProfileTier
+            ) || activeTier.level;
+
+        const selectedProfile =
+            getTier(selectedProfileTier);
+
+        const profileName =
+            savedProfile.nickname ||
+            user.nickname ||
+            "Your Nickname";
+
+        const profileId =
+            String(
+                savedProfile.uniqueId ||
+                user.publicUid ||
+                user.public_uid ||
+                "05031"
+            );
+
+        const topProfileName =
+            document.getElementById(
+                "topProfileName"
+            );
+
+        const topProfileId =
+            document.getElementById(
+                "topProfileId"
+            );
+
+        const topProfileAvatar =
+            document.getElementById(
+                "topProfileAvatar"
+            );
+
+        if (topProfileName) {
+            topProfileName.textContent =
+                profileName;
+        }
+
+        if (topProfileId) {
+            topProfileId.textContent =
+                `ID: ${profileId}`;
+        }
+
+        if (topProfileAvatar) {
+            topProfileAvatar.innerHTML =
+                `<img src="${selectedProfile.logo}" alt="${selectedProfile.name}">`;
+        }
+
+
+
+        /* =========================
+           NEXT TIER PROGRESS
+        ========================= */
+
+        const progressFill =
+            document.getElementById(
+                "progressFill"
+            );
+
+
+        const progressPercent =
+            document.getElementById(
+                "progressPercent"
+            );
+
+
+        const progressDescription =
+            document.getElementById(
+                "progressDescription"
+            );
+
+
+        if (nextUnlock) {
+
+            const previousRequirement =
+                Number(
+                    highestUnlocked.deposit
+                );
+
+
+            const nextRequirement =
+                Number(
+                    nextUnlock.deposit
+                );
+
+
+            const range =
+                Math.max(
+                    0.00000001,
+                    nextRequirement -
+                    previousRequirement
+                );
+
+
+            const progress =
+                Math.min(
+                    100,
+                    Math.max(
+                        0,
+                        (
+                            (
+                                balance -
+                                previousRequirement
+                            ) /
+                            range
+                        ) * 100
+                    )
+                );
+
+
+            progressFill.style.width =
+                `${progress}%`;
+
+
+            progressPercent.textContent =
+                `${Math.floor(progress)}%`;
+
+
+            const needed =
+                Math.max(
+                    0,
+                    nextRequirement -
+                    balance
+                );
+
+
+            progressDescription.textContent =
+                `${highestUnlocked.name} unlocked. ` +
+                `${money(needed)} USDT more to unlock ${nextUnlock.name}.`;
+
+        } else {
+
+            progressFill.style.width =
+                "100%";
+
+
+            progressPercent.textContent =
+                "100%";
+
+
+            progressDescription.textContent =
+                `${highestUnlocked.name} is the highest tier currently unlocked by your wallet balance.`;
+
+        }
+
+
+
+        /* =========================
+           OVERVIEW
+        ========================= */
+
+        document.getElementById(
+            "totalDeposit"
+        ).textContent =
+            money(balance);
+
+
+        document.getElementById(
+            "withdrawableAmount"
+        ).textContent =
+            money(withdrawable);
+
+
+        document.getElementById(
+            "totalWithdraw"
+        ).textContent =
+            money(totalWithdrawn);
+
+
+        document.getElementById(
+            "referralCode"
+        ).textContent =
+            user.referralCode ||
+            "AVX-DEMO7K4M";
+
+        const referralCountElement =
+            document.getElementById(
+                "referralCount"
+            );
+
+        if (referralCountElement) {
+
+            referralCountElement.textContent =
+                Number(
+                    user.referralCount ||
+                    0
+                );
+
+        }
+
+
+
+        /* =========================
+           RECENT ACTIVITY
+        ========================= */
+
+        const recordsContainer =
+            document.getElementById(
+                "records"
+            );
+
+
+        recordsContainer.innerHTML =
+            "";
+
+
+        if (
+            transactions.length === 0
+        ) {
+
+            recordsContainer.innerHTML = `
+                <div class="empty-records">
+                    No recent activity yet.
+                </div>
+            `;
+
+        } else {
+
+            /*
+               Subscription reward and Daily Reward represent
+               the same daily credit.
+
+               If both records exist for the same credit, keep
+               only the Daily Reward entry on Dashboard.
+               Deposits and withdrawals remain unchanged.
+            */
+
+            const dailyRewards =
+                transactions.filter(
+                    transaction => {
+
+                        const type =
+                            String(
+                                transaction.type || ""
+                            ).toLowerCase();
+
+                        return (
+                            type === "reward" ||
+                            type.includes("daily-reward") ||
+                            type.includes("daily reward")
+                        );
+
+                    }
+                );
+
+            const dashboardTransactions =
+                transactions.filter(
+                    transaction => {
+
+                        const type =
+                            String(
+                                transaction.type || ""
+                            ).toLowerCase();
+
+                        const isSubscription =
+                            type.includes("subscription");
+
+                        if (!isSubscription) {
+                            return true;
+                        }
+
+                        const subscriptionAmount =
+                            Number(
+                                transaction.amountUSDT ||
+                                transaction.amount ||
+                                0
+                            );
+
+                        const subscriptionDate =
+                            transaction.createdAt
+                                ? new Date(
+                                    transaction.createdAt
+                                ).getTime()
+                                : 0;
+
+                        /*
+                           Hide the subscription entry only when
+                           a matching Daily Reward exists for the
+                           same amount on the same reward cycle.
+                        */
+                        const matchingReward =
+                            dailyRewards.some(
+                                reward => {
+
+                                    const rewardAmount =
+                                        Number(
+                                            reward.amountUSDT ||
+                                            reward.amount ||
+                                            0
+                                        );
+
+                                    const rewardDate =
+                                        reward.createdAt
+                                            ? new Date(
+                                                reward.createdAt
+                                            ).getTime()
+                                            : 0;
+
+                                    const sameAmount =
+                                        Math.abs(
+                                            rewardAmount -
+                                            subscriptionAmount
+                                        ) < 0.000001;
+
+                                    const sameCycle =
+                                        subscriptionDate &&
+                                        rewardDate
+                                            ? Math.abs(
+                                                subscriptionDate -
+                                                rewardDate
+                                            ) <=
+                                              24 * 60 * 60 * 1000
+                                            : true;
+
+                                    return (
+                                        sameAmount &&
+                                        sameCycle
+                                    );
+
+                                }
+                            );
+
+                        return !matchingReward;
+
+                    }
+                );
+
+            dashboardTransactions
+                .slice(0, 5)
+                .forEach(
+                    transaction => {
+
+                        recordsContainer.appendChild(
+                            renderRecord(
+                                transaction
+                            )
+                        );
+
+                    }
+                );
+
+        }
+
+
+        console.log(
+            "AVERYX dashboard loaded:",
+            {
+                deposited:
+                    balance,
+
+                withdrawn:
+                    totalWithdrawn,
+
+                withdrawable:
+                    withdrawable,
+
+                activeTier:
+                    activeTier.name,
+
+                nextTier:
+                    nextUnlock
+                        ? nextUnlock.name
+                        : "MAX"
+            }
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Dashboard error:",
+            error
+        );
+
+
+        document.getElementById(
+            "welcomeText"
+        ).textContent =
+            error.message ||
+            "Unable to load dashboard.";
+
+    }
+
+}
+initDashboard();
+</script>
+
+
+</body>
+</html>

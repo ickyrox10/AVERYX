@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>AVERYX | Withdraw</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+
+            margin: 0;
+
+            min-height: 100vh;
+
+            background:
+                radial-gradient(
+                    circle at top right,
+                    rgba(100, 8, 30, .22),
+                    transparent 40%
+                ),
+                #050507;
+
+            color: #f4f2f4;
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+        }
+
+        .container {
+
+            width: min(
+                900px,
+                calc(100% - 32px)
+            );
+
+            margin: auto;
+
+            padding:
+                35px 0 100px;
+
+        }
+
+        .top {
+
+            display: flex;
+
+            justify-content:
+                space-between;
+
+            align-items: center;
+
+            margin-bottom: 70px;
+
+        }
+
+        .brand {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 14px;
+
+            font-family:
+                Georgia,
+                serif;
+
+            font-size: 30px;
+
+            letter-spacing: 3px;
+
+        }
+
+        .brand-mark {
+
+            width: 34px;
+            height: 34px;
+            object-fit: contain;
+            display: block;
+
+        }
+
+        .back {
+
+            color: #9c9aa3;
+
+            text-decoration: none;
+
+        }
+
+        .eyebrow {
+
+            color: #8e8a98;
+
+            font-size: 11px;
+
+            letter-spacing: 3px;
+
+            margin-bottom: 12px;
+
+        }
+
+        h1 {
+
+            margin: 0;
+
+            font-family:
+                Georgia,
+                serif;
+
+            font-size:
+                clamp(
+                    48px,
+                    8vw,
+                    78px
+                );
+
+        }
+
+        .subtitle {
+
+            color: #92909a;
+
+            margin:
+                18px 0 35px;
+
+        }
+
+        .balance-card {
+
+            padding: 35px;
+
+            border:
+                1px solid
+                rgba(220, 24, 65, .45);
+
+            border-radius: 24px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(25, 10, 16, .96),
+                    rgba(15, 15, 19, .96)
+                );
+
+        }
+
+        .label {
+
+            color: #8e8a98;
+
+            font-size: 10px;
+
+            letter-spacing: 2px;
+
+            text-transform:
+                uppercase;
+
+        }
+
+        .amount {
+
+            margin-top: 10px;
+
+            font-family:
+                Georgia,
+                serif;
+
+            font-size:
+                clamp(
+                    50px,
+                    10vw,
+                    82px
+                );
+
+        }
+
+        .amount span {
+
+            font-family:
+                Arial,
+                sans-serif;
+
+            font-size: 17px;
+
+            color: #98949e;
+
+        }
+
+        .locked {
+
+            margin-top: 10px;
+
+            color: #77747e;
+
+            font-size: 13px;
+
+        }
+
+        .withdraw-card {
+
+            margin-top: 25px;
+
+            padding: 35px;
+
+            border:
+                1px solid
+                #28282f;
+
+            border-radius: 24px;
+
+            background: #101014;
+
+        }
+
+        .field {
+
+            margin-top: 22px;
+
+        }
+
+        input {
+
+            width: 100%;
+
+            padding: 17px;
+
+            margin-top: 9px;
+
+            border:
+                1px solid
+                #303039;
+
+            border-radius: 12px;
+
+            outline: none;
+
+            background: #08080b;
+
+            color: white;
+
+            font-size: 16px;
+
+        }
+
+        input:focus {
+
+            border-color:
+                #d91d49;
+
+        }
+
+        button {
+
+            width: 100%;
+
+            margin-top: 25px;
+
+            padding: 17px;
+
+            border: 0;
+
+            border-radius: 12px;
+
+            background:
+                #d71947;
+
+            color: white;
+
+            font-size: 15px;
+
+            font-weight: 700;
+
+            cursor: pointer;
+
+        }
+
+        button:disabled {
+
+            opacity: .45;
+
+            cursor: not-allowed;
+
+        }
+
+        .message {
+
+            display: none;
+
+            margin-top: 20px;
+
+            padding: 15px;
+
+            border-radius: 12px;
+
+            font-size: 14px;
+
+        }
+
+        .message.success {
+
+            display: block;
+
+            color: #45d5a3;
+
+            background:
+                rgba(45, 200, 150, .08);
+
+            border:
+                1px solid
+                rgba(45, 200, 150, .2);
+
+        }
+
+        .message.error {
+
+            display: block;
+
+            color: #ff607f;
+
+            background:
+                rgba(220, 25, 70, .08);
+
+            border:
+                1px solid
+                rgba(220, 25, 70, .2);
+
+        }
+
+        .info {
+
+            margin-top: 22px;
+
+            color: #77747e;
+
+            font-size: 12px;
+
+            line-height: 1.7;
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <div class="top">
+
+        <div class="brand">
+
+            <img src="logo.png" alt="AVERYX Logo" class="brand-mark">
+
+            AVERYX
+
+        </div>
+
+        <a
+            class="back"
+            href="wallet.html"
+        >
+            ← Wallet
+        </a>
+
+    </div>
+
+
+    <div class="eyebrow">
+        WALLET
+    </div>
+
+    <h1>
+        Withdraw
+    </h1>
+
+    <div class="subtitle">
+        Withdraw your earned rewards.
+    </div>
+
+
+    <div class="balance-card">
+
+        <div class="label">
+            Withdrawable Balance
+        </div>
+
+        <div class="amount">
+
+            <span id="withdrawableBalance">
+                0.00
+            </span>
+
+            <span>
+                USDT
+            </span>
+
+        </div>
+
+        <div class="locked">
+
+            Your deposited balance is locked
+            and cannot be withdrawn.
+
+        </div>
+
+    </div>
+
+
+    <div class="withdraw-card">
+
+        <div class="label">
+            Withdrawal Amount
+        </div>
+
+
+        <div class="field">
+
+            <label
+                for="amount"
+                class="label"
+            >
+                Amount
+            </label>
+
+            <input
+                id="amount"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="0.00"
+            >
+
+        </div>
+
+
+        <div class="field">
+
+            <div class="label">
+                Address Type
+            </div>
+
+            <div
+                id="networkOptions"
+                style="
+                    display:grid;
+                    grid-template-columns:repeat(5, 1fr);
+                    gap:10px;
+                    margin-top:9px;
+                "
+            >
+
+                <button
+                    type="button"
+                    class="network-option"
+                    data-network="BEP20"
+                    style="
+                        margin:0;
+                        padding:14px 8px;
+                        border:1px solid #303039;
+                        border-radius:12px;
+                        background:#08080b;
+                        color:#98949e;
+                        font-size:13px;
+                        font-weight:600;
+                    "
+                >
+                    BEP20
+                </button>
+
+                <button
+                    type="button"
+                    class="network-option"
+                    data-network="TRC20"
+                    style="
+                        margin:0;
+                        padding:14px 8px;
+                        border:1px solid #303039;
+                        border-radius:12px;
+                        background:#08080b;
+                        color:#98949e;
+                        font-size:13px;
+                        font-weight:600;
+                    "
+                >
+                    TRC20
+                </button>
+
+                <button
+                    type="button"
+                    class="network-option"
+                    data-network="TON"
+                    style="
+                        margin:0;
+                        padding:14px 8px;
+                        border:1px solid #303039;
+                        border-radius:12px;
+                        background:#08080b;
+                        color:#98949e;
+                        font-size:13px;
+                        font-weight:600;
+                    "
+                >
+                    TON
+                </button>
+
+                <button
+                    type="button"
+                    class="network-option"
+                    data-network="ERC20"
+                    style="
+                        margin:0;
+                        padding:14px 8px;
+                        border:1px solid #303039;
+                        border-radius:12px;
+                        background:#08080b;
+                        color:#98949e;
+                        font-size:13px;
+                        font-weight:600;
+                    "
+                >
+                    ERC20
+                </button>
+
+                <button
+                    type="button"
+                    class="network-option"
+                    data-network="POLYGON"
+                    style="
+                        margin:0;
+                        padding:14px 8px;
+                        border:1px solid #303039;
+                        border-radius:12px;
+                        background:#08080b;
+                        color:#98949e;
+                        font-size:13px;
+                        font-weight:600;
+                    "
+                >
+                    Polygon
+                </button>
+
+            </div>
+
+            <input
+                type="hidden"
+                id="network"
+                value=""
+            >
+
+        </div>
+
+
+        <div class="field">
+
+            <label
+                for="address"
+                class="label"
+            >
+                Wallet Address
+            </label>
+
+            <input
+                id="address"
+                type="text"
+                placeholder="Enter demo wallet address"
+            >
+
+        </div>
+
+
+        <button
+            id="withdrawButton"
+            type="button"
+        >
+            Withdraw USDT
+        </button>
+
+
+        <div
+            id="message"
+            class="message"
+        ></div>
+
+
+        <div class="info">
+
+            Only your withdrawable rewards can be
+            withdrawn. Deposited funds are never
+            included in the withdrawal amount.
+
+            <br><br>
+
+            This is currently a demo withdrawal
+            system and does not broadcast a real
+            blockchain transaction.
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+const API =
+    "http://localhost:3000";
+
+
+function getToken() {
+
+    return (
+        localStorage.getItem("averyx_token") ||
+        localStorage.getItem("token") ||
+        localStorage.getItem("authToken") ||
+        ""
+    );
+
+}
+
+
+async function apiRequest(
+    endpoint,
+    options = {}
+) {
+
+    const token =
+        getToken();
+
+
+    const headers = {
+
+        "Content-Type":
+            "application/json",
+
+        ...(options.headers || {})
+
+    };
+
+
+    if (token) {
+
+        headers.Authorization =
+            `Bearer ${token}`;
+
+    }
+
+
+    const response =
+        await fetch(
+            `${API}${endpoint}`,
+            {
+                ...options,
+                headers
+            }
+        );
+
+
+    const data =
+        await response.json()
+            .catch(
+                () => ({})
+            );
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            data.message ||
+            "Request failed."
+        );
+
+    }
+
+
+    return data;
+
+}
+
+
+function showMessage(
+    message,
+    type
+) {
+
+    const element =
+        document.getElementById(
+            "message"
+        );
+
+
+    element.textContent =
+        message;
+
+    element.className =
+        `message ${type}`;
+
+}
+
+
+async function loadWallet() {
+
+    try {
+
+        const data =
+            await apiRequest(
+                "/api/wallet/"
+            );
+
+
+        const wallet =
+            data.wallet ||
+            {};
+
+
+        const withdrawable =
+            Number(
+                wallet.withdrawableUSDT
+            ) || 0;
+
+
+        document.getElementById(
+            "withdrawableBalance"
+        ).textContent =
+            withdrawable.toFixed(2);
+
+
+        document.getElementById(
+            "amount"
+        ).max =
+            withdrawable;
+
+
+    } catch (error) {
+
+        showMessage(
+            error.message,
+            "error"
+        );
+
+    }
+
+}
+
+
+async function withdraw() {
+
+    const button =
+        document.getElementById(
+            "withdrawButton"
+        );
+
+
+    const amountInput =
+        document.getElementById(
+            "amount"
+        );
+
+
+    const addressInput =
+        document.getElementById(
+            "address"
+        );
+
+    const networkInput =
+        document.getElementById(
+            "network"
+        );
+
+
+    const amount =
+        Number(
+            amountInput.value
+        );
+
+
+    const network =
+        networkInput.value;
+
+
+    const address =
+        addressInput.value.trim();
+
+
+    if (
+        !Number.isFinite(amount) ||
+        amount <= 0
+    ) {
+
+        showMessage(
+            "Enter a valid withdrawal amount.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    if (!network) {
+
+        showMessage(
+            "Choose an address type.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    if (!address) {
+
+        showMessage(
+            "Enter a wallet address.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    button.disabled =
+        true;
+
+    button.textContent =
+        "Processing...";
+
+
+    try {
+
+        const result =
+            await apiRequest(
+                "/api/wallet/withdraw",
+                {
+
+                    method:
+                        "POST",
+
+                    body:
+                        JSON.stringify({
+
+                            amount,
+                            network,
+                            address
+
+                        })
+
+                }
+            );
+
+
+        showMessage(
+            result.message ||
+            "Withdrawal recorded successfully.",
+            "success"
+        );
+
+
+        amountInput.value =
+            "";
+
+
+        addressInput.value =
+            "";
+
+        networkInput.value =
+            "";
+
+
+        await loadWallet();
+
+
+    } catch (error) {
+
+        showMessage(
+            error.message,
+            "error"
+        );
+
+
+    } finally {
+
+        button.disabled =
+            false;
+
+        button.textContent =
+            "Withdraw USDT";
+
+    }
+
+}
+
+
+document.querySelectorAll(
+    ".network-option"
+).forEach(
+    option => {
+
+        option.addEventListener(
+            "click",
+            () => {
+
+                document.querySelectorAll(
+                    ".network-option"
+                ).forEach(
+                    item => {
+
+                        item.style.borderColor =
+                            "#303039";
+
+                        item.style.background =
+                            "#08080b";
+
+                        item.style.color =
+                            "#98949e";
+
+                    }
+                );
+
+                option.style.borderColor =
+                    "#d71947";
+
+                option.style.background =
+                    "rgba(215,25,71,.12)";
+
+                option.style.color =
+                    "#ffffff";
+
+                document.getElementById(
+                    "network"
+                ).value =
+                    option.dataset.network;
+
+            }
+        );
+
+    }
+);
+
+
+document.getElementById(
+    "withdrawButton"
+).addEventListener(
+    "click",
+    withdraw
+);
+
+
+loadWallet();
+
+</script>
+
+</body>
+
+</html>

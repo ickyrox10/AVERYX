@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AVERYX | Sign In</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+
+        :root {
+            --bg: #08080b;
+            --card: #0f0f13;
+            --border: #292930;
+            --input: #0a0a0e;
+            --text: #f5f5f7;
+            --muted: #8d8d96;
+            --soft: #66666f;
+            --red: #e52249;
+            --red-dark: #c90d35;
+            --error: #ff6683;
+            --success: #55d6a7;
+        }
+
+
+        body {
+            min-height: 100vh;
+
+            background:
+                radial-gradient(
+                    circle at 50% 0%,
+                    rgba(126, 20, 52, 0.20),
+                    transparent 35%
+                ),
+                var(--bg);
+
+            color: var(--text);
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+            display: flex;
+            justify-content: center;
+        }
+
+
+        .app {
+            width: 100%;
+            max-width: 430px;
+            min-height: 100vh;
+
+            padding: 28px 22px 40px;
+
+            background:
+                radial-gradient(
+                    circle at 85% 15%,
+                    rgba(126, 20, 52, 0.16),
+                    transparent 35%
+                ),
+                var(--bg);
+        }
+
+
+        /* =========================
+           BRAND
+        ========================= */
+
+        .brand {
+            text-align: center;
+
+            margin-top: 25px;
+            margin-bottom: 38px;
+        }
+
+
+        .logo {
+            width: 92px;
+            height: 92px;
+
+            display: block;
+
+            margin: 0 auto 18px;
+
+            object-fit: contain;
+
+            filter:
+                drop-shadow(
+                    0 0 18px
+                    rgba(255, 255, 255, 0.08)
+                );
+        }
+
+
+        .brand h1 {
+            font-family:
+                Georgia,
+                "Times New Roman",
+                serif;
+
+            font-size: 38px;
+
+            letter-spacing: 5px;
+
+            font-weight: 700;
+        }
+
+
+        .brand p {
+            margin-top: 8px;
+
+            color: var(--muted);
+
+            font-size: 11px;
+
+            letter-spacing: 3px;
+        }
+
+
+        /* =========================
+           AUTH SWITCH
+        ========================= */
+
+        .auth-switch {
+            display: flex;
+
+            width: 100%;
+            height: 58px;
+
+            padding: 4px;
+
+            margin-bottom: 20px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 14px;
+
+            background: #0b0b0f;
+        }
+
+
+        .auth-switch a {
+            flex: 1;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            color: #777780;
+
+            text-decoration: none;
+
+            font-size: 15px;
+
+            border-radius: 10px;
+
+            transition:
+                background 0.2s ease,
+                color 0.2s ease;
+        }
+
+
+        .auth-switch a.active {
+            color: white;
+
+            background:
+                rgba(126, 20, 52, 0.30);
+        }
+
+
+        /* =========================
+           LOGIN CARD
+        ========================= */
+
+        .card {
+            border:
+                1px solid var(--border);
+
+            border-radius: 18px;
+
+            background:
+                rgba(15, 15, 19, 0.90);
+
+            padding:
+                27px 24px 28px;
+
+            box-shadow:
+                0 20px 60px
+                rgba(0, 0, 0, 0.38);
+        }
+
+
+        /* =========================
+           WELCOME
+        ========================= */
+
+        .welcome {
+            margin-bottom: 27px;
+        }
+
+
+        .welcome h2 {
+            font-family:
+                Georgia,
+                "Times New Roman",
+                serif;
+
+            font-size: 29px;
+
+            line-height: 1.2;
+        }
+
+
+        .welcome p {
+            margin-top: 9px;
+
+            color: var(--muted);
+
+            font-size: 14px;
+
+            line-height: 1.5;
+        }
+
+
+        /* =========================
+           LABEL
+        ========================= */
+
+        .label {
+            display: block;
+
+            margin-top: 20px;
+
+            color: #8b8b94;
+
+            font-size: 11px;
+
+            letter-spacing: 2px;
+        }
+
+
+        /* =========================
+           INPUT
+        ========================= */
+
+        .login-input {
+            width: 100%;
+            height: 55px;
+
+            margin-top: 10px;
+
+            padding:
+                0 17px;
+
+            border:
+                1px solid #303038;
+
+            border-radius: 12px;
+
+            background: var(--input);
+
+            color: white;
+
+            outline: none;
+
+            font-size: 15px;
+
+            transition:
+                border-color 0.2s ease,
+                box-shadow 0.2s ease;
+        }
+
+
+        .login-input::placeholder {
+            color: var(--soft);
+        }
+
+
+        .login-input:focus {
+            border-color:
+                rgba(229, 34, 73, 0.8);
+
+            box-shadow:
+                0 0 0 3px
+                rgba(229, 34, 73, 0.08);
+        }
+
+
+        /* =========================
+           FORGOT PASSWORD
+        ========================= */
+
+        .forgot-row {
+            width: 100%;
+
+            display: flex;
+
+            justify-content: flex-end;
+
+            margin-top: 10px;
+        }
+
+
+        .forgot-row a {
+            color: #92929b;
+
+            font-size: 12px;
+
+            text-decoration: none;
+
+            transition:
+                color 0.2s ease;
+        }
+
+
+        .forgot-row a:hover {
+            color: #f5f5f7;
+        }
+
+
+        /* =========================
+           LOGIN ERROR
+        ========================= */
+
+        .message {
+            display: none;
+
+            margin-top: 15px;
+
+            padding:
+                11px 13px;
+
+            border-radius: 10px;
+
+            font-size: 12px;
+
+            line-height: 1.45;
+        }
+
+
+        .message.error {
+            display: block;
+
+            border:
+                1px solid
+                rgba(229, 34, 73, 0.35);
+
+            background:
+                rgba(229, 34, 73, 0.08);
+
+            color: var(--error);
+        }
+
+
+        .message.success {
+            display: block;
+
+            border:
+                1px solid
+                rgba(85, 214, 167, 0.30);
+
+            background:
+                rgba(85, 214, 167, 0.07);
+
+            color: var(--success);
+        }
+
+
+        /* =========================
+           SIGN IN BUTTON
+        ========================= */
+
+        .button {
+            width: 100%;
+            height: 56px;
+
+            margin-top: 27px;
+
+            border: none;
+
+            border-radius: 12px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--red),
+                    var(--red-dark)
+                );
+
+            color: white;
+
+            font-size: 16px;
+
+            font-weight: 600;
+
+            cursor: pointer;
+
+            transition:
+                transform 0.15s ease,
+                filter 0.15s ease,
+                opacity 0.15s ease;
+        }
+
+
+        .button:hover {
+            filter: brightness(1.08);
+        }
+
+
+        .button:active {
+            transform: scale(0.985);
+        }
+
+
+        .button:disabled {
+            cursor: not-allowed;
+
+            opacity: 0.65;
+
+            transform: none;
+        }
+
+
+        /* =========================
+           REGISTER LINK
+        ========================= */
+
+        .register {
+            margin-top: 23px;
+
+            text-align: center;
+
+            color: #777780;
+
+            font-size: 13px;
+        }
+
+
+        .register a {
+            color: #f0f0f2;
+
+            text-decoration: none;
+        }
+
+
+        .register a:hover {
+            color: white;
+        }
+
+
+        /* =========================
+           SECURITY NOTICE
+        ========================= */
+
+        .security {
+            margin-top: 27px;
+
+            padding:
+                15px 16px;
+
+            border:
+                1px solid
+                rgba(50, 110, 100, 0.45);
+
+            border-radius: 12px;
+
+            background:
+                rgba(20, 60, 55, 0.08);
+
+            color: #7f9a94;
+
+            font-size: 11px;
+
+            line-height: 1.5;
+        }
+
+
+        .security strong {
+            color: #a7c1ba;
+
+            font-weight: 500;
+        }
+
+
+        /* =========================
+           DESKTOP
+        ========================= */
+
+        @media (min-width: 700px) {
+
+            body {
+                padding: 40px 0;
+            }
+
+
+            .app {
+                min-height: auto;
+
+                border:
+                    1px solid #25252c;
+
+                border-radius: 25px;
+
+                padding:
+                    40px 30px 45px;
+            }
+
+
+            .brand {
+                margin-top: 10px;
+            }
+
+        }
+
+    </style>
+</head>
+
+
+<body>
+
+    <main class="app">
+
+
+        <!-- =====================
+             AVERYX BRAND
+        ====================== -->
+
+        <section class="brand">
+
+            <img
+                src="logo.png"
+                alt="AVERYX Logo"
+                class="logo"
+            >
+
+            <h1>
+                AVERYX
+            </h1>
+
+            <p>
+                ASCEND BEYOND LIMITS
+            </p>
+
+        </section>
+
+
+        <!-- =====================
+             SIGN IN / REGISTER
+        ====================== -->
+
+        <nav class="auth-switch">
+
+            <a
+                href="login.html"
+                class="active"
+            >
+                Sign In
+            </a>
+
+            <a
+                href="register.html"
+            >
+                Register
+            </a>
+
+        </nav>
+
+
+        <!-- =====================
+             LOGIN CARD
+        ====================== -->
+
+        <section class="card">
+
+            <div class="welcome">
+
+                <h2>
+                    Welcome Back
+                </h2>
+
+                <p>
+                    Sign in to continue to your
+                    AVERYX account.
+                </p>
+
+            </div>
+
+
+            <!-- EMAIL -->
+
+            <label
+                class="label"
+                for="loginIdentifier"
+            >
+                EMAIL
+            </label>
+
+            <input
+                id="loginIdentifier"
+                class="login-input"
+                type="text"
+                placeholder="Enter your email address"
+                autocomplete="username"
+                required
+            >
+
+
+            <!-- PASSWORD -->
+
+            <label
+                class="label"
+                for="loginPassword"
+            >
+                PASSWORD
+            </label>
+
+            <input
+                id="loginPassword"
+                class="login-input"
+                type="password"
+                placeholder="Enter your password"
+                autocomplete="current-password"
+                required
+            >
+
+
+            <!-- FORGOT PASSWORD -->
+
+            <div class="forgot-row">
+
+                <a href="forgot-password.html">
+                    Forgot password?
+                </a>
+
+            </div>
+
+
+            <!-- MESSAGE -->
+
+            <div
+                id="loginMessage"
+                class="message"
+                role="alert"
+            ></div>
+
+
+            <!-- SIGN IN -->
+
+            <button
+                type="button"
+                class="button"
+                id="loginButton"
+            >
+                Sign In
+            </button>
+
+
+            <!-- REGISTER -->
+
+            <div class="register">
+
+                New to AVERYX?
+
+                <a href="register.html">
+                    Create an account
+                </a>
+
+            </div>
+
+
+            <!-- SECURITY -->
+
+            <div class="security">
+
+                <strong>
+                    Account security is important.
+                </strong>
+
+                Never share your password,
+                verification codes, or private
+                wallet keys.
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <script>
+
+
+        /* ==================================================
+           CONFIGURATION
+        ================================================== */
+
+        const API_BASE_URL =
+            "http://localhost:3000";
+
+
+        /* ==================================================
+           ELEMENTS
+        ================================================== */
+
+        const loginIdentifier =
+            document.getElementById(
+                "loginIdentifier"
+            );
+
+
+        const loginPassword =
+            document.getElementById(
+                "loginPassword"
+            );
+
+
+        const loginButton =
+            document.getElementById(
+                "loginButton"
+            );
+
+
+        const loginMessage =
+            document.getElementById(
+                "loginMessage"
+            );
+
+
+        /* ==================================================
+           MESSAGE
+        ================================================== */
+
+        function showMessage(
+            message,
+            type = "error"
+        ) {
+
+            loginMessage.textContent =
+                message;
+
+            loginMessage.className =
+                `message ${type}`;
+
+        }
+
+
+        function clearMessage() {
+
+            loginMessage.textContent =
+                "";
+
+            loginMessage.className =
+                "message";
+
+        }
+
+
+        /* ==================================================
+           LOGIN
+        ================================================== */
+
+        async function handleLogin() {
+
+            clearMessage();
+
+
+            const email =
+                loginIdentifier.value.trim();
+
+
+            const password =
+                loginPassword.value;
+
+
+            /* -----------------------------
+               BASIC VALIDATION
+            ----------------------------- */
+
+            if (!email) {
+
+                showMessage(
+                    "Please enter your email address."
+                );
+
+                loginIdentifier.focus();
+
+                return;
+
+            }
+
+
+            /*
+             * This validates the same email-style
+             * format accepted during registration.
+             *
+             * IMPORTANT:
+             * This is only a format check.
+             * The address does NOT need to be
+             * an actually existing mailbox.
+             */
+
+            const emailPattern =
+                /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+
+            if (!emailPattern.test(email)) {
+
+                showMessage(
+                    "Please enter a valid email address."
+                );
+
+                loginIdentifier.focus();
+
+                return;
+
+            }
+
+
+            if (!password) {
+
+                showMessage(
+                    "Please enter your password."
+                );
+
+                loginPassword.focus();
+
+                return;
+
+            }
+
+
+            /* -----------------------------
+               LOADING STATE
+            ----------------------------- */
+
+            loginButton.disabled =
+                true;
+
+
+            loginButton.textContent =
+                "Signing In...";
+
+
+            try {
+
+
+                /*
+                 * AVERYX login uses email
+                 * authentication.
+                 */
+
+                const response =
+                    await fetch(
+                        `${API_BASE_URL}/api/auth/login`,
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            credentials:
+                                "include",
+
+                            body:
+                                JSON.stringify({
+
+                                    email:
+                                        email,
+
+                                    password:
+                                        password
+
+                                })
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                /* -----------------------------
+                   BACKEND ERROR
+                ----------------------------- */
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        data.message ||
+                        "Unable to sign in."
+                    );
+
+                }
+
+
+                if (
+                    !data.success ||
+                    !data.token
+                ) {
+
+                    throw new Error(
+                        "Invalid login response."
+                    );
+
+                }
+
+
+                /* -----------------------------
+                   SAVE AUTHENTICATION
+                ----------------------------- */
+
+                localStorage.setItem(
+                    "averyx_token",
+                    data.token
+                );
+
+
+                localStorage.setItem(
+                    "averyx_user",
+                    JSON.stringify(
+                        data.user
+                    )
+                );
+
+
+                /* -----------------------------
+                   SUCCESS
+                ----------------------------- */
+
+                showMessage(
+                    "Login successful. Redirecting...",
+                    "success"
+                );
+
+
+                setTimeout(
+                    () => {
+
+                        window.location.href =
+                            "dashboard.html";
+
+                    },
+                    500
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "Login error:",
+                    error
+                );
+
+
+                showMessage(
+                    error.message ||
+                    "Unable to connect to the server."
+                );
+
+
+                loginButton.disabled =
+                    false;
+
+
+                loginButton.textContent =
+                    "Sign In";
+
+            }
+
+        }
+
+
+        /* ==================================================
+           BUTTON
+        ================================================== */
+
+        loginButton.addEventListener(
+            "click",
+            handleLogin
+        );
+
+
+        /* ==================================================
+           ENTER KEY
+        ================================================== */
+
+        loginPassword.addEventListener(
+            "keydown",
+            (event) => {
+
+                if (
+                    event.key === "Enter"
+                ) {
+
+                    handleLogin();
+
+                }
+
+            }
+        );
+
+
+        loginIdentifier.addEventListener(
+            "keydown",
+            (event) => {
+
+                if (
+                    event.key === "Enter"
+                ) {
+
+                    loginPassword.focus();
+
+                }
+
+            }
+        );
+
+
+        /* ==================================================
+           PREVENT ACCIDENTAL EMPTY SUBMISSION
+        ================================================== */
+
+        window.addEventListener(
+            "pageshow",
+            () => {
+
+                loginButton.disabled =
+                    false;
+
+                loginButton.textContent =
+                    "Sign In";
+
+            }
+        );
+
+
+    </script>
+
+</body>
+</html>

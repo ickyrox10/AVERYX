@@ -1,0 +1,2523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AVERYX | Subscription</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #070709;
+            --panel: #101014;
+            --panel-2: #0c0c10;
+            --border: #292930;
+            --border-soft: #202026;
+            --text: #f5f5f7;
+            --muted: #898992;
+            --soft: #606069;
+            --red: #e52249;
+            --green: #42c998;
+        }
+
+        body {
+            min-height: 100vh;
+
+            background:
+                radial-gradient(
+                    circle at 82% 0%,
+                    rgba(126, 20, 52, .18),
+                    transparent 31%
+                ),
+                var(--bg);
+
+            color: var(--text);
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        button {
+            font: inherit;
+        }
+
+        .app {
+            width: 100%;
+            max-width: 850px;
+
+            margin: auto;
+
+            padding:
+                18px 18px 115px;
+        }
+
+        /* =========================
+           TOP BAR
+        ========================= */
+
+        .topbar {
+            height: 62px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+
+            gap: 11px;
+        }
+
+        .brand img {
+            width: 42px;
+            height: 42px;
+
+            object-fit: contain;
+        }
+
+        .brand-name {
+            font-family: Georgia, serif;
+
+            font-size: 22px;
+
+            letter-spacing: 3px;
+        }
+
+        .back {
+            color: var(--muted);
+
+            font-size: 13px;
+        }
+
+        /* =========================
+           PROFILE HEADER
+        ========================= */
+
+        .subscription-profile {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 9px;
+            min-width: 145px;
+            height: 48px;
+            padding: 2px 0 2px 8px;
+            background: transparent;
+            border: none;
+        }
+
+        .subscription-profile-details {
+            min-width: 0;
+            flex: 1;
+            text-align: right;
+            line-height: 1.15;
+        }
+
+        .subscription-profile-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: var(--text);
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .subscription-profile-id {
+            margin-top: 4px;
+            color: var(--muted);
+            font-family: monospace;
+            font-size: 8px;
+            letter-spacing: .5px;
+        }
+
+        .subscription-profile-avatar {
+            width: 42px;
+            height: 42px;
+            flex: 0 0 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: none;
+            border-radius: 50%;
+            background: transparent;
+        }
+
+        .subscription-profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* =========================
+           HEADER
+        ========================= */
+
+        .header {
+            padding:
+                31px 2px 23px;
+        }
+
+        .eyebrow {
+            color: var(--muted);
+
+            font-size: 10px;
+
+            letter-spacing: 2.5px;
+
+            text-transform: uppercase;
+        }
+
+        .header h1 {
+            margin-top: 8px;
+
+            font-family: Georgia, serif;
+
+            font-size:
+                clamp(35px, 8vw, 50px);
+        }
+
+        .header p {
+            max-width: 620px;
+
+            margin-top: 9px;
+
+            color: var(--muted);
+
+            font-size: 12px;
+
+            line-height: 1.7;
+        }
+
+        /* =========================
+           CURRENT STATUS
+        ========================= */
+
+        .current-card {
+            padding: 21px;
+
+            border:
+                1px solid
+                rgba(229, 34, 73, .28);
+
+            border-radius: 20px;
+
+            background:
+                radial-gradient(
+                    circle at 100% 0%,
+                    rgba(229, 34, 73, .12),
+                    transparent 42%
+                ),
+                var(--panel);
+        }
+
+        .current-top {
+            display: flex;
+
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 15px;
+        }
+
+        .current-label {
+            color: var(--muted);
+
+            font-size: 8px;
+
+            letter-spacing: 1.6px;
+
+            text-transform: uppercase;
+        }
+
+        .current-name {
+            margin-top: 5px;
+
+            font-family: Georgia, serif;
+
+            font-size: 25px;
+        }
+
+        .active-badge {
+            padding:
+                6px 9px;
+
+            border:
+                1px solid
+                rgba(66, 201, 152, .22);
+
+            border-radius: 6px;
+
+            color: var(--green);
+
+            font-size: 7px;
+
+            letter-spacing: 1px;
+
+            text-transform: uppercase;
+        }
+
+        .current-info {
+            margin-top: 15px;
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, 1fr);
+
+            gap: 9px;
+        }
+
+        .current-stat {
+            padding: 12px;
+
+            border:
+                1px solid var(--border-soft);
+
+            border-radius: 10px;
+
+            background:
+                rgba(0, 0, 0, .16);
+        }
+
+        .current-stat-label {
+            color: var(--soft);
+
+            font-size: 7px;
+
+            letter-spacing: 1px;
+
+            text-transform: uppercase;
+        }
+
+        .current-stat-value {
+            margin-top: 5px;
+
+            font-size: 12px;
+        }
+
+        /* =========================
+           PROGRESS
+        ========================= */
+
+        .progress-section {
+            margin-top: 13px;
+
+            padding: 17px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 17px;
+
+            background: var(--panel);
+        }
+
+        .progress-top {
+            display: flex;
+
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 15px;
+        }
+
+        .progress-title {
+            font-size: 10px;
+        }
+
+        .progress-percent {
+            color: var(--muted);
+
+            font-size: 9px;
+        }
+
+        .progress-track {
+            height: 7px;
+
+            margin-top: 10px;
+
+            overflow: hidden;
+
+            border-radius: 99px;
+
+            background: #1b1b20;
+        }
+
+        .progress-fill {
+            width: 0%;
+
+            height: 100%;
+
+            border-radius: 99px;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #b90d31,
+                    #e52249
+                );
+
+            transition:
+                width .4s ease;
+        }
+
+        .progress-next-preview {
+            margin-top: 10px;
+
+            display: flex;
+            align-items: center;
+
+            gap: 10px;
+        }
+
+        .progress-next-logo {
+            width: 42px;
+            height: 42px;
+
+            flex: 0 0 42px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            overflow: hidden;
+
+            border-radius: 10px;
+
+            background: #08080b;
+        }
+
+        .progress-next-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .progress-next-copy {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .progress-text {
+            margin-top: 0;
+
+            color: var(--soft);
+
+            font-size: 8px;
+
+            line-height: 1.5;
+        }
+
+        .progress-text .next-tier-name {
+            color: var(--text);
+            font-weight: 700;
+        }
+
+        .progress-text .remaining-amount {
+            color: var(--green);
+            font-weight: 700;
+        }
+
+        /* =========================
+           SECTION
+        ========================= */
+
+        .section {
+            margin-top: 31px;
+        }
+
+        .section-title {
+            margin-bottom: 12px;
+
+            font-family: Georgia, serif;
+
+            font-size: 23px;
+        }
+
+        /* =========================
+           TIER LIST
+        ========================= */
+
+        .tier-list {
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 11px;
+        }
+
+        .tier-card {
+            position: relative;
+
+            min-height: 145px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 17px;
+
+            padding: 17px;
+
+            overflow: hidden;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 19px;
+
+            background: var(--panel);
+
+            transition:
+                transform .2s ease,
+                border-color .2s ease,
+                background .2s ease;
+        }
+
+        .tier-card:hover {
+            border-color: #3a3a42;
+
+            background: #121217;
+        }
+
+        .tier-card.active {
+            border-color:
+                rgba(229, 34, 73, .45);
+
+            background:
+                radial-gradient(
+                    circle at 100% 0%,
+                    rgba(229, 34, 73, .10),
+                    transparent 43%
+                ),
+                var(--panel);
+        }
+
+        .tier-card.locked {
+            opacity: .78;
+        }
+
+        /* =========================
+           LOGO
+        ========================= */
+
+        .tier-logo {
+            width: 104px;
+            height: 104px;
+
+            flex-shrink: 0;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            overflow: hidden;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 16px;
+
+            background: #08080b;
+        }
+
+        .tier-logo img {
+            width: 100%;
+            height: 100%;
+
+            object-fit: contain;
+        }
+
+        .tier-card.locked .tier-logo {
+            filter:
+                grayscale(1)
+                brightness(.55);
+        }
+
+        /* =========================
+           LOCK OVERLAY
+        ========================= */
+
+        .logo-wrap {
+            position: relative;
+
+            width: 104px;
+            height: 104px;
+
+            flex-shrink: 0;
+        }
+
+        .logo-wrap .tier-logo {
+            width: 100%;
+            height: 100%;
+        }
+
+        .lock-overlay {
+            position: absolute;
+
+            inset: 0;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 16px;
+
+            background:
+                rgba(0, 0, 0, .28);
+
+            color: #d0d0d5;
+
+            font-size: 25px;
+        }
+
+        /* =========================
+           TIER INFO
+        ========================= */
+
+        .tier-info {
+            flex: 1;
+
+            min-width: 0;
+        }
+
+        .tier-number {
+            color: var(--soft);
+
+            font-size: 7px;
+
+            letter-spacing: 1.4px;
+
+            text-transform: uppercase;
+        }
+
+        .tier-name {
+            margin-top: 5px;
+
+            font-family: Georgia, serif;
+
+            font-size: 24px;
+        }
+
+        .tier-description {
+            margin-top: 5px;
+
+            color: var(--muted);
+
+            font-size: 9px;
+
+            line-height: 1.5;
+        }
+
+        .tier-stats {
+            margin-top: 11px;
+
+            display: flex;
+
+            gap: 18px;
+        }
+
+        .tier-stat-label {
+            color: var(--soft);
+
+            font-size: 7px;
+
+            letter-spacing: .8px;
+
+            text-transform: uppercase;
+        }
+
+        .tier-stat-value {
+            margin-top: 3px;
+
+            color: #e5e5e9;
+
+            font-size: 11px;
+        }
+
+        .tier-stat-value.return {
+            color: var(--green);
+        }
+
+        /* =========================
+           CARD SIDE
+        ========================= */
+
+        .tier-side {
+            align-self: flex-start;
+
+            flex-shrink: 0;
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: flex-end;
+
+            gap: 8px;
+        }
+
+        .status {
+            padding:
+                5px 8px;
+
+            border-radius: 6px;
+
+            font-size: 7px;
+
+            letter-spacing: .8px;
+
+            text-transform: uppercase;
+        }
+
+        .status.active {
+            border:
+                1px solid
+                rgba(66, 201, 152, .22);
+
+            color: var(--green);
+
+            background:
+                rgba(66, 201, 152, .06);
+        }
+
+        .status.unlocked {
+            border:
+                1px solid
+                rgba(229, 34, 73, .22);
+
+            color: #e85a76;
+
+            background:
+                rgba(229, 34, 73, .05);
+        }
+
+        .status.locked {
+            border:
+                1px solid #292930;
+
+            color: #676770;
+        }
+
+        /* =========================
+           SELECT BUTTON
+        ========================= */
+
+        .select-btn {
+            min-width: 82px;
+
+            height: 34px;
+
+            padding:
+                0 10px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 8px;
+
+            background: #121217;
+
+            color: #b5b5bd;
+
+            cursor: pointer;
+
+            font-size: 8px;
+
+            text-transform: uppercase;
+        }
+
+        .select-btn:hover {
+            border-color: #45454d;
+
+            color: white;
+        }
+
+        .select-btn.active {
+            border-color:
+                rgba(229, 34, 73, .4);
+
+            background:
+                rgba(229, 34, 73, .08);
+
+            color: #ed5875;
+        }
+
+        .select-btn.locked {
+            cursor: not-allowed;
+
+            color: #55555e;
+
+            background: #0d0d11;
+        }
+
+        /* =========================
+           UNLOCK MESSAGE
+        ========================= */
+
+        .unlock-box {
+            margin-top: 10px;
+
+            padding: 12px 14px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 11px;
+
+            background: var(--panel-2);
+
+            color: var(--muted);
+
+            font-size: 8px;
+
+            line-height: 1.6;
+        }
+
+        .unlock-box strong {
+            color: #dddde2;
+        }
+
+        /* =========================
+           BOTTOM NAV
+        ========================= */
+
+        .bottom-nav {
+            position: fixed;
+
+            left: 50%;
+            bottom: 14px;
+
+            transform:
+                translateX(-50%);
+
+            width:
+                calc(100% - 28px);
+
+            max-width: 700px;
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(5, 1fr);
+
+            gap: 4px;
+
+            padding: 7px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 18px;
+
+            background:
+                rgba(11, 11, 15, .94);
+
+            backdrop-filter:
+                blur(16px);
+
+            z-index: 20;
+        }
+
+        .nav-item {
+            min-height: 49px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+            justify-content: center;
+
+            gap: 4px;
+
+            border-radius: 12px;
+
+            color: #707078;
+
+            font-size: 9px;
+        }
+
+        .nav-icon {
+            font-size: 16px;
+        }
+
+        .nav-item.active {
+            color: white;
+
+            background:
+                rgba(229, 34, 73, .12);
+        }
+
+        /* =========================
+           TOAST
+        ========================= */
+
+        .toast {
+            position: fixed;
+
+            left: 50%;
+            bottom: 88px;
+
+            transform:
+                translate(-50%, 15px);
+
+            padding:
+                11px 16px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 10px;
+
+            background: #15151a;
+
+            color: #e5e5e9;
+
+            font-size: 9px;
+
+            opacity: 0;
+
+            pointer-events: none;
+
+            transition:
+                opacity .2s ease,
+                transform .2s ease;
+
+            z-index: 50;
+        }
+
+        .toast.show {
+            opacity: 1;
+
+            transform:
+                translate(-50%, 0);
+        }
+
+        /* =========================
+           MOBILE
+        ========================= */
+
+        @media (max-width: 620px) {
+
+            .tier-card {
+                align-items: flex-start;
+            }
+
+            .tier-side {
+                position: absolute;
+
+                top: 15px;
+                right: 15px;
+            }
+
+            .tier-info {
+                padding-right: 60px;
+            }
+
+            .select-btn {
+                min-width: 72px;
+            }
+        }
+
+        @media (max-width: 470px) {
+
+            .app {
+                padding:
+                    15px 15px 115px;
+            }
+
+            .tier-card {
+                min-height: 0;
+
+                flex-direction: column;
+
+                align-items: stretch;
+
+                padding: 15px;
+            }
+
+            .logo-wrap {
+                width: 100%;
+                height: 165px;
+            }
+
+            .tier-logo {
+                width: 100%;
+                height: 165px;
+            }
+
+            .lock-overlay {
+                border-radius: 16px;
+            }
+
+            .tier-info {
+                padding-right: 0;
+            }
+
+            .tier-side {
+                top: 25px;
+                right: 25px;
+            }
+
+            .tier-name {
+                font-size: 22px;
+            }
+
+            .tier-stats {
+                gap: 25px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<main class="app">
+
+    <header class="topbar">
+
+        <a
+            href="dashboard.html"
+            class="brand"
+        >
+
+            <img
+                src="logo.png"
+                alt="AVERYX Logo"
+            >
+
+            <span class="brand-name">
+                AVERYX
+            </span>
+
+        </a>
+
+        <a
+            href="dashboard.html"
+            class="back"
+        >
+            ← Dashboard
+        </a>
+
+        <a
+            href="profile.html"
+            class="subscription-profile"
+            id="subscriptionProfile"
+        >
+            <div class="subscription-profile-details">
+                <div class="subscription-profile-name" id="subscriptionProfileName">Your Nickname</div>
+                <div class="subscription-profile-id" id="subscriptionProfileId">ID: 05031</div>
+            </div>
+            <div class="subscription-profile-avatar" id="subscriptionProfileAvatar"></div>
+        </a>
+
+    </header>
+
+
+    <section class="header">
+
+        <div class="eyebrow">
+            Membership
+        </div>
+
+        <h1>
+            Subscription
+        </h1>
+
+        <p>
+            Unlock higher tiers as your qualifying
+            deposit increases. Each tier has its own
+            daily return and profile identity.
+        </p>
+
+    </section>
+
+
+    <section class="current-card">
+
+        <div class="current-top">
+
+            <div>
+
+                <div class="current-label">
+                    Current Subscription
+                </div>
+
+                <div
+                    class="current-name"
+                    id="currentTierName"
+                >
+                    The Fool
+                </div>
+
+            </div>
+
+            <div class="active-badge">
+                Active
+            </div>
+
+        </div>
+
+
+        <div class="current-info">
+
+            <div class="current-stat">
+
+                <div class="current-stat-label">
+                    Deposit Required
+                </div>
+
+                <div
+                    class="current-stat-value"
+                    id="currentDeposit"
+                >
+                    0 USDT
+                </div>
+
+            </div>
+
+
+            <div class="current-stat">
+
+                <div class="current-stat-label">
+                    Daily Return
+                </div>
+
+                <div
+                    class="current-stat-value"
+                    id="currentReturn"
+                >
+                    0 USDT/day
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <section class="progress-section">
+
+        <div class="progress-top">
+
+            <div class="progress-title">
+                Progress to Next Tier
+            </div>
+
+            <div
+                class="progress-percent"
+                id="progressPercent"
+            >
+                0%
+            </div>
+
+        </div>
+
+
+        <div class="progress-track">
+
+            <div
+                class="progress-fill"
+                id="progressFill"
+            ></div>
+
+        </div>
+
+
+        <div class="progress-next-preview">
+            <div
+                class="progress-next-logo"
+                id="progressNextLogo"
+            ></div>
+
+            <div class="progress-next-copy">
+                <div
+                    class="progress-text"
+                    id="progressText"
+                >
+                    Deposit 3.5 USDT to unlock The Prodigy.
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+
+    <section class="section">
+
+        <h2 class="section-title">
+            All Tiers
+        </h2>
+
+
+        <div
+            class="tier-list"
+            id="tierList"
+        ></div>
+
+    </section>
+
+
+    <div class="unlock-box">
+
+        <strong>
+            How unlocking works:
+        </strong>
+
+        Your tier status is determined by your
+        qualifying deposit amount. Unlocked tiers
+        become available for your profile identity.
+        Locked tiers remain unavailable until their
+        requirements are met.
+
+    </div>
+
+</main>
+
+
+<nav class="bottom-nav">
+
+    <a
+        href="dashboard.html"
+        class="nav-item"
+    >
+
+        <span class="nav-icon">
+            ⌂
+        </span>
+
+        Home
+
+    </a>
+
+
+    <a
+        href="subscription.html"
+        class="nav-item active"
+    >
+
+        <span class="nav-icon">
+            ◇
+        </span>
+
+        Tiers
+
+    </a>
+
+
+    <a
+        href="wallet.html"
+        class="nav-item"
+    >
+
+        <span class="nav-icon">
+            ◈
+        </span>
+
+        Wallet
+
+    </a>
+
+
+    <a
+        href="records.html"
+        class="nav-item"
+    >
+
+        <span class="nav-icon">
+            ≡
+        </span>
+
+        Records
+
+    </a>
+
+
+    <a
+        href="profile.html"
+        class="nav-item"
+    >
+
+        <span class="nav-icon">
+            ○
+        </span>
+
+        Profile
+
+    </a>
+
+</nav>
+
+
+<div
+    class="toast"
+    id="toast"
+>
+    Profile title updated
+</div>
+
+
+<script>
+/* ==================================================
+   AVERYX subscription
+   LIVE BACKEND VERSION
+================================================== */
+
+const API_BASE_URL = "http://localhost:3000";
+
+
+/* ==================================================
+   AUTH
+================================================== */
+
+function getToken() {
+
+    return (
+        localStorage.getItem("averyx_token") ||
+        localStorage.getItem("token") ||
+        localStorage.getItem("authToken") ||
+        ""
+    );
+
+}
+
+
+function clearAuth() {
+
+    localStorage.removeItem("averyx_token");
+    localStorage.removeItem("token");
+    localStorage.removeItem("authToken");
+
+}
+
+
+async function apiGet(endpoint) {
+
+    const token = getToken();
+
+    if (!token) {
+
+        window.location.href =
+            "login.html";
+
+        return null;
+
+    }
+
+    const response =
+        await fetch(
+            `${API_BASE_URL}${endpoint}`,
+            {
+                method: "GET",
+                headers: {
+                    Authorization:
+                        `Bearer ${token}`
+                }
+            }
+        );
+
+    let data = {};
+
+    try {
+
+        data =
+            await response.json();
+
+    } catch (error) {
+
+        throw new Error(
+            "Invalid server response."
+        );
+
+    }
+
+
+    if (response.status === 401) {
+
+        clearAuth();
+
+        window.location.href =
+            "login.html";
+
+        return null;
+
+    }
+
+
+    if (
+        !response.ok ||
+        !data.success
+    ) {
+
+        throw new Error(
+            data.message ||
+            "Unable to load account data."
+        );
+
+    }
+
+
+    return data;
+
+}
+
+
+/* ==================================================
+   PROFILE DEFAULT
+================================================== */
+
+const DEFAULT_PROFILE = {
+
+    nickname:
+        "Your Nickname",
+
+    email:
+        "user@example.com",
+
+    phone:
+        "",
+
+    referralCode:
+        "AVX-DEMO7K4M",
+
+    highestUnlockedTier:
+        1,
+
+    selectedProfileTier:
+        1
+
+};
+
+
+/* ==================================================
+   TIER DATA
+================================================== */
+
+const TIERS = [
+
+    {
+        level: 1,
+        name: "The Fool",
+        deposit: 0,
+        daily: 0,
+        logo: "tier-fool.png",
+        description:
+            "The starting tier. No deposit required."
+    },
+
+    {
+        level: 2,
+        name: "The Prodigy",
+        deposit: 3.5,
+        daily: 1,
+        logo: "tier-prodigy.png",
+        description:
+            "The first progression beyond the starting tier."
+    },
+
+    {
+        level: 3,
+        name: "The Magician",
+        deposit: 16,
+        daily: 5,
+        logo: "tier-magician.png",
+        description:
+            "A higher tier with increased daily return."
+    },
+
+    {
+        level: 4,
+        name: "The Conqueror",
+        deposit: 60,
+        daily: 18,
+        logo: "tier-conqueror.png",
+        description:
+            "An advanced progression tier."
+    },
+
+    {
+        level: 5,
+        name: "The Emperor",
+        deposit: 165,
+        daily: 49.5,
+        logo: "tier-emperor.png",
+        description:
+            "A premium tier with a higher configured return."
+    },
+
+    {
+        level: 6,
+        name: "The Shadow Monarch",
+        deposit: 550,
+        daily: 165,
+        logo: "shadow-monarch.png",
+        description:
+            "One of the highest progression tiers."
+    },
+
+    {
+        level: 7,
+        name: "The Berserk",
+        deposit: 1440,
+        daily: 432,
+        logo: "tier-berserk.png",
+        description:
+            "The highest tier in the current progression."
+    }
+
+];
+
+
+/* ==================================================
+   FORMAT
+================================================== */
+
+function formatUSDT(value) {
+
+    const number =
+        Number(value) || 0;
+
+    if (
+        Number.isInteger(number)
+    ) {
+
+        return number.toFixed(0);
+
+    }
+
+    return number
+        .toFixed(2)
+        .replace(
+            /0+$/,
+            ""
+        )
+        .replace(
+            /\.$/,
+            ""
+        );
+
+}
+
+
+/* ==================================================
+   LOCAL PROFILE
+   Used only for selected visual identity.
+================================================== */
+
+function getLocalProfile() {
+
+    try {
+
+        const saved =
+            localStorage.getItem(
+                "averyx_profile"
+            );
+
+        if (!saved) {
+
+            localStorage.setItem(
+                "averyx_profile",
+                JSON.stringify(
+                    DEFAULT_PROFILE
+                )
+            );
+
+            return {
+                ...DEFAULT_PROFILE
+            };
+
+        }
+
+        return {
+            ...DEFAULT_PROFILE,
+            ...JSON.parse(saved)
+        };
+
+    } catch (error) {
+
+        return {
+            ...DEFAULT_PROFILE
+        };
+
+    }
+
+}
+
+
+function saveLocalProfile(profile) {
+
+    localStorage.setItem(
+        "averyx_profile",
+        JSON.stringify(profile)
+    );
+
+        renderSubscriptionProfileHeader();
+
+}
+
+
+/* ==================================================
+   CALCULATE HIGHEST UNLOCKED
+   IMPORTANT:
+   Uses LIVE PostgreSQL wallet balance.
+================================================== */
+
+function renderSubscriptionProfileHeader() {
+
+    const profile =
+        getLocalProfile();
+
+    const name =
+        profile.nickname ||
+        "Your Nickname";
+
+    const id =
+        String(
+            profile.uniqueId ||
+            "05031"
+        );
+
+    const selectedLevel =
+        Number(
+            profile.selectedProfileTier
+        ) || 1;
+
+    const selectedTier =
+        TIERS.find(
+            tier =>
+                tier.level === selectedLevel
+        ) || TIERS[0];
+
+    const nameElement =
+        document.getElementById(
+            "subscriptionProfileName"
+        );
+
+    const idElement =
+        document.getElementById(
+            "subscriptionProfileId"
+        );
+
+    const avatarElement =
+        document.getElementById(
+            "subscriptionProfileAvatar"
+        );
+
+    if (nameElement) {
+        nameElement.textContent = name;
+    }
+
+    if (idElement) {
+        idElement.textContent = `ID: ${id}`;
+    }
+
+    if (avatarElement) {
+        avatarElement.innerHTML =
+            `<img src="${selectedTier.logo}" alt="${selectedTier.name}">`;
+    }
+}
+
+
+function calculateHighestUnlocked(
+    balance
+) {
+
+    let highest =
+        TIERS[0];
+
+    TIERS.forEach(
+        tier => {
+
+            if (
+                Number(balance) >=
+                Number(tier.deposit)
+            ) {
+
+                highest =
+                    tier;
+
+            }
+
+        }
+    );
+
+    return highest;
+
+}
+
+
+/* ==================================================
+   NEXT TIER
+================================================== */
+
+function getNextTier(
+    highestLevel
+) {
+
+    return (
+        TIERS.find(
+            tier =>
+                tier.level >
+                Number(highestLevel)
+        ) ||
+        null
+    );
+
+}
+
+
+/* ==================================================
+   PROGRESS
+================================================== */
+
+function calculateProgress(
+    balance,
+    nextTier
+) {
+
+    if (!nextTier) {
+
+        return 100;
+
+    }
+
+    if (
+        Number(nextTier.deposit) <= 0
+    ) {
+
+        return 100;
+
+    }
+
+    return Math.max(
+        0,
+        Math.min(
+            100,
+            (
+                Number(balance) /
+                Number(nextTier.deposit)
+            ) * 100
+        )
+    );
+
+}
+
+
+/* ==================================================
+   CURRENT SUBSCRIPTION
+================================================== */
+
+function getSelectedTier(
+    selectedLevel,
+    highestUnlockedLevel
+) {
+
+    let selected =
+        TIERS.find(
+            tier =>
+                tier.level ===
+                Number(selectedLevel)
+        ) || TIERS[0];
+
+
+    /*
+       Never allow a locked tier to remain selected.
+    */
+
+    if (
+        selected.level >
+        Number(highestUnlockedLevel)
+    ) {
+
+        selected =
+            TIERS.find(
+                tier =>
+                    tier.level ===
+                    Number(highestUnlockedLevel)
+            ) || TIERS[0];
+
+    }
+
+    return selected;
+
+}
+
+
+/* ==================================================
+   CURRENT HEADER
+================================================== */
+
+function renderCurrentTier(
+    tier
+) {
+
+    document.getElementById(
+        "currentTierName"
+    ).textContent =
+        tier.name;
+
+    document.getElementById(
+        "currentDeposit"
+    ).textContent =
+        `${formatUSDT(tier.deposit)} USDT`;
+
+    document.getElementById(
+        "currentReturn"
+    ).textContent =
+        `${formatUSDT(tier.daily)} USDT/day`;
+
+}
+
+
+/* ==================================================
+   PROGRESS UI
+================================================== */
+
+function renderProgress(
+    balance,
+    highestTier,
+    nextTier
+) {
+
+    const progress =
+        calculateProgress(
+            balance,
+            nextTier
+        );
+
+
+    document.getElementById(
+        "progressPercent"
+    ).textContent =
+        `${Math.floor(progress)}%`;
+
+
+    document.getElementById(
+        "progressFill"
+    ).style.width =
+        `${progress}%`;
+
+
+    const progressText =
+        document.getElementById(
+            "progressText"
+        );
+
+
+    if (!nextTier) {
+
+        progressText.textContent =
+            `You have reached the highest available tier. Current qualifying balance: ${formatUSDT(balance)} USDT.`;
+
+        const nextLogo =
+            document.getElementById(
+                "progressNextLogo"
+            );
+
+        if (nextLogo) {
+            nextLogo.innerHTML = "";
+        }
+
+        return;
+
+    }
+
+
+    const required =
+        Number(nextTier.deposit) -
+        Number(balance);
+
+
+    if (required <= 0) {
+
+        progressText.innerHTML =
+            `<span class="next-tier-name">${nextTier.name}</span> is unlocked.`;
+
+        const nextLogo =
+            document.getElementById(
+                "progressNextLogo"
+            );
+
+        if (nextLogo) {
+            nextLogo.innerHTML =
+                `<img src="${nextTier.logo}" alt="${nextTier.name}">`;
+        }
+
+        return;
+
+    }
+
+
+    progressText.innerHTML =
+        `${formatUSDT(balance)} USDT / ${formatUSDT(nextTier.deposit)} USDT toward <span class="next-tier-name">${nextTier.name}</span>. <span class="remaining-amount">${formatUSDT(required)} USDT more required</span>.`;
+
+    const nextLogo =
+        document.getElementById(
+            "progressNextLogo"
+        );
+
+    if (nextLogo) {
+        nextLogo.innerHTML =
+            `<img src="${nextTier.logo}" alt="${nextTier.name}">`;
+    }
+
+}
+
+
+/* ==================================================
+   TIER CARDS
+================================================== */
+
+function renderTierCards(
+    balance,
+    highestUnlockedLevel,
+    selectedLevel
+) {
+
+    const tierList =
+        document.getElementById(
+            "tierList"
+        );
+
+
+    tierList.innerHTML =
+        "";
+
+
+    TIERS.forEach(
+        tier => {
+
+            const unlocked =
+                tier.level <=
+                Number(
+                    highestUnlockedLevel
+                );
+
+
+            const active =
+                tier.level ===
+                Number(selectedLevel);
+
+
+            const card =
+                document.createElement(
+                    "div"
+                );
+
+
+            card.className =
+                "tier-card" +
+                (
+                    unlocked
+                        ? ""
+                        : " locked"
+                ) +
+                (
+                    active
+                        ? " active"
+                        : ""
+                );
+
+
+            /* =========================
+               LOGO
+            ========================= */
+
+            const logoWrap =
+                document.createElement(
+                    "div"
+                );
+
+            logoWrap.className =
+                "logo-wrap";
+
+
+            const logo =
+                document.createElement(
+                    "div"
+                );
+
+            logo.className =
+                "tier-logo";
+
+
+            const image =
+                document.createElement(
+                    "img"
+                );
+
+            image.src =
+                tier.logo;
+
+            image.alt =
+                tier.name;
+
+            image.loading =
+                "lazy";
+
+
+            logo.appendChild(
+                image
+            );
+
+            logoWrap.appendChild(
+                logo
+            );
+
+
+            if (!unlocked) {
+
+                const lock =
+                    document.createElement(
+                        "div"
+                    );
+
+                lock.className =
+                    "lock-overlay";
+
+                lock.innerHTML =
+                    "🔒";
+
+                logoWrap.appendChild(
+                    lock
+                );
+
+            }
+
+
+            /* =========================
+               INFO
+            ========================= */
+
+            const info =
+                document.createElement(
+                    "div"
+                );
+
+            info.className =
+                "tier-info";
+
+
+            info.innerHTML = `
+
+                <div class="tier-number">
+                    Tier ${tier.level}
+                </div>
+
+                <div class="tier-name">
+                    ${tier.name}
+                </div>
+
+                <div class="tier-description">
+                    ${tier.description}
+                </div>
+
+                <div class="tier-stats">
+
+                    <div>
+
+                        <div class="tier-stat-label">
+                            Deposit
+                        </div>
+
+                        <div class="tier-stat-value">
+                            ${formatUSDT(tier.deposit)} USDT
+                        </div>
+
+                    </div>
+
+
+                    <div>
+
+                        <div class="tier-stat-label">
+                            Daily Return
+                        </div>
+
+                        <div class="tier-stat-value return">
+                            ${formatUSDT(tier.daily)} USDT/day
+                        </div>
+
+                    </div>
+
+                </div>
+
+            `;
+
+
+            /* =========================
+               SIDE
+            ========================= */
+
+            const side =
+                document.createElement(
+                    "div"
+                );
+
+            side.className =
+                "tier-side";
+
+
+            const status =
+                document.createElement(
+                    "div"
+                );
+
+            status.className =
+                "status";
+
+
+            if (active) {
+
+                status.classList.add(
+                    "active"
+                );
+
+                status.textContent =
+                    "Active";
+
+            } else if (unlocked) {
+
+                status.classList.add(
+                    "unlocked"
+                );
+
+                status.textContent =
+                    "Unlocked";
+
+            } else {
+
+                status.classList.add(
+                    "locked"
+                );
+
+                status.textContent =
+                    "Locked";
+
+            }
+
+
+            side.appendChild(
+                status
+            );
+
+
+            /* =========================
+               SELECT BUTTON
+            ========================= */
+
+            const select =
+                document.createElement(
+                    "button"
+                );
+
+            select.type =
+                "button";
+
+            select.className =
+                "select-btn";
+
+
+            if (!unlocked) {
+
+                select.classList.add(
+                    "locked"
+                );
+
+                select.textContent =
+                    "Locked";
+
+                select.disabled =
+                    true;
+
+            } else if (active) {
+
+                select.classList.add(
+                    "active"
+                );
+
+                select.textContent =
+                    "Use Logo";
+
+                select.addEventListener(
+                    "click",
+                    function() {
+
+                        profile.selectedProfileTier =
+                            tier.level;
+
+                        profile.highestUnlockedTier =
+                            Number(
+                                highestUnlockedLevel
+                            );
+
+                        saveLocalProfile(
+                            profile
+                        );
+
+                        showToast(
+                            `${tier.name} logo applied`
+                        );
+
+                        renderSubscriptionProfileHeader();
+                    }
+                );
+
+            } else {
+
+                select.textContent =
+                    "Use Logo";
+
+
+                select.addEventListener(
+                    "click",
+                    function() {
+
+                        profile.selectedProfileTier =
+                            tier.level;
+
+
+                        profile.highestUnlockedTier =
+                            Number(
+                                highestUnlockedLevel
+                            );
+
+
+                        saveLocalProfile(
+                            profile
+                        );
+
+
+                        showToast(
+                            `${tier.name} selected`
+                        );
+
+
+                        setTimeout(
+                            function() {
+
+                                location.reload();
+
+                            },
+                            500
+                        );
+
+                    }
+                );
+
+            }
+
+
+            side.appendChild(
+                select
+            );
+
+
+            /* =========================
+               BUILD CARD
+            ========================= */
+
+            card.appendChild(
+                logoWrap
+            );
+
+            card.appendChild(
+                info
+            );
+
+            card.appendChild(
+                side
+            );
+
+            tierList.appendChild(
+                card
+            );
+
+        }
+    );
+
+}
+
+
+/* ==================================================
+   TOAST
+================================================== */
+
+function showToast(
+    text
+) {
+
+    const toast =
+        document.getElementById(
+            "toast"
+        );
+
+
+    toast.textContent =
+        text;
+
+
+    toast.classList.add(
+        "show"
+    );
+
+
+    setTimeout(
+        function() {
+
+            toast.classList.remove(
+                "show"
+            );
+
+        },
+        1400
+    );
+
+}
+
+
+/* ==================================================
+   LOAD LIVE ACCOUNT
+================================================== */
+
+async function initializesubscription() {
+
+    try {
+
+        const data =
+            await apiGet(
+                "/api/auth/me"
+            );
+
+
+        if (!data) {
+            return;
+        }
+
+
+        const user =
+            data.user ||
+            {};
+
+        const backendProfile =
+            data.profile ||
+            {};
+
+        const wallet =
+            data.wallet ||
+            {};
+
+
+        /*
+           PostgreSQL wallet balance.
+        */
+
+        const balance =
+            Number(
+                wallet.balanceUSDT
+            ) || 0;
+
+
+        /*
+           Calculate unlock status from REAL balance.
+        */
+
+        const highestTier =
+            calculateHighestUnlocked(
+                balance
+            );
+
+
+        const nextTier =
+            getNextTier(
+                highestTier.level
+            );
+
+
+        /*
+           CURRENT SUBSCRIPTION IS AUTOMATICALLY
+           DETERMINED BY THE LIVE QUALIFYING BALANCE.
+
+           Example:
+           230 USDT balance -> The Emperor
+
+           We intentionally do NOT use the old
+           selectedProfileTier value here, because that
+           value was still "The Fool" in the profile.
+        */
+
+        const localProfile =
+            getLocalProfile();
+
+
+        const selectedTier =
+            highestTier;
+
+
+        /*
+           Keep the local profile synchronized with
+           the real unlocked tier.
+        */
+
+        profile =
+            {
+                ...localProfile,
+
+                nickname:
+                    localProfile.nickname ||
+                    user.nickname ||
+                    DEFAULT_PROFILE.nickname,
+
+                email:
+                    localProfile.email ||
+                    user.email ||
+                    DEFAULT_PROFILE.email,
+
+                phone:
+                    localProfile.phone ||
+                    user.phone ||
+                    DEFAULT_PROFILE.phone,
+
+                referralCode:
+                    localProfile.referralCode ||
+                    user.referralCode ||
+                    DEFAULT_PROFILE.referralCode,
+
+                uniqueId:
+                    localProfile.uniqueId ||
+                    user.uniqueId ||
+                    user.publicUid ||
+                    user.public_uid ||
+                    "05031",
+
+                highestUnlockedTier:
+                    highestTier.level,
+
+                selectedProfileTier:
+                    Number(
+                        localProfile.selectedProfileTier
+                    ) || highestTier.level
+            };
+
+
+        saveLocalProfile(
+            profile
+        );
+
+
+        /* =========================
+           RENDER
+        ========================= */
+
+        renderCurrentTier(
+            selectedTier
+        );
+
+
+        renderProgress(
+            balance,
+            highestTier,
+            nextTier
+        );
+
+
+        renderTierCards(
+            balance,
+            highestTier.level,
+            selectedTier.level
+        );
+
+
+        /*
+           Helpful page title.
+        */
+
+        document.title =
+            `AVERYX | Subscription`;
+
+
+        console.log(
+            "AVERYX subscription data:",
+            {
+                balance,
+                highestUnlocked:
+                    highestTier.name,
+                nextTier:
+                    nextTier
+                        ? nextTier.name
+                        : "MAX",
+                activeTier:
+                    selectedTier.name
+            }
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Subscription loading error:",
+            error
+        );
+
+
+        document.getElementById(
+            "progressText"
+        ).textContent =
+            error.message ||
+            "Unable to load subscription data.";
+
+
+        /*
+           Do not silently show fake wallet data.
+        */
+
+        document.getElementById(
+            "progressPercent"
+        ).textContent =
+            "ERROR";
+
+
+        document.getElementById(
+            "progressFill"
+        ).style.width =
+            "0%";
+
+    }
+
+}
+
+
+/* ==================================================
+   START
+================================================== */
+
+let profile =
+    getLocalProfile();
+
+
+renderSubscriptionProfileHeader();
+
+initializesubscription();
+
+</script>
+
+</body>
+</html>

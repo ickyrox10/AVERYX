@@ -1,0 +1,1887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AVERYX | Edit Profile</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #070709;
+            --panel: #101014;
+            --border: #292930;
+            --border-soft: #202026;
+            --text: #f5f5f7;
+            --muted: #898992;
+            --soft: #606069;
+            --red: #e52249;
+            --green: #42c998;
+        }
+
+        body {
+            min-height: 100vh;
+
+            background:
+                radial-gradient(
+                    circle at 82% 0%,
+                    rgba(126, 20, 52, .18),
+                    transparent 31%
+                ),
+                var(--bg);
+
+            color: var(--text);
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        button,
+        input {
+            font: inherit;
+        }
+
+        .app {
+            width: 100%;
+            max-width: 850px;
+
+            margin: auto;
+
+            padding:
+                18px 18px 115px;
+        }
+
+        /* =========================
+           TOP BAR
+        ========================= */
+
+        .topbar {
+            height: 62px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+
+            gap: 11px;
+        }
+
+        .brand img {
+            width: 42px;
+            height: 42px;
+
+            object-fit: contain;
+        }
+
+        .brand-name {
+            font-family: Georgia, serif;
+
+            font-size: 22px;
+
+            letter-spacing: 3px;
+        }
+
+        .back {
+            color: var(--muted);
+
+            font-size: 13px;
+        }
+
+        /* =========================
+           TOP PROFILE
+        ========================= */
+
+        .top-profile {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .top-profile-info {
+            text-align: right;
+            min-width: 72px;
+        }
+
+        .top-profile-name {
+            color: var(--text);
+            font-size: 9px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 105px;
+        }
+
+        .top-profile-id {
+            margin-top: 2px;
+            color: var(--muted);
+            font-size: 7px;
+            letter-spacing: .3px;
+            white-space: nowrap;
+        }
+
+        .top-profile-avatar {
+            width: 38px;
+            height: 38px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 1px solid rgba(229, 34, 73, .35);
+            border-radius: 11px;
+            background: #08080b;
+        }
+
+        .top-profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* =========================
+           HEADER
+        ========================= */
+
+        .header {
+            padding:
+                31px 2px 23px;
+        }
+
+        .eyebrow {
+            color: var(--muted);
+
+            font-size: 10px;
+
+            letter-spacing: 2.5px;
+
+            text-transform: uppercase;
+        }
+
+        .header h1 {
+            margin-top: 8px;
+
+            font-family: Georgia, serif;
+
+            font-size:
+                clamp(35px, 8vw, 50px);
+        }
+
+        .header p {
+            max-width: 620px;
+
+            margin-top: 9px;
+
+            color: var(--muted);
+
+            font-size: 12px;
+
+            line-height: 1.7;
+        }
+
+        /* =========================
+           DP SECTION
+        ========================= */
+
+        .dp-card {
+            padding: 20px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 17px;
+
+            border:
+                1px solid
+                rgba(229, 34, 73, .25);
+
+            border-radius: 19px;
+
+            background:
+                radial-gradient(
+                    circle at 100% 0%,
+                    rgba(229, 34, 73, .10),
+                    transparent 43%
+                ),
+                var(--panel);
+        }
+
+        .dp-preview {
+            width: 92px;
+            height: 92px;
+
+            flex-shrink: 0;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            overflow: hidden;
+
+            border:
+                1px solid
+                rgba(229, 34, 73, .3);
+
+            border-radius: 17px;
+
+            background: #08080b;
+        }
+
+        .dp-preview img {
+            width: 100%;
+            height: 100%;
+
+            object-fit: contain;
+        }
+
+        .dp-info {
+            flex: 1;
+        }
+
+        .dp-label {
+            color: var(--muted);
+
+            font-size: 7px;
+
+            letter-spacing: 1.4px;
+
+            text-transform: uppercase;
+        }
+
+        .dp-title {
+            margin-top: 5px;
+
+            font-family: Georgia, serif;
+
+            font-size: 22px;
+        }
+
+        .dp-description {
+            margin-top: 5px;
+
+            color: var(--soft);
+
+            font-size: 8px;
+
+            line-height: 1.6;
+        }
+
+        /* =========================
+           SECTION
+        ========================= */
+
+        .section {
+            margin-top: 27px;
+        }
+
+        .section-title {
+            margin-bottom: 11px;
+
+            font-family: Georgia, serif;
+
+            font-size: 22px;
+        }
+
+        /* =========================
+           FORM
+        ========================= */
+
+        .form-card {
+            padding: 18px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 17px;
+
+            background: var(--panel);
+        }
+
+        .field {
+            margin-bottom: 17px;
+        }
+
+        .field:last-child {
+            margin-bottom: 0;
+        }
+
+        .field-label {
+            display: block;
+
+            margin-bottom: 7px;
+
+            color: var(--soft);
+
+            font-size: 8px;
+
+            letter-spacing: .9px;
+
+            text-transform: uppercase;
+        }
+
+        .input {
+            width: 100%;
+
+            height: 45px;
+
+            padding:
+                0 13px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 10px;
+
+            outline: none;
+
+            background: #0b0b0f;
+
+            color: var(--text);
+
+            font-size: 10px;
+
+            transition:
+                border-color .2s ease,
+                background .2s ease;
+        }
+
+        .input::placeholder {
+            color: #55555e;
+        }
+
+        .input:focus {
+            border-color:
+                rgba(229, 34, 73, .45);
+
+            background: #0d0d12;
+        }
+
+        .input.readonly {
+            color: #686870;
+
+            cursor: not-allowed;
+
+            background: #0a0a0d;
+        }
+
+        .field-note {
+            margin-top: 6px;
+
+            color: var(--soft);
+
+            font-size: 7px;
+
+            line-height: 1.5;
+        }
+
+        /* =========================
+           TIER PROFILE PICTURE
+        ========================= */
+
+        .tier-selection {
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, 1fr);
+
+            gap: 10px;
+        }
+
+        .tier-option {
+            position: relative;
+
+            padding: 10px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 13px;
+
+            background: #0c0c10;
+
+            cursor: pointer;
+
+            transition:
+                border-color .2s ease,
+                background .2s ease,
+                opacity .2s ease;
+        }
+
+        .tier-option:hover {
+            border-color: #414149;
+        }
+
+        .tier-option.selected {
+            border-color:
+                rgba(229, 34, 73, .48);
+
+            background:
+                rgba(229, 34, 73, .07);
+        }
+
+        .tier-option.locked {
+            opacity: .42;
+
+            cursor: not-allowed;
+        }
+
+        .tier-option img {
+            width: 100%;
+            height: 115px;
+
+            display: block;
+
+            object-fit: contain;
+
+            border-radius: 9px;
+
+            background: #08080b;
+        }
+
+        .tier-option-name {
+            margin-top: 8px;
+
+            font-family: Georgia, serif;
+
+            font-size: 13px;
+        }
+
+        .tier-option-status {
+            margin-top: 4px;
+
+            color: var(--soft);
+
+            font-size: 7px;
+
+            text-transform: uppercase;
+        }
+
+        .tier-option.selected
+        .tier-option-status {
+            color: var(--green);
+        }
+
+        .lock {
+            position: absolute;
+
+            top: 18px;
+            right: 18px;
+
+            width: 27px;
+            height: 27px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 50%;
+
+            background:
+                rgba(0, 0, 0, .65);
+
+            font-size: 12px;
+        }
+
+        /* =========================
+           BUTTONS
+        ========================= */
+
+        .actions {
+            margin-top: 20px;
+
+            display: grid;
+
+            grid-template-columns:
+                1fr 1fr;
+
+            gap: 10px;
+        }
+
+        .btn {
+            height: 45px;
+
+            border-radius: 10px;
+
+            cursor: pointer;
+
+            font-size: 9px;
+
+            text-transform: uppercase;
+
+            letter-spacing: .4px;
+        }
+
+        .btn-secondary {
+            border:
+                1px solid var(--border);
+
+            background: #111116;
+
+            color: var(--muted);
+        }
+
+        .btn-secondary:hover {
+            color: white;
+
+            border-color: #414149;
+        }
+
+        .btn-primary {
+            border:
+                1px solid rgba(229, 34, 73, .4);
+
+            background:
+                rgba(229, 34, 73, .12);
+
+            color: #ed5875;
+        }
+
+        .btn-primary:hover {
+            background:
+                rgba(229, 34, 73, .18);
+        }
+
+        /* =========================
+           BOTTOM NAV
+        ========================= */
+
+        .bottom-nav {
+            position: fixed;
+
+            left: 50%;
+            bottom: 14px;
+
+            transform:
+                translateX(-50%);
+
+            width:
+                calc(100% - 28px);
+
+            max-width: 700px;
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(5, 1fr);
+
+            gap: 4px;
+
+            padding: 7px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 18px;
+
+            background:
+                rgba(11, 11, 15, .94);
+
+            backdrop-filter:
+                blur(16px);
+
+            z-index: 20;
+        }
+
+        .nav-item {
+            min-height: 49px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+            justify-content: center;
+
+            gap: 4px;
+
+            border-radius: 12px;
+
+            color: #707078;
+
+            font-size: 9px;
+        }
+
+        .nav-icon {
+            font-size: 16px;
+        }
+
+        .nav-item.active {
+            color: white;
+
+            background:
+                rgba(229, 34, 73, .12);
+        }
+
+        /* =========================
+           TOAST
+        ========================= */
+
+        .toast {
+            position: fixed;
+
+            left: 50%;
+            bottom: 88px;
+
+            transform:
+                translate(-50%, 15px);
+
+            padding:
+                11px 16px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 10px;
+
+            background: #15151a;
+
+            color: #e5e5e9;
+
+            font-size: 9px;
+
+            opacity: 0;
+
+            pointer-events: none;
+
+            transition:
+                opacity .2s ease,
+                transform .2s ease;
+
+            z-index: 50;
+        }
+
+        .toast.show {
+            opacity: 1;
+
+            transform:
+                translate(-50%, 0);
+        }
+
+        /* =========================
+           MOBILE
+        ========================= */
+
+        @media (max-width: 560px) {
+
+            .app {
+                padding:
+                    15px 15px 115px;
+            }
+
+            .dp-card {
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 430px) {
+
+            .tier-selection {
+                grid-template-columns: 1fr;
+            }
+
+            .actions {
+                grid-template-columns: 1fr;
+            }
+
+            .dp-preview {
+                width: 78px;
+                height: 78px;
+            }
+
+            .dp-title {
+                font-size: 19px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<main class="app">
+
+    <!-- =========================
+         TOP BAR
+    ========================= -->
+
+    <header class="topbar">
+
+        <a
+            href="profile.html"
+            class="brand"
+        >
+
+            <img
+                src="logo.png"
+                alt="AVERYX Logo"
+            >
+
+            <span class="brand-name">
+                AVERYX
+            </span>
+
+        </a>
+
+        <div
+            class="top-profile"
+            id="topProfile"
+            aria-label="Current account"
+        >
+            <div class="top-profile-info">
+                <div
+                    class="top-profile-name"
+                    id="topProfileName"
+                >
+                    Your Nickname
+                </div>
+
+                <div
+                    class="top-profile-id"
+                    id="topProfileId"
+                >
+                    ID: 05031
+                </div>
+            </div>
+
+            <div
+                class="top-profile-avatar"
+                id="topProfileAvatar"
+            >
+                <img
+                    src="tier-fool.png"
+                    alt="Profile"
+                >
+            </div>
+        </div>
+
+    </header>
+
+
+    <!-- =========================
+         HEADER
+    ========================= -->
+
+    <section class="header">
+
+        <div class="eyebrow">
+            Account
+        </div>
+
+        <h1>
+            Edit Profile
+        </h1>
+
+        <p>
+            Update your profile information and
+            choose an unlocked subscription logo
+            for your profile.
+        </p>
+
+    </section>
+
+
+    <!-- =========================
+         CURRENT DP
+    ========================= -->
+
+    <section class="dp-card">
+
+        <div
+            class="dp-preview"
+            id="dpPreview"
+        ></div>
+
+
+        <div class="dp-info">
+
+            <div class="dp-label">
+                Profile Picture
+            </div>
+
+            <div
+                class="dp-title"
+                id="dpTitle"
+            >
+                The Fool
+            </div>
+
+            <div class="dp-description">
+                Your profile picture is linked to
+                your selected unlocked subscription.
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         PERSONAL DETAILS
+    ========================= -->
+
+    <section class="section">
+
+        <h2 class="section-title">
+            Personal Details
+        </h2>
+
+
+        <div class="form-card">
+
+            <div class="field">
+
+                <label
+                    class="field-label"
+                    for="nickname"
+                >
+                    Nickname
+                </label>
+
+                <input
+                    class="input"
+                    id="nickname"
+                    type="text"
+                    maxlength="30"
+                    placeholder="Enter your nickname"
+                >
+
+            </div>
+
+
+            <div class="field">
+
+                <label
+                    class="field-label"
+                    for="email"
+                >
+                    Email
+                </label>
+
+                <input
+                    class="input"
+                    id="email"
+                    type="email"
+                    maxlength="100"
+                    placeholder="Enter your email"
+                >
+
+            </div>
+
+
+            <div class="field">
+
+                <label
+                    class="field-label"
+                    for="referralCode"
+                >
+                    Referral Code
+                </label>
+
+                <input
+                    class="input readonly"
+                    id="referralCode"
+                    type="text"
+                    readonly
+                >
+
+                <div class="field-note">
+                    Your referral code is unique to your
+                    account and cannot be changed here.
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         PROFILE LOGO
+    ========================= -->
+
+    <section class="section">
+
+        <h2 class="section-title">
+            Profile Logo
+        </h2>
+
+
+        <div
+            class="tier-selection"
+            id="tierSelection"
+        ></div>
+
+    </section>
+
+
+    <!-- =========================
+         ACTIONS
+    ========================= -->
+
+    <div class="actions">
+
+        <a
+            href="profile.html"
+            class="btn btn-secondary"
+            style="
+                display:flex;
+                align-items:center;
+                justify-content:center;
+            "
+        >
+            Cancel
+        </a>
+
+
+        <button
+            type="button"
+            class="btn btn-primary"
+            id="saveButton"
+        >
+            Save Changes
+        </button>
+
+    </div>
+
+</main>
+
+
+<!-- =========================
+     BOTTOM NAV
+========================= -->
+
+<nav class="bottom-nav">
+
+    <a
+        href="dashboard.html"
+        class="nav-item"
+    >
+        <span class="nav-icon">⌂</span>
+        Home
+    </a>
+
+
+    <a
+        href="subscription.html"
+        class="nav-item"
+    >
+        <span class="nav-icon">◇</span>
+        Tiers
+    </a>
+
+
+    <a
+        href="wallet.html"
+        class="nav-item"
+    >
+        <span class="nav-icon">◈</span>
+        Wallet
+    </a>
+
+
+    <a
+        href="records.html"
+        class="nav-item"
+    >
+        <span class="nav-icon">≡</span>
+        Records
+    </a>
+
+
+    <a
+        href="profile.html"
+        class="nav-item active"
+    >
+        <span class="nav-icon">○</span>
+        Profile
+    </a>
+
+</nav>
+
+
+<div
+    class="toast"
+    id="toast"
+>
+    Profile saved successfully
+</div>
+
+
+<script>
+
+/* ==================================================
+   DEFAULT PROFILE
+================================================== */
+
+const DEFAULT_PROFILE = {
+
+    nickname: "Your Nickname",
+
+    email: "user@example.com",
+
+    referralCode: "AVX-DEMO7K4M",
+
+    highestUnlockedTier: 1,
+
+    selectedProfileTier: 1
+
+};
+
+
+/* ==================================================
+   TIER DATA
+================================================== */
+
+const TIERS = [
+
+    {
+        level: 1,
+        name: "The Fool",
+        deposit: 0,
+        daily: 0,
+        logo: "tier-fool.png"
+    },
+
+    {
+        level: 2,
+        name: "The Prodigy",
+        deposit: 3.5,
+        daily: 1,
+        logo: "tier-prodigy.png"
+    },
+
+    {
+        level: 3,
+        name: "The Magician",
+        deposit: 16,
+        daily: 5,
+        logo: "tier-magician.png"
+    },
+
+    {
+        level: 4,
+        name: "The Conqueror",
+        deposit: 60,
+        daily: 18,
+        logo: "tier-conqueror.png"
+    },
+
+    {
+        level: 5,
+        name: "The Emperor",
+        deposit: 165,
+        daily: 49.5,
+        logo: "tier-emperor.png"
+    },
+
+    {
+        level: 6,
+        name: "The Shadow Monarch",
+        deposit: 550,
+        daily: 165,
+        logo: "shadow-monarch.png"
+    },
+
+    {
+        level: 7,
+        name: "The Berserk",
+        deposit: 1440,
+        daily: 432,
+        logo: "tier-berserk.png"
+    }
+
+];
+
+
+/* ==================================================
+   LOAD PROFILE
+================================================== */
+
+function getProfile() {
+
+    try {
+
+        const saved =
+            localStorage.getItem(
+                "averyx_profile"
+            );
+
+
+        if (!saved) {
+
+            localStorage.setItem(
+                "averyx_profile",
+                JSON.stringify(
+                    DEFAULT_PROFILE
+                )
+            );
+
+
+            return {
+                ...DEFAULT_PROFILE
+            };
+
+        }
+
+
+        return {
+            ...DEFAULT_PROFILE,
+            ...JSON.parse(saved)
+        };
+
+    } catch (error) {
+
+        return {
+            ...DEFAULT_PROFILE
+        };
+
+    }
+
+}
+
+
+let profile =
+    getProfile();
+
+
+/* ==================================================
+   LOAD WALLET
+================================================== */
+
+function getWallet() {
+
+    const defaultWallet = {
+
+        balance: 0,
+
+        totalDeposit: 0,
+
+        totalWithdraw: 0
+
+    };
+
+
+    try {
+
+        const saved =
+            localStorage.getItem(
+                "averyx_wallet"
+            );
+
+
+        if (!saved) {
+
+            return defaultWallet;
+
+        }
+
+
+        return {
+
+            ...defaultWallet,
+
+            ...JSON.parse(saved)
+
+        };
+
+    } catch (error) {
+
+        return defaultWallet;
+
+    }
+
+}
+
+
+const wallet =
+    getWallet();
+
+
+/* ==================================================
+   ACCOUNT ID + STORED SUBSCRIPTION STATE
+   Keep the original page layout and use the existing
+   saved account/subscription data when available.
+================================================== */
+
+function readStoredObject(key) {
+
+    try {
+
+        const saved =
+            localStorage.getItem(key);
+
+        if (!saved) {
+            return null;
+        }
+
+        const parsed =
+            JSON.parse(saved);
+
+        return parsed &&
+            typeof parsed === "object"
+            ? parsed
+            : null;
+
+    } catch (error) {
+
+        return null;
+
+    }
+
+}
+
+
+function readStoredTier(source) {
+
+    if (!source) {
+        return 0;
+    }
+
+    const values = [
+        source.highestUnlockedTier,
+        source.highestTier,
+        source.unlockedTier,
+        source.currentTier,
+        source.subscriptionTier,
+        source.selectedTier,
+        source.tierLevel,
+        source.level,
+        source.tier
+    ];
+
+    for (const value of values) {
+
+        const number =
+            Number(
+                value && typeof value === "object"
+                    ? (value.level ?? value.tier ?? value.id)
+                    : value
+            );
+
+        if (
+            Number.isFinite(number) &&
+            number >= 1 &&
+            number <= TIERS.length
+        ) {
+            return Math.floor(number);
+        }
+
+    }
+
+    return 0;
+
+}
+
+
+const storedAccountSources = [
+    readStoredObject("averyx_user"),
+    readStoredObject("averyx_account"),
+    readStoredObject("currentUser"),
+    readStoredObject("user"),
+    readStoredObject("averyx_auth")
+];
+
+
+function formatAccountId(rawId) {
+    const value = String(rawId ?? "").trim();
+
+    // Stable AVERYX public ID sequence:
+    // user 1 -> 05031, user 2 -> 05032, user 3 -> 05033 ...
+    if (/^\d+$/.test(value)) {
+        const numericId = Number(value);
+        if (Number.isSafeInteger(numericId) && numericId >= 1) {
+            return String(5030 + numericId).padStart(5, "0");
+        }
+    }
+
+    // Never hash an ID. Hashing made the visible ID change unpredictably.
+    return "05031";
+}
+
+let accountId = null;
+
+for (const source of storedAccountSources) {
+    accountId =
+        accountId ||
+        source?.id ||
+        source?.user?.id ||
+        source?.uniqueId ||
+        source?.userId ||
+        null;
+}
+
+const canonicalUID = formatAccountId(accountId);
+profile.uniqueId = canonicalUID;
+
+localStorage.setItem(
+    "averyx_profile",
+    JSON.stringify(profile)
+);
+
+document.getElementById(
+    "topProfileName"
+).textContent =
+    profile.nickname ||
+    "Your Nickname";
+
+
+document.getElementById(
+    "topProfileId"
+).textContent =
+    `ID: ${canonicalUID}`;
+
+
+/* ==================================================
+   DETERMINE HIGHEST UNLOCKED TIER
+================================================== */
+
+const deposited =
+    Math.max(
+        0,
+        Number(wallet.balanceUSDT) || 0,
+        Number(wallet.totalDeposit) || 0
+    );
+
+let walletHighestUnlocked = 1;
+
+TIERS.forEach(tier => {
+    if (deposited >= Number(tier.deposit)) {
+        walletHighestUnlocked = tier.level;
+    }
+});
+
+const subscriptionSources = [
+    profile,
+    readStoredObject("averyx_subscription"),
+    readStoredObject("averyx_subscription_data"),
+    ...storedAccountSources
+];
+
+let storedSubscriptionTier = 0;
+
+subscriptionSources.forEach(source => {
+    storedSubscriptionTier = Math.max(
+        storedSubscriptionTier,
+        readStoredTier(source)
+    );
+
+    if (source?.wallet) {
+        const nestedBalance = Number(source.wallet.balanceUSDT) || 0;
+        TIERS.forEach(tier => {
+            if (nestedBalance >= Number(tier.deposit)) {
+                storedSubscriptionTier = Math.max(
+                    storedSubscriptionTier,
+                    tier.level
+                );
+            }
+        });
+    }
+});
+
+/* NEVER downgrade an already-unlocked account. */
+let highestUnlocked = Math.min(
+    TIERS.length,
+    Math.max(
+        1,
+        Number(profile.highestUnlockedTier) || 0,
+        storedSubscriptionTier,
+        walletHighestUnlocked
+    )
+);
+
+profile.highestUnlockedTier = highestUnlocked;
+
+
+/*
+   Never allow a locked tier to remain
+   selected as the profile picture.
+*/
+
+if (
+    Number(
+        profile.selectedProfileTier
+    ) >
+    highestUnlocked
+) {
+
+    profile.selectedProfileTier =
+        highestUnlocked;
+
+}
+
+
+localStorage.setItem(
+    "averyx_profile",
+    JSON.stringify(profile)
+);
+
+
+/* ==================================================
+   LOAD FORM VALUES
+================================================== */
+
+document.getElementById(
+    "nickname"
+).value =
+    profile.nickname || "";
+
+
+document.getElementById(
+    "email"
+).value =
+    profile.email || "";
+
+
+document.getElementById(
+    "referralCode"
+).value =
+    profile.referralCode;
+
+
+/* ==================================================
+   CURRENT SELECTED TIER
+================================================== */
+
+let selectedTierLevel =
+    Number(
+        profile.selectedProfileTier
+    ) || 1;
+
+
+if (
+    selectedTierLevel >
+    highestUnlocked
+) {
+
+    selectedTierLevel =
+        highestUnlocked;
+
+}
+
+
+/* ==================================================
+   CURRENT DP
+================================================== */
+
+function updatePreview() {
+
+    const tier =
+        TIERS.find(
+            item =>
+                item.level ===
+                selectedTierLevel
+        ) || TIERS[0];
+
+
+    document.getElementById(
+        "dpPreview"
+    ).innerHTML = `
+
+        <img
+            src="${tier.logo}"
+            alt="${tier.name}"
+        >
+
+    `;
+
+
+    document.getElementById(
+        "dpTitle"
+    ).textContent =
+        tier.name;
+
+}
+
+
+updatePreview();
+
+
+/* ==================================================
+   RENDER TIER OPTIONS
+================================================== */
+
+const tierSelection =
+    document.getElementById(
+        "tierSelection"
+    );
+
+
+TIERS.forEach(
+    tier => {
+
+        const unlocked =
+            tier.level <=
+            highestUnlocked;
+
+
+        const selected =
+            tier.level ===
+            selectedTierLevel;
+
+
+        const option =
+            document.createElement(
+                "div"
+            );
+
+
+        option.className =
+            "tier-option";
+
+
+        if (selected) {
+
+            option.classList.add(
+                "selected"
+            );
+
+        }
+
+
+        if (!unlocked) {
+
+            option.classList.add(
+                "locked"
+            );
+
+        }
+
+
+        option.innerHTML = `
+
+            <img
+                src="${tier.logo}"
+                alt="${tier.name}"
+            >
+
+            <div class="tier-option-name">
+                ${tier.name}
+            </div>
+
+            <div class="tier-option-status">
+                ${
+                    unlocked
+                        ? (
+                            selected
+                                ? "Selected"
+                                : "Unlocked"
+                          )
+                        : "Locked"
+                }
+            </div>
+
+            ${
+                !unlocked
+                    ? `
+                        <div class="lock">
+                            🔒
+                        </div>
+                      `
+                    : ""
+            }
+
+        `;
+
+
+        if (unlocked) {
+
+            option.addEventListener(
+                "click",
+                function() {
+
+                    selectedTierLevel =
+                        tier.level;
+
+
+                    document
+                        .querySelectorAll(
+                            ".tier-option"
+                        )
+                        .forEach(
+                            item => {
+
+                                item.classList.remove(
+                                    "selected"
+                                );
+
+                            }
+                        );
+
+
+                    option.classList.add(
+                        "selected"
+                    );
+
+
+                    document
+                        .querySelectorAll(
+                            ".tier-option"
+                        )
+                        .forEach(
+                            item => {
+
+                                const status =
+                                    item.querySelector(
+                                        ".tier-option-status"
+                                    );
+
+
+                                if (
+                                    item === option
+                                ) {
+
+                                    status.textContent =
+                                        "Selected";
+
+                                }
+
+                            }
+                        );
+
+
+                    updatePreview();
+
+                }
+            );
+
+        }
+
+
+        tierSelection.appendChild(
+            option
+        );
+
+    }
+);
+
+
+/* ==================================================
+   LIVE SUBSCRIPTION SYNC
+
+   The Subscription page calculates the real tier from
+   /api/wallet/ using wallet.balanceUSDT. Do the same
+   here so Edit Profile cannot fall back to The Fool
+   just because localStorage is stale.
+================================================== */
+
+async function syncLiveUnlockedTiers() {
+    try {
+        const token =
+            localStorage.getItem("averyx_token") ||
+            localStorage.getItem("token") ||
+            localStorage.getItem("authToken") ||
+            "";
+
+        if (!token) return;
+
+        // Load the real account identity when available.
+        const accountResponse = await fetch("/api/auth/me", {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (accountResponse.ok) {
+            const accountData = await accountResponse.json().catch(() => ({}));
+            if (accountData.success && accountData.user) {
+                const user = accountData.user;
+                profile.nickname = user.nickname || profile.nickname;
+                profile.email = user.email || profile.email;
+                profile.referralCode = user.referralCode || profile.referralCode;
+
+                // Always derive the public ID from the stable numeric account ID.
+                profile.uniqueId = formatAccountId(
+                    user.id ?? user.userId ?? user.publicUid ?? profile.uniqueId
+                );
+
+                document.getElementById("nickname").value = profile.nickname || "";
+                document.getElementById("email").value = profile.email || "";
+                document.getElementById("referralCode").value = profile.referralCode || "";
+            }
+        }
+
+        // The wallet endpoint only unlocks tiers. It must never overwrite the
+        // user's selected profile logo.
+        const walletResponse = await fetch("/api/wallet/", {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (walletResponse.ok) {
+            const data = await walletResponse.json().catch(() => ({}));
+            const liveWallet = data?.wallet || {};
+            const liveBalance = Number(liveWallet.balanceUSDT) || 0;
+
+            let liveHighest = 1;
+            TIERS.forEach(tier => {
+                if (liveBalance >= Number(tier.deposit)) {
+                    liveHighest = tier.level;
+                }
+            });
+
+            if (liveHighest > highestUnlocked) {
+                highestUnlocked = liveHighest;
+                profile.highestUnlockedTier = highestUnlocked;
+            }
+        }
+
+        // Keep the saved selection. Only fall back to the highest unlocked
+        // tier if the saved selection is missing/invalid.
+        const savedSelected = Number(profile.selectedProfileTier);
+        if (savedSelected >= 1 && savedSelected <= highestUnlocked) {
+            selectedTierLevel = savedSelected;
+        } else {
+            selectedTierLevel = Math.min(highestUnlocked, TIERS.length);
+            profile.selectedProfileTier = selectedTierLevel;
+        }
+
+        localStorage.setItem(
+            "averyx_profile",
+            JSON.stringify(profile)
+        );
+
+        document.getElementById("topProfileName").textContent =
+            profile.nickname || "Your Nickname";
+        document.getElementById("topProfileId").textContent =
+            `ID: ${profile.uniqueId || "05031"}`;
+
+        const tier = TIERS.find(item => item.level === selectedTierLevel) || TIERS[0];
+        document.getElementById("topProfileAvatar").innerHTML = `
+            <img src="${tier.logo}" alt="${tier.name}">
+        `;
+
+        updatePreview();
+
+        // Rebuild only the state of existing cards. The visual layout remains untouched.
+        document.querySelectorAll(".tier-option").forEach((option, index) => {
+            const level = index + 1;
+            const unlocked = level <= highestUnlocked;
+            option.classList.toggle("locked", !unlocked);
+            option.classList.toggle("selected", level === selectedTierLevel);
+
+            const status = option.querySelector(".tier-option-status");
+            if (status) {
+                status.textContent = !unlocked
+                    ? "Locked"
+                    : (level === selectedTierLevel ? "Selected" : "Unlocked");
+            }
+
+            const lock = option.querySelector(".lock");
+            if (lock && unlocked) lock.remove();
+        });
+    } catch (error) {
+        console.warn("Edit Profile live sync skipped:", error.message);
+    }
+}
+
+syncLiveUnlockedTiers();
+
+
+/* ==================================================
+   SAVE
+================================================== */
+
+document.getElementById(
+    "saveButton"
+).addEventListener(
+    "click",
+    function() {
+        const nickname =
+            document.getElementById("nickname").value.trim();
+        const email =
+            document.getElementById("email").value.trim();
+        profile.nickname = nickname || "Your Nickname";
+        profile.email = email;
+        profile.uniqueId = profile.uniqueId || "05031";
+        profile.selectedProfileTier = selectedTierLevel;
+        profile.highestUnlockedTier = highestUnlocked;
+
+        // Edit Profile is deliberately self-contained for this page.
+        // Do not call the broken profile PUT endpoint here.
+        localStorage.setItem(
+            "averyx_profile",
+            JSON.stringify(profile)
+        );
+
+        document.getElementById("topProfileName").textContent =
+            profile.nickname;
+        document.getElementById("topProfileId").textContent =
+            `ID: ${profile.uniqueId}`;
+
+        const tier = TIERS.find(item => item.level === selectedTierLevel) || TIERS[0];
+        document.getElementById("topProfileAvatar").innerHTML = `
+            <img src="${tier.logo}" alt="${tier.name}">
+        `;
+
+        updatePreview();
+        showToast("Profile saved successfully");
+
+        setTimeout(function() {
+            window.location.href = "profile.html";
+        }, 150);
+    }
+);
+
+/* ==================================================
+   TOAST
+================================================== */
+
+function showToast(
+    message
+) {
+
+    const toast =
+        document.getElementById(
+            "toast"
+        );
+
+
+    toast.textContent =
+        message;
+
+
+    toast.classList.add(
+        "show"
+    );
+
+
+    setTimeout(
+        function() {
+
+            toast.classList.remove(
+                "show"
+            );
+
+        },
+        1600
+    );
+
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,2286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AVERYX | Refer & Earn</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #070709;
+            --panel: #101014;
+            --panel2: #0c0c10;
+            --border: #292930;
+            --border-soft: #202026;
+            --text: #f5f5f7;
+            --muted: #898992;
+            --soft: #606069;
+            --red: #e52249;
+            --green: #42c998;
+        }
+
+        body {
+            min-height: 100vh;
+
+            background:
+                radial-gradient(
+                    circle at 82% 0%,
+                    rgba(126, 20, 52, .18),
+                    transparent 31%
+                ),
+                var(--bg);
+
+            color: var(--text);
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        button {
+            font: inherit;
+        }
+
+        .app {
+            width: 100%;
+            max-width: 850px;
+
+            margin: auto;
+
+            padding:
+                18px 18px 115px;
+        }
+
+        /* =========================
+           TOP BAR
+        ========================= */
+
+        .topbar {
+            height: 62px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+
+            gap: 11px;
+        }
+
+        .brand img {
+            width: 42px;
+            height: 42px;
+
+            object-fit: contain;
+        }
+
+        .brand-name {
+            font-family: Georgia, serif;
+
+            font-size: 22px;
+
+            letter-spacing: 3px;
+        }
+
+        .back {
+            color: var(--muted);
+
+            font-size: 13px;
+        }
+
+        /* =========================
+           PROFILE SYNC
+        ========================= */
+
+        .ref-profile {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 9px;
+            min-width: 145px;
+            height: 48px;
+            padding: 2px 0 2px 8px;
+            background: transparent;
+            border: none;
+        }
+
+        .ref-profile-details {
+            min-width: 0;
+            flex: 1;
+            text-align: right;
+            line-height: 1.15;
+        }
+
+        .ref-profile-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: var(--text);
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .ref-profile-id {
+            margin-top: 4px;
+            color: var(--muted);
+            font-family: monospace;
+            font-size: 8px;
+            letter-spacing: .5px;
+        }
+
+        .ref-profile-avatar {
+            width: 42px;
+            height: 42px;
+            flex: 0 0 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: none;
+            border-radius: 50%;
+            background: transparent;
+        }
+
+        .ref-profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* =========================
+           HEADER
+        ========================= */
+
+        .header {
+            padding:
+                31px 2px 25px;
+        }
+
+        .eyebrow {
+            color: var(--muted);
+
+            font-size: 10px;
+
+            letter-spacing: 2.5px;
+
+            text-transform: uppercase;
+        }
+
+        .header h1 {
+            margin-top: 8px;
+
+            font-family: Georgia, serif;
+
+            font-size:
+                clamp(35px, 8vw, 50px);
+        }
+
+        .header p {
+            max-width: 650px;
+
+            margin-top: 9px;
+
+            color: var(--muted);
+
+            font-size: 12px;
+
+            line-height: 1.7;
+        }
+
+        /* =========================
+           REWARD HERO
+        ========================= */
+
+        .reward-card {
+            padding: 23px;
+
+            border:
+                1px solid
+                rgba(229, 34, 73, .28);
+
+            border-radius: 20px;
+
+            background:
+                radial-gradient(
+                    circle at 100% 0%,
+                    rgba(229, 34, 73, .13),
+                    transparent 45%
+                ),
+                var(--panel);
+        }
+
+        .reward-top {
+            display: flex;
+
+            align-items: flex-start;
+
+            justify-content: space-between;
+
+            gap: 20px;
+        }
+
+        .reward-label {
+            color: var(--muted);
+
+            font-size: 8px;
+
+            letter-spacing: 1.6px;
+
+            text-transform: uppercase;
+        }
+
+        .reward-title {
+            margin-top: 5px;
+
+            font-family: Georgia, serif;
+
+            font-size: 27px;
+        }
+
+        .reward-description {
+            max-width: 520px;
+
+            margin-top: 7px;
+
+            color: var(--muted);
+
+            font-size: 9px;
+
+            line-height: 1.7;
+        }
+
+        .reward-percent {
+            flex-shrink: 0;
+
+            padding:
+                10px 12px;
+
+            border:
+                1px solid
+                rgba(229, 34, 73, .3);
+
+            border-radius: 10px;
+
+            background:
+                rgba(229, 34, 73, .08);
+
+            color: #ed5875;
+
+            font-size: 16px;
+
+            font-weight: 600;
+        }
+
+        /* =========================
+           REFERRAL CODE
+        ========================= */
+
+        .code-card {
+            margin-top: 12px;
+
+            padding: 17px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 16px;
+
+            background: var(--panel);
+        }
+
+        .code-label {
+            color: var(--soft);
+
+            font-size: 7px;
+
+            letter-spacing: 1.2px;
+
+            text-transform: uppercase;
+        }
+
+        .code-row {
+            margin-top: 8px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 8px;
+        }
+
+        .code-value {
+            flex: 1;
+
+            min-width: 0;
+
+            height: 43px;
+
+            display: flex;
+
+            align-items: center;
+
+            padding:
+                0 12px;
+
+            border:
+                1px solid var(--border-soft);
+
+            border-radius: 9px;
+
+            background: #0b0b0f;
+
+            color: #e5e5e9;
+
+            font-family: monospace;
+
+            font-size: 11px;
+
+            letter-spacing: 1px;
+
+            overflow: hidden;
+
+            white-space: nowrap;
+
+            text-overflow: ellipsis;
+        }
+
+        .copy-button {
+            height: 43px;
+
+            padding:
+                0 13px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 9px;
+
+            background: #15151a;
+
+            color: var(--muted);
+
+            cursor: pointer;
+
+            font-size: 8px;
+
+            text-transform: uppercase;
+        }
+
+        .copy-button:hover {
+            color: white;
+
+            border-color: #42424a;
+        }
+
+        /* =========================
+           REFERRAL LINK
+        ========================= */
+
+        .link-card {
+            margin-top: 11px;
+
+            padding: 15px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 15px;
+
+            background: var(--panel);
+        }
+
+        .link-label {
+            color: var(--soft);
+
+            font-size: 7px;
+
+            letter-spacing: 1.1px;
+
+            text-transform: uppercase;
+        }
+
+        .link-row {
+            margin-top: 8px;
+
+            display: flex;
+
+            gap: 8px;
+        }
+
+        .link-value {
+            flex: 1;
+
+            min-width: 0;
+
+            height: 41px;
+
+            display: flex;
+
+            align-items: center;
+
+            padding:
+                0 11px;
+
+            border:
+                1px solid var(--border-soft);
+
+            border-radius: 9px;
+
+            background: #0b0b0f;
+
+            color: var(--muted);
+
+            font-family: monospace;
+
+            font-size: 8px;
+
+            overflow: hidden;
+
+            white-space: nowrap;
+
+            text-overflow: ellipsis;
+        }
+
+        .share-button {
+            height: 41px;
+
+            padding:
+                0 13px;
+
+            border:
+                1px solid
+                rgba(229, 34, 73, .32);
+
+            border-radius: 9px;
+
+            background:
+                rgba(229, 34, 73, .09);
+
+            color: #ed5875;
+
+            cursor: pointer;
+
+            font-size: 8px;
+
+            text-transform: uppercase;
+        }
+
+        /* =========================
+           STATISTICS
+        ========================= */
+
+        .section {
+            margin-top: 27px;
+        }
+
+        .section-title {
+            margin-bottom: 11px;
+
+            font-family: Georgia, serif;
+
+            font-size: 22px;
+        }
+
+        .stats {
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 9px;
+        }
+
+        .stat-card {
+            padding: 16px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 15px;
+
+            background: var(--panel);
+        }
+
+        .stat-label {
+            color: var(--soft);
+
+            font-size: 7px;
+
+            letter-spacing: .7px;
+
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            margin-top: 7px;
+
+            font-family: Georgia, serif;
+
+            font-size: 23px;
+        }
+
+        .stat-green {
+            color: var(--green);
+        }
+
+        /* =========================
+           HOW IT WORKS
+        ========================= */
+
+        .steps {
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 9px;
+        }
+
+        .step {
+            padding: 17px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 15px;
+
+            background: var(--panel);
+        }
+
+        .step-number {
+            width: 29px;
+            height: 29px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 8px;
+
+            background:
+                rgba(229, 34, 73, .1);
+
+            color: #ed5875;
+
+            font-size: 9px;
+        }
+
+        .step-title {
+            margin-top: 11px;
+
+            font-family: Georgia, serif;
+
+            font-size: 15px;
+        }
+
+        .step-text {
+            margin-top: 6px;
+
+            color: var(--muted);
+
+            font-size: 8px;
+
+            line-height: 1.7;
+        }
+
+        /* =========================
+           REWARD RULE
+        ========================= */
+
+        .rule-card {
+            padding: 18px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 16px;
+
+            background: var(--panel);
+        }
+
+        .rule-title {
+            font-family: Georgia, serif;
+
+            font-size: 20px;
+        }
+
+        .rule-list {
+            margin-top: 12px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 9px;
+        }
+
+        .rule {
+            display: flex;
+
+            align-items: flex-start;
+
+            gap: 9px;
+
+            color: var(--muted);
+
+            font-size: 8px;
+
+            line-height: 1.7;
+        }
+
+        .rule-dot {
+            width: 6px;
+            height: 6px;
+
+            flex-shrink: 0;
+
+            margin-top: 5px;
+
+            border-radius: 50%;
+
+            background: var(--red);
+        }
+
+        /* =========================
+           REFERRAL HISTORY
+        ========================= */
+
+        .history {
+            overflow: hidden;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 16px;
+
+            background: var(--panel);
+        }
+
+        .history-row {
+            min-height: 64px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 12px;
+
+            padding:
+                11px 15px;
+
+            border-bottom:
+                1px solid var(--border-soft);
+        }
+
+        .history-row:last-child {
+            border-bottom: 0;
+        }
+
+        .history-left {
+            min-width: 0;
+        }
+
+        .history-name {
+            font-size: 9px;
+        }
+
+        .history-date {
+            margin-top: 4px;
+
+            color: var(--soft);
+
+            font-size: 7px;
+        }
+
+        .history-right {
+            flex-shrink: 0;
+
+            text-align: right;
+        }
+
+        .history-reward {
+            color: var(--green);
+
+            font-size: 9px;
+        }
+
+        .history-status {
+            margin-top: 4px;
+
+            color: var(--soft);
+
+            font-size: 7px;
+        }
+
+        .empty-history {
+            padding: 27px 15px;
+
+            color: var(--soft);
+
+            font-size: 8px;
+
+            text-align: center;
+        }
+
+        /* =========================
+           BOTTOM NAV
+        ========================= */
+
+        .bottom-nav {
+            position: fixed;
+
+            left: 50%;
+            bottom: 14px;
+
+            transform:
+                translateX(-50%);
+
+            width:
+                calc(100% - 28px);
+
+            max-width: 700px;
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(5, 1fr);
+
+            gap: 4px;
+
+            padding: 7px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 18px;
+
+            background:
+                rgba(11, 11, 15, .94);
+
+            backdrop-filter:
+                blur(16px);
+
+            z-index: 20;
+        }
+
+        .nav-item {
+            min-height: 49px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 4px;
+
+            border-radius: 12px;
+
+            color: #707078;
+
+            font-size: 9px;
+        }
+
+        .nav-icon {
+            font-size: 16px;
+        }
+
+        .nav-item.active {
+            color: white;
+
+            background:
+                rgba(229, 34, 73, .12);
+        }
+
+        /* =========================
+           TOAST
+        ========================= */
+
+        .toast {
+            position: fixed;
+
+            left: 50%;
+            bottom: 88px;
+
+            transform:
+                translate(-50%, 15px);
+
+            padding:
+                11px 16px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 10px;
+
+            background: #15151a;
+
+            color: #e5e5e9;
+
+            font-size: 9px;
+
+            opacity: 0;
+
+            pointer-events: none;
+
+            transition:
+                opacity .2s ease,
+                transform .2s ease;
+
+            z-index: 50;
+        }
+
+        .toast.show {
+            opacity: 1;
+
+            transform:
+                translate(-50%, 0);
+        }
+
+        /* =========================
+           MOBILE
+        ========================= */
+
+        @media (max-width: 650px) {
+
+            .stats {
+                grid-template-columns:
+                    1fr;
+            }
+
+            .steps {
+                grid-template-columns:
+                    1fr;
+            }
+        }
+
+        @media (max-width: 500px) {
+
+            .app {
+                padding:
+                    15px 15px 115px;
+            }
+
+            .reward-top {
+                flex-direction: column;
+            }
+
+            .reward-percent {
+                align-self: flex-start;
+            }
+
+            .code-row,
+            .link-row {
+                flex-direction: column;
+            }
+
+            .copy-button,
+            .share-button {
+                width: 100%;
+            }
+
+            .code-value,
+            .link-value {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<main class="app">
+
+    <!-- =========================
+         TOP BAR
+    ========================= -->
+
+    <header class="topbar">
+
+        <a
+            href="profile.html"
+            class="brand"
+        >
+
+            <img
+                src="logo.png"
+                alt="AVERYX Logo"
+            >
+
+            <span class="brand-name">
+                AVERYX
+            </span>
+
+        </a>
+
+        <a
+            href="profile.html"
+            class="ref-profile"
+            id="refProfile"
+        >
+            <div class="ref-profile-details">
+                <div
+                    class="ref-profile-name"
+                    id="refProfileName"
+                >
+                    Your Nickname
+                </div>
+
+                <div
+                    class="ref-profile-id"
+                    id="refProfileId"
+                >
+                    ID: 05031
+                </div>
+            </div>
+
+            <div
+                class="ref-profile-avatar"
+                id="refProfileAvatar"
+            ></div>
+        </a>
+
+    </header>
+
+
+    <!-- =========================
+         HEADER
+    ========================= -->
+
+    <section class="header">
+
+        <div class="eyebrow">
+            Rewards
+        </div>
+
+        <h1>
+            Refer & Earn
+        </h1>
+
+        <p>
+            Invite others using your unique referral
+            code and track qualifying deposits and
+            referral rewards from one place.
+        </p>
+
+    </section>
+
+
+    <!-- =========================
+         REWARD HERO
+    ========================= -->
+
+    <section class="reward-card">
+
+        <div class="reward-top">
+
+            <div>
+
+                <div class="reward-label">
+                    Referral Reward
+                </div>
+
+                <div class="reward-title">
+                    Earn 5%
+                </div>
+
+                <div class="reward-description">
+                    Receive a 5% referral reward on a
+                    qualifying deposit made by a referred
+                    user.
+                </div>
+
+            </div>
+
+
+            <div class="reward-percent">
+                5%
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         REFERRAL CODE
+    ========================= -->
+
+    <section class="code-card">
+
+        <div class="code-label">
+            Your Unique Referral Code
+        </div>
+
+        <div class="code-row">
+
+            <div
+                class="code-value"
+                id="referralCode"
+            >
+                AVX-000000
+            </div>
+
+            <button
+                type="button"
+                class="copy-button"
+                id="copyCode"
+            >
+                Copy
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         REFERRAL LINK
+    ========================= -->
+
+    <section class="link-card">
+
+        <div class="link-label">
+            Referral Link
+        </div>
+
+        <div class="link-row">
+
+            <div
+                class="link-value"
+                id="referralLink"
+            >
+                averyx.example/register?ref=AVX-000000
+            </div>
+
+            <button
+                type="button"
+                class="share-button"
+                id="shareButton"
+            >
+                Share
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         STATISTICS
+    ========================= -->
+
+    <section class="section">
+
+        <h2 class="section-title">
+            Referral Overview
+        </h2>
+
+
+        <div class="stats">
+
+            <div class="stat-card">
+
+                <div class="stat-label">
+                    Total Referrals
+                </div>
+
+                <div
+                    class="stat-value"
+                    id="totalReferrals"
+                >
+                    0
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-label">
+                    Qualified Referrals
+                </div>
+
+                <div
+                    class="stat-value"
+                    id="qualifiedReferrals"
+                >
+                    0
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-label">
+                    Total Rewards
+                </div>
+
+                <div
+                    class="stat-value stat-green"
+                    id="totalRewards"
+                >
+                    0 USDT
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         HOW IT WORKS
+    ========================= -->
+
+    <section class="section">
+
+        <h2 class="section-title">
+            How It Works
+        </h2>
+
+
+        <div class="steps">
+
+            <div class="step">
+
+                <div class="step-number">
+                    01
+                </div>
+
+                <div class="step-title">
+                    Share
+                </div>
+
+                <div class="step-text">
+                    Share your unique referral
+                    code or referral link with
+                    someone you want to invite.
+                </div>
+
+            </div>
+
+
+            <div class="step">
+
+                <div class="step-number">
+                    02
+                </div>
+
+                <div class="step-title">
+                    Qualify
+                </div>
+
+                <div class="step-text">
+                    The referred user must join
+                    through your referral and
+                    make a qualifying deposit.
+                </div>
+
+            </div>
+
+
+            <div class="step">
+
+                <div class="step-number">
+                    03
+                </div>
+
+                <div class="step-title">
+                    Earn
+                </div>
+
+                <div class="step-text">
+                    A 5% referral reward is
+                    recorded against the
+                    qualifying deposit.
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         REWARD RULES
+    ========================= -->
+
+    <section class="section">
+
+        <div class="rule-card">
+
+            <div class="rule-title">
+                Referral Rules
+            </div>
+
+
+            <div class="rule-list">
+
+                <div class="rule">
+
+                    <span class="rule-dot"></span>
+
+                    <span>
+                        Every account receives a unique
+                        referral code for tracking.
+                    </span>
+
+                </div>
+
+
+                <div class="rule">
+
+                    <span class="rule-dot"></span>
+
+                    <span>
+                        A referral reward is only recorded
+                        after the referred user completes
+                        a qualifying deposit.
+                    </span>
+
+                </div>
+
+
+                <div class="rule">
+
+                    <span class="rule-dot"></span>
+
+                    <span>
+                        The reward rate is 5% of the
+                        qualifying deposit.
+                    </span>
+
+                </div>
+
+
+                <div class="rule">
+
+                    <span class="rule-dot"></span>
+
+                    <span>
+                        The larger the qualifying deposit,
+                        the larger the corresponding
+                        referral reward.
+                    </span>
+
+                </div>
+
+
+                <div class="rule">
+
+                    <span class="rule-dot"></span>
+
+                    <span>
+                        Referral activity and rewards are
+                        tracked separately from your own
+                        subscription activity.
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         REFERRAL HISTORY
+    ========================= -->
+
+    <section class="section">
+
+        <h2 class="section-title">
+            Referral History
+        </h2>
+
+
+        <div
+            class="history"
+            id="history"
+        >
+
+            <div class="empty-history">
+                No referral activity yet.
+                Share your referral code to get started.
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<!-- =========================
+     BOTTOM NAV
+========================= -->
+
+<nav class="bottom-nav">
+
+    <a
+        href="dashboard.html"
+        class="nav-item"
+    >
+        <span class="nav-icon">⌂</span>
+        Home
+    </a>
+
+
+    <a
+        href="subscription.html"
+        class="nav-item"
+    >
+        <span class="nav-icon">◇</span>
+        Tiers
+    </a>
+
+
+    <a
+        href="wallet.html"
+        class="nav-item"
+    >
+        <span class="nav-icon">◈</span>
+        Wallet
+    </a>
+
+
+    <a
+        href="records.html"
+        class="nav-item"
+    >
+        <span class="nav-icon">≡</span>
+        Records
+    </a>
+
+
+    <a
+        href="profile.html"
+        class="nav-item active"
+    >
+        <span class="nav-icon">○</span>
+        Profile
+    </a>
+
+</nav>
+
+
+<div
+    class="toast"
+    id="toast"
+></div>
+
+
+<script>
+
+/* ==================================================
+   PROFILE + REFERRAL LIVE SYNC
+   UI ABOVE IS UNCHANGED
+================================================== */
+
+const DEFAULT_PROFILE = {
+    nickname: "Your Nickname",
+    email: "",
+    phone: "",
+    referralCode: "",
+    uniqueId: "",
+    highestUnlockedTier: 1,
+    selectedProfileTier: 1
+};
+
+function getLocalProfile() {
+    try {
+        const saved =
+            localStorage.getItem(
+                "averyx_profile"
+            );
+
+        return saved
+            ? {
+                ...DEFAULT_PROFILE,
+                ...JSON.parse(saved)
+            }
+            : {
+                ...DEFAULT_PROFILE
+            };
+
+    } catch (error) {
+        return {
+            ...DEFAULT_PROFILE
+        };
+    }
+}
+
+let profile =
+    getLocalProfile();
+
+
+/* ==================================================
+   AUTH TOKEN
+================================================== */
+
+function getAuthToken() {
+
+    return (
+        localStorage.getItem("token") ||
+        localStorage.getItem("averyx_token") ||
+        localStorage.getItem("authToken") ||
+        ""
+    );
+
+}
+
+
+/* ==================================================
+   API CONFIGURATION
+================================================== */
+
+const API_BASE_URL =
+    "http://localhost:3000";
+
+
+/* ==================================================
+   API
+================================================== */
+
+async function apiGet(
+    path
+) {
+
+    const token =
+        getAuthToken();
+
+    if (!token) {
+        throw new Error(
+            "Authentication token not found."
+        );
+    }
+
+    const response =
+        await fetch(
+            `${API_BASE_URL}${path}`,
+            {
+                method: "GET",
+
+                headers: {
+                    Authorization:
+                        `Bearer ${token}`,
+
+                    "Content-Type":
+                        "application/json"
+                },
+
+                credentials:
+                    "include",
+
+                cache:
+                    "no-store"
+            }
+        );
+
+    let data = {};
+
+    try {
+        data =
+            await response.json();
+    } catch (error) {
+        data = {};
+    }
+
+    if (!response.ok) {
+        throw new Error(
+            data.message ||
+            `Request failed (${response.status})`
+        );
+    }
+
+    return data;
+
+}
+
+
+/* ==================================================
+   PROFILE HEADER
+   IMPORTANT:
+   Backend returns publicUid,
+   not uniqueId.
+================================================== */
+
+function renderRefProfile(
+    source = profile
+) {
+
+    const nameElement =
+        document.getElementById(
+            "refProfileName"
+        );
+
+    const idElement =
+        document.getElementById(
+            "refProfileId"
+        );
+
+    const avatarElement =
+        document.getElementById(
+            "refProfileAvatar"
+        );
+
+
+    if (nameElement) {
+
+        nameElement.textContent =
+            source.nickname ||
+            "Your Nickname";
+
+    }
+
+
+    if (idElement) {
+
+        const publicUid =
+            source.publicUid ||
+            source.public_uid ||
+            source.uniqueId ||
+            source.unique_id ||
+            "";
+
+        idElement.textContent =
+            publicUid
+                ? `ID: ${publicUid}`
+                : "ID: ------";
+
+    }
+
+
+    if (!avatarElement) {
+        return;
+    }
+
+
+    /*
+       Edit Profile stores the selected tier/logo
+       locally. The backend /me endpoint returns the
+       selected tier number, so merge both sources.
+    */
+
+    const selectedLevel =
+        Number(
+            source.selectedProfileTier
+        ) || 1;
+
+
+    const tierLogos = {
+
+        1: "tier-fool.png",
+
+        2: "tier-prodigy.png",
+
+        3: "tier-magician.png",
+
+        4: "tier-conqueror.png",
+
+        5: "tier-emperor.png",
+
+        6: "shadow-monarch.png",
+
+        7: "tier-berserk.png"
+
+    };
+
+
+    const directLogo =
+        source.profileLogo ||
+        source.profilePicture ||
+        source.logo ||
+        "";
+
+
+    const logo =
+        directLogo ||
+        tierLogos[selectedLevel] ||
+        tierLogos[1];
+
+
+    avatarElement.innerHTML = `
+        <img
+            src="${escapeHTML(logo)}"
+            alt="Profile"
+            onerror="this.onerror=null; this.src='tier-fool.png';"
+        >
+    `;
+
+}
+
+
+/* ==================================================
+   REFERRAL CODE
+================================================== */
+
+function renderReferralCode(
+    code
+) {
+
+    const codeElement =
+        document.getElementById(
+            "referralCode"
+        );
+
+    const linkElement =
+        document.getElementById(
+            "referralLink"
+        );
+
+    const cleanCode =
+        String(code || "").trim();
+
+
+    if (codeElement) {
+
+        codeElement.textContent =
+            cleanCode ||
+            "Unavailable";
+
+    }
+
+
+    if (linkElement) {
+
+        linkElement.textContent =
+            cleanCode
+                ? `register.html?ref=${encodeURIComponent(cleanCode)}`
+                : "Unavailable";
+
+    }
+
+}
+
+
+/* ==================================================
+   REFERRAL STATISTICS
+================================================== */
+
+function renderReferralStats(
+    data
+) {
+
+    document.getElementById(
+        "totalReferrals"
+    ).textContent =
+        Number(
+            data.totalReferrals
+        ) || 0;
+
+
+    document.getElementById(
+        "qualifiedReferrals"
+    ).textContent =
+        Number(
+            data.qualifiedReferrals
+        ) || 0;
+
+
+    document.getElementById(
+        "totalRewards"
+    ).textContent =
+        `${(
+            Number(
+                data.totalRewardsUSDT
+            ) || 0
+        ).toFixed(2)} USDT`;
+
+
+    renderLiveHistory(
+        data.recentActivity || []
+    );
+
+}
+
+
+/* ==================================================
+   REFERRAL HISTORY
+================================================== */
+
+function renderLiveHistory(
+    activity
+) {
+
+    const history =
+        document.getElementById(
+            "history"
+        );
+
+    if (!history) {
+        return;
+    }
+
+
+    if (
+        !Array.isArray(activity) ||
+        activity.length === 0
+    ) {
+
+        history.innerHTML = `
+            <div class="empty-history">
+                No referral activity yet.
+                Share your referral code to get started.
+            </div>
+        `;
+
+        return;
+
+    }
+
+
+    history.innerHTML = "";
+
+
+    activity.forEach(
+        transaction => {
+
+            const row =
+                document.createElement(
+                    "div"
+                );
+
+            row.className =
+                "history-row";
+
+
+            const createdAt =
+                transaction.createdAt ||
+                transaction.created_at ||
+                null;
+
+
+            const dateText =
+                createdAt
+                    ? new Date(
+                        createdAt
+                    ).toLocaleString(
+                        undefined,
+                        {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit"
+                        }
+                    )
+                    : "Date unavailable";
+
+
+            const reward =
+                Number(
+                    transaction.amountUSDT ??
+                    transaction.amount_usdt
+                ) || 0;
+
+
+            const status =
+                String(
+                    transaction.status ||
+                    ""
+                ).toLowerCase();
+
+
+            const completed =
+                status ===
+                "completed";
+
+
+            row.innerHTML = `
+                <div class="history-left">
+
+                    <div class="history-name">
+                        Referral
+                    </div>
+
+                    <div class="history-date">
+                        ${escapeHTML(
+                            dateText
+                        )}
+                    </div>
+
+                </div>
+
+                <div class="history-right">
+
+                    <div class="history-reward">
+                        ${
+                            completed
+                                ? `+${reward.toFixed(2)} USDT`
+                                : `${reward.toFixed(2)} USDT`
+                        }
+                    </div>
+
+                    <div class="history-status">
+                        ${
+                            completed
+                                ? "Completed"
+                                : escapeHTML(
+                                    transaction.status ||
+                                    "Pending"
+                                )
+                        }
+                    </div>
+
+                </div>
+            `;
+
+
+            history.appendChild(
+                row
+            );
+
+        }
+    );
+
+}
+
+
+/* ==================================================
+   LOAD LIVE ACCOUNT
+================================================== */
+
+async function loadLiveAccount() {
+
+    const account =
+        await apiGet(
+            "/api/auth/me"
+        );
+
+
+    const user =
+        account?.user || {};
+
+
+    const backendProfile =
+        account?.profile || {};
+
+
+    /*
+       CRITICAL FIX:
+       The backend returns:
+         user.publicUid
+       not:
+         user.uniqueId
+    */
+
+    /*
+       IMPORTANT PROFILE OWNERSHIP RULE:
+       Edit Profile currently stores nickname and the selected PFP
+       in localStorage. The /api/auth/me endpoint is authoritative
+       for account identity/referral data, but it must NOT overwrite
+       the locally selected nickname or profile logo.
+
+       Previously backendProfile was spread over profile and the
+       backend selectedProfileTier was preferred. That caused the
+       Referral page to reset the PFP to The Fool and restore the
+       backend nickname whenever this page opened.
+    */
+    const localNickname =
+        String(profile.nickname || "").trim();
+
+    const localSelectedProfileTier =
+        Number(profile.selectedProfileTier);
+
+    const liveProfile = {
+        ...profile,
+        ...backendProfile,
+
+        /* Preserve the profile values controlled by Edit Profile. */
+        nickname:
+            localNickname &&
+            localNickname !== "Your Nickname"
+                ? localNickname
+                : (
+                    user.nickname ||
+                    backendProfile.nickname ||
+                    localNickname ||
+                    "Your Nickname"
+                ),
+
+        selectedProfileTier:
+            Number.isFinite(localSelectedProfileTier) &&
+            localSelectedProfileTier >= 1
+                ? localSelectedProfileTier
+                : (
+                    Number(
+                        backendProfile.selectedProfileTier
+                    ) || 1
+                ),
+
+        /* These remain backend/account values. */
+        publicUid:
+            user.publicUid ||
+            user.public_uid ||
+            profile.publicUid ||
+            profile.uniqueId,
+
+        referralCode:
+            user.referralCode ||
+            user.referral_code ||
+            profile.referralCode
+    };
+
+
+    profile =
+        liveProfile;
+
+
+    localStorage.setItem(
+        "averyx_profile",
+        JSON.stringify(
+            profile
+        )
+    );
+
+
+    renderRefProfile(
+        profile
+    );
+
+
+    renderReferralCode(
+        profile.referralCode
+    );
+
+
+    return account;
+
+}
+
+
+/* ==================================================
+   LOAD REFERRAL STATS
+================================================== */
+
+async function loadReferralStats() {
+
+    try {
+
+        // This is the actual backend route mounted in server.js.
+        const data = await apiGet("/api/referrals");
+
+        if (!data || data.success !== true) {
+            throw new Error(
+                data?.message || "Referral statistics unavailable."
+            );
+        }
+
+        renderReferralStats(data);
+
+    } catch (error) {
+
+        console.error(
+            "Referral statistics API unavailable:",
+            error
+        );
+
+    }
+}
+
+
+/* ==================================================
+   PAGE INITIALIZATION
+================================================== */
+
+async function initializeReferralPage() {
+
+    /*
+       Render immediately from the same local profile
+       used by Profile/Edit Profile.
+    */
+
+    renderRefProfile(
+        profile
+    );
+
+
+    renderReferralCode(
+        profile.referralCode
+    );
+
+
+    try {
+
+        await loadLiveAccount();
+
+    } catch (
+        error
+    ) {
+
+        console.error(
+            "Live account sync failed:",
+            error
+        );
+
+    }
+
+
+    try {
+
+        await loadReferralStats();
+
+    } catch (
+        error
+    ) {
+
+        console.error(
+            "Referral stats sync failed:",
+            error
+        );
+
+    }
+
+}
+
+
+initializeReferralPage();
+
+
+/* ==================================================
+   PROFILE RESYNC
+================================================== */
+
+window.addEventListener(
+    "pageshow",
+    function() {
+
+        profile =
+            getLocalProfile();
+
+        renderRefProfile(
+            profile
+        );
+
+        renderReferralCode(
+            profile.referralCode
+        );
+
+        initializeReferralPage();
+
+    }
+);
+
+
+/* ==================================================
+   ESCAPE HTML
+================================================== */
+
+function escapeHTML(
+    value
+) {
+
+    return String(
+        value ?? ""
+    )
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+
+/* ==================================================
+   TOAST
+================================================== */
+
+function showToast(
+    message
+) {
+
+    const toast =
+        document.getElementById(
+            "toast"
+        );
+
+    if (!toast) {
+        return;
+    }
+
+    toast.textContent =
+        message;
+
+    toast.classList.add(
+        "show"
+    );
+
+    setTimeout(
+        function() {
+
+            toast.classList.remove(
+                "show"
+            );
+
+        },
+        1700
+    );
+
+}
+
+
+/* ==================================================
+   COPY REFERRAL CODE
+================================================== */
+
+document.getElementById(
+    "copyCode"
+).addEventListener(
+    "click",
+    async function() {
+
+        try {
+
+            await navigator.clipboard.writeText(
+                document.getElementById(
+                    "referralCode"
+                ).textContent.trim()
+            );
+
+            showToast(
+                "Referral code copied"
+            );
+
+        } catch (
+            error
+        ) {
+
+            showToast(
+                "Unable to copy code"
+            );
+
+        }
+
+    }
+);
+
+
+/* ==================================================
+   SHARE REFERRAL
+================================================== */
+
+document.getElementById(
+    "shareButton"
+).addEventListener(
+    "click",
+    async function() {
+
+        const code =
+            document.getElementById(
+                "referralCode"
+            ).textContent.trim();
+
+
+        const url =
+            document.getElementById(
+                "referralLink"
+            ).textContent.trim();
+
+
+        const shareText =
+            `Join AVERYX using my referral code: ${code}`;
+
+
+        if (
+            navigator.share
+        ) {
+
+            try {
+
+                await navigator.share({
+
+                    title:
+                        "AVERYX Referral",
+
+                    text:
+                        shareText,
+
+                    url
+
+                });
+
+            } catch (
+                error
+            ) {
+                /* User cancelled share. */
+            }
+
+            return;
+
+        }
+
+
+        try {
+
+            await navigator.clipboard.writeText(
+                url
+            );
+
+            showToast(
+                "Referral link copied"
+            );
+
+        } catch (
+            error
+        ) {
+
+            showToast(
+                "Unable to share referral link"
+            );
+
+        }
+
+    }
+);
+
+</script>
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,1815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AVERYX | Help & Support</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #070709;
+            --panel: #101014;
+            --panel2: #0c0c10;
+            --border: #292930;
+            --border-soft: #202026;
+            --text: #f5f5f7;
+            --muted: #898992;
+            --soft: #606069;
+            --red: #e52249;
+            --green: #42c998;
+            --telegram: #229ed9;
+        }
+
+        body {
+            min-height: 100vh;
+
+            background:
+                radial-gradient(
+                    circle at 82% 0%,
+                    rgba(126, 20, 52, .18),
+                    transparent 31%
+                ),
+                var(--bg);
+
+            color: var(--text);
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        button,
+        input {
+            font: inherit;
+        }
+
+        .app {
+            width: 100%;
+            max-width: 850px;
+
+            margin: auto;
+
+            padding:
+                18px 18px 115px;
+        }
+
+        /* =========================
+           TOP BAR
+        ========================= */
+
+        .topbar {
+            height: 62px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+        }
+
+        .brand {
+            display: flex;
+
+            align-items: center;
+
+            gap: 11px;
+        }
+
+        .brand img {
+            width: 42px;
+            height: 42px;
+
+            object-fit: contain;
+        }
+
+        .brand-name {
+            font-family: Georgia, serif;
+
+            font-size: 22px;
+
+            letter-spacing: 3px;
+        }
+
+        .back {
+            color: var(--muted);
+
+            font-size: 13px;
+        }
+
+        /* =========================
+           HEADER
+        ========================= */
+
+        .header {
+            padding:
+                31px 2px 24px;
+        }
+
+        .eyebrow {
+            color: var(--muted);
+
+            font-size: 10px;
+
+            letter-spacing: 2.5px;
+
+            text-transform: uppercase;
+        }
+
+        .header h1 {
+            margin-top: 8px;
+
+            font-family: Georgia, serif;
+
+            font-size:
+                clamp(35px, 8vw, 50px);
+        }
+
+        .header p {
+            max-width: 620px;
+
+            margin-top: 9px;
+
+            color: var(--muted);
+
+            font-size: 12px;
+
+            line-height: 1.7;
+        }
+
+        /* =========================
+           SEARCH
+        ========================= */
+
+        .search-card {
+            padding: 17px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 17px;
+
+            background: var(--panel);
+        }
+
+        .search-title {
+            font-family: Georgia, serif;
+
+            font-size: 19px;
+
+            margin-bottom: 11px;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+
+            height: 44px;
+
+            padding:
+                0 43px 0 13px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 10px;
+
+            outline: none;
+
+            background: #0b0b0f;
+
+            color: var(--text);
+
+            font-size: 10px;
+        }
+
+        .search-input::placeholder {
+            color: #56565e;
+        }
+
+        .search-input:focus {
+            border-color:
+                rgba(229, 34, 73, .4);
+        }
+
+        .search-icon {
+            position: absolute;
+
+            right: 14px;
+            top: 50%;
+
+            transform:
+                translateY(-50%);
+
+            color: var(--soft);
+
+            font-size: 15px;
+        }
+
+        /* =========================
+           CATEGORIES
+        ========================= */
+
+        .categories {
+            display: flex;
+
+            gap: 7px;
+
+            margin-top: 11px;
+
+            overflow-x: auto;
+
+            padding-bottom: 2px;
+
+            scrollbar-width: none;
+        }
+
+        .categories::-webkit-scrollbar {
+            display: none;
+        }
+
+        .category {
+            flex-shrink: 0;
+
+            padding:
+                8px 11px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 8px;
+
+            background: #0b0b0f;
+
+            color: var(--muted);
+
+            cursor: pointer;
+
+            font-size: 7px;
+
+            text-transform: uppercase;
+        }
+
+        .category.active {
+            border-color:
+                rgba(229, 34, 73, .4);
+
+            background:
+                rgba(229, 34, 73, .08);
+
+            color: #ed5875;
+        }
+
+        /* =========================
+           FAQ
+        ========================= */
+
+        .faq-section {
+            margin-top: 15px;
+
+            padding: 19px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 17px;
+
+            background: var(--panel);
+        }
+
+        .section-title {
+            font-family: Georgia, serif;
+
+            font-size: 21px;
+
+            margin-bottom: 11px;
+        }
+
+        .faq-item {
+            border-bottom:
+                1px solid var(--border-soft);
+        }
+
+        .faq-item:last-child {
+            border-bottom: 0;
+        }
+
+        .faq-question {
+            width: 100%;
+
+            min-height: 59px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 14px;
+
+            padding:
+                12px 0;
+
+            border: 0;
+
+            background: transparent;
+
+            color: var(--text);
+
+            cursor: pointer;
+
+            text-align: left;
+        }
+
+        .question-text {
+            font-size: 10px;
+
+            line-height: 1.5;
+        }
+
+        .question-plus {
+            width: 26px;
+            height: 26px;
+
+            flex-shrink: 0;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 7px;
+
+            color: var(--muted);
+
+            font-size: 14px;
+
+            transition:
+                transform .2s ease,
+                color .2s ease,
+                border-color .2s ease;
+        }
+
+        .faq-item.open
+        .question-plus {
+            transform: rotate(45deg);
+
+            color: #ed5875;
+
+            border-color:
+                rgba(229, 34, 73, .35);
+        }
+
+        .answer-wrap {
+            display: grid;
+
+            grid-template-rows: 0fr;
+
+            transition:
+                grid-template-rows .25s ease;
+        }
+
+        .answer {
+            overflow: hidden;
+
+            min-height: 0;
+
+            padding:
+                0;
+
+            color: var(--muted);
+
+            font-size: 9px;
+
+            line-height: 1.8;
+        }
+
+        .faq-item.open
+        .answer-wrap {
+            grid-template-rows: 1fr;
+        }
+
+        .faq-item.open
+        .answer {
+            padding:
+                0 0 16px;
+        }
+
+        /* =========================
+           NO RESULTS
+        ========================= */
+
+        .no-results {
+            display: none;
+
+            padding:
+                28px 10px;
+
+            color: var(--soft);
+
+            font-size: 9px;
+
+            text-align: center;
+        }
+
+        /* =========================
+           TELEGRAM SUPPORT
+        ========================= */
+
+        .telegram-card {
+            margin-top: 22px;
+
+            padding: 21px;
+
+            border:
+                1px solid
+                rgba(34, 158, 217, .24);
+
+            border-radius: 18px;
+
+            background:
+                radial-gradient(
+                    circle at 100% 0%,
+                    rgba(34, 158, 217, .10),
+                    transparent 45%
+                ),
+                var(--panel);
+        }
+
+        .telegram-top {
+            display: flex;
+
+            align-items: center;
+
+            gap: 13px;
+        }
+
+        .telegram-icon {
+            width: 44px;
+            height: 44px;
+
+            flex-shrink: 0;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 12px;
+
+            background:
+                rgba(34, 158, 217, .12);
+
+            color:
+                var(--telegram);
+
+            font-size: 20px;
+        }
+
+        .telegram-title {
+            font-family: Georgia, serif;
+
+            font-size: 21px;
+        }
+
+        .telegram-subtitle {
+            margin-top: 4px;
+
+            color: var(--muted);
+
+            font-size: 8px;
+        }
+
+        .telegram-handle {
+            margin-top: 16px;
+
+            padding: 12px 13px;
+
+            border:
+                1px solid
+                rgba(34, 158, 217, .17);
+
+            border-radius: 10px;
+
+            background:
+                rgba(34, 158, 217, .05);
+
+            color: #d8eaf3;
+
+            font-family: monospace;
+
+            font-size: 11px;
+        }
+
+        .telegram-button {
+            width: 100%;
+
+            min-height: 44px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            margin-top: 11px;
+
+            border:
+                1px solid
+                rgba(34, 158, 217, .35);
+
+            border-radius: 10px;
+
+            background:
+                rgba(34, 158, 217, .12);
+
+            color: #62bde8;
+
+            font-size: 8px;
+
+            letter-spacing: .5px;
+
+            text-transform: uppercase;
+        }
+
+        .telegram-button:hover {
+            background:
+                rgba(34, 158, 217, .19);
+        }
+
+        .telegram-note {
+            margin-top: 10px;
+
+            color: var(--soft);
+
+            font-size: 7px;
+
+            line-height: 1.6;
+
+            text-align: center;
+        }
+
+        /* =========================
+           BOTTOM NAV
+        ========================= */
+
+        .bottom-nav {
+            position: fixed;
+
+            left: 50%;
+            bottom: 14px;
+
+            transform:
+                translateX(-50%);
+
+            width:
+                calc(100% - 28px);
+
+            max-width: 700px;
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(5, 1fr);
+
+            gap: 4px;
+
+            padding: 7px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 18px;
+
+            background:
+                rgba(11, 11, 15, .94);
+
+            backdrop-filter:
+                blur(16px);
+
+            z-index: 20;
+        }
+
+        .nav-item {
+            min-height: 49px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 4px;
+
+            border-radius: 12px;
+
+            color: #707078;
+
+            font-size: 9px;
+        }
+
+        .nav-icon {
+            font-size: 16px;
+        }
+
+        .nav-item.active {
+            color: white;
+
+            background:
+                rgba(229, 34, 73, .12);
+        }
+
+        /* =========================
+           MOBILE
+        ========================= */
+
+        @media (max-width: 500px) {
+
+            .app {
+                padding:
+                    15px 15px 115px;
+            }
+
+            .search-card,
+            .faq-section,
+            .telegram-card {
+                border-radius: 15px;
+            }
+
+            .question-text {
+                font-size: 9px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<main class="app">
+
+    <!-- =========================
+         TOP BAR
+    ========================= -->
+
+    <header class="topbar">
+
+        <a
+            href="profile.html"
+            class="brand"
+        >
+
+            <img
+                src="logo.png"
+                alt="AVERYX Logo"
+            >
+
+            <span class="brand-name">
+                AVERYX
+            </span>
+
+        </a>
+
+        <a
+            href="profile.html"
+            class="back"
+        >
+            ← Profile
+        </a>
+
+    </header>
+
+
+    <!-- =========================
+         HEADER
+    ========================= -->
+
+    <section class="header">
+
+        <div class="eyebrow">
+            Assistance
+        </div>
+
+        <h1>
+            Help & Support
+        </h1>
+
+        <p>
+            Find answers to common questions
+            about your account, subscription,
+            deposits, withdrawals and referrals.
+        </p>
+
+    </section>
+
+
+    <!-- =========================
+         SEARCH + CATEGORIES
+    ========================= -->
+
+    <section class="search-card">
+
+        <div class="search-title">
+            How can we help?
+        </div>
+
+
+        <div class="search-box">
+
+            <input
+                type="text"
+                id="searchInput"
+                class="search-input"
+                placeholder="Search a question..."
+                autocomplete="off"
+            >
+
+            <span class="search-icon">
+                ⌕
+            </span>
+
+        </div>
+
+
+        <div class="categories">
+
+            <button
+                type="button"
+                class="category active"
+                data-category="all"
+            >
+                All
+            </button>
+
+            <button
+                type="button"
+                class="category"
+                data-category="account"
+            >
+                Account
+            </button>
+
+            <button
+                type="button"
+                class="category"
+                data-category="subscription"
+            >
+                Subscription
+            </button>
+
+            <button
+                type="button"
+                class="category"
+                data-category="deposit"
+            >
+                Deposit
+            </button>
+
+            <button
+                type="button"
+                class="category"
+                data-category="withdrawal"
+            >
+                Withdrawal
+            </button>
+
+            <button
+                type="button"
+                class="category"
+                data-category="referral"
+            >
+                Referral
+            </button>
+
+            <button
+                type="button"
+                class="category"
+                data-category="security"
+            >
+                Security
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         FAQ
+    ========================= -->
+
+    <section class="faq-section">
+
+        <h2 class="section-title">
+            Frequently Asked Questions
+        </h2>
+
+
+        <div id="faqList">
+
+
+            <!-- ACCOUNT -->
+
+            <div
+                class="faq-item"
+                data-category="account"
+            >
+
+                <button
+                    type="button"
+                    class="faq-question"
+                >
+
+                    <span class="question-text">
+                        How do I edit my profile?
+                    </span>
+
+                    <span class="question-plus">
+                        +
+                    </span>
+
+                </button>
+
+                <div class="answer-wrap">
+
+                    <div class="answer">
+                        Open Profile and select Edit Profile.
+                        You can update your nickname, email
+                        and phone details from there.
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="faq-item"
+                data-category="account"
+            >
+
+                <button
+                    type="button"
+                    class="faq-question"
+                >
+
+                    <span class="question-text">
+                        Can I change my profile picture?
+                    </span>
+
+                    <span class="question-plus">
+                        +
+                    </span>
+
+                </button>
+
+                <div class="answer-wrap">
+
+                    <div class="answer">
+                        Your profile picture uses a
+                        subscription tier logo. You can
+                        select any tier that you have
+                        already unlocked. Locked tier
+                        logos cannot be selected.
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="faq-item"
+                data-category="account"
+            >
+
+                <button
+                    type="button"
+                    class="faq-question"
+                >
+
+                    <span class="question-text">
+                        What should I do if I forgot my password?
+                    </span>
+
+                    <span class="question-plus">
+                        +
+                    </span>
+
+                </button>
+
+                <div class="answer-wrap">
+
+                    <div class="answer">
+                        Use the Forgot Password option
+                        from the password recovery page.
+                        Follow the recovery instructions
+                        to create a new password.
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- SUBSCRIPTION -->
+
+            <div
+                class="faq-item"
+                data-category="subscription"
+            >
+
+                <button
+                    type="button"
+                    class="faq-question"
+                >
+
+                    <span class="question-text">
+                        How do I activate a subscription tier?
+                    </span>
+
+                    <span class="question-plus">
+                        +
+                    </span>
+
+                </button>
+
+                <div class="answer-wrap">
+
+                    <div class="answer">
+                        Open Subscription, select the tier
+                        you want, review its required
+                        deposit and follow the deposit
+                        instructions shown for that tier.
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="faq-item"
+                data-category="subscription"
+            >
+
+                <button
+                    type="button"
+                    class="faq-question"
+                >
+
+                    <span class="question-text">
+                        How do I unlock a higher subscription?
+                    </span>
+
+                    <span class="question-plus">
+                        +
+                    </span>
+
+                </button>
+
+                <div class="answer-wrap">
+
+                    <div class="answer">
+                        A higher tier becomes available
+                        when its required deposit level
+                        has been reached. Your Profile
+                        will automatically recognize the
+                        highest unlocked level.
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="faq-item"
+                data-category="subscription"
+            >
+
+                <button
+                    type="button"
+                    class="faq-question"
+                >
+
+                    <span class="question-text">
+                        What is The Fool subscription?
+                    </span>
+
+                    <span class="question-plus">
+                        +
+                    </span>
+
+                </button>
+
+                <div class="answer-wrap">
+
+                    <div class="answer">
+                        The Fool is the basic starting tier.
+                        It requires 0 USDT deposit and
+                        displays 0 USDT/day.
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- DEPOSIT -->
+
+            <div
+                class="faq-item"
+                data-category="deposit"
+            >
+
+                <button
+                    type="button"
+                    class="faq-question"
+                >
+
+                    <span class="question-text">
+                        How do I deposit USDT?
+                    </span>
+
+                    <span class="question-plus">
+                        +
+                    </span>
+
+                </button>
+
+                <div class="answer-wrap">
+
+                    <div class="answer">
+                        Open Wallet → Deposit, select the
+                        correct network and use the displayed
+                        deposit address. Always verify the
+                        network before sending USDT.
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="faq-item"
+                data-category="deposit"
+            >
+
+                <button
+                    type="button"
+                    class="faq-question"
+                >
+
+                    <span class="question-text">
+                        Can the same deposit address be used for different profiles?
+                    </span>
+
+                    <span class="question-plus">
+                        +
+                    </span>
+
+                </button>
+
+                <div class="answer-wrap">
+
+                    <div class="answer">
+                        The same deposit address may be used
+                        for deposits associated with different
+                        profiles. Withdrawal-address rules
+                        are handled separately.
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="faq-item"
+                data-category="deposit"
+            >
+
+                <button
+                    type="button"
+                    class="faq-question"
+                >
+
+                    <span class="question-text">
+                        What happens if I use the wrong network?
+                    </span>
+
+                    <span class="question-plus">
+                        +
+                    </span>
+
+                </button>
+
+                <div class="answer-wrap">
+
+                    <div class="answer">
+                        Always confirm the network before
+                        sending USDT. Sending through an
+                        unsupported or incorrect network
+                        can cause funds to become inaccessible.
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- WITHDRAWAL -->
+
+            <div
+                class="faq-item"
+                data-category="withdrawal"
+            >
+
+                <button
+                    type="button"
+                    class="faq-question"
+                >
+
+                    <span class="question-text">
+                        How do I withdraw USDT?
+                    </span>
+
+                    <span class="question-plus">
+                        +
+                    </span>
+
+                </button>
+
+                <div class="answer-wrap">
+
+                    <div class="answer">
+                        Open Wallet → Withdraw, enter your
+                        destination address and amount, then
+                        review the withdrawal details before
+                        confirming.
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="faq-item"
+                data-category="withdrawal"
+            >
+
+                <button
+                    type="button"
+                    class="faq-question"
+                >
+
+                    <span class="question-text">
+                        Can I use the same withdrawal address on multiple profiles?
+                    </span>
+
+                    <span class="question-plus">
+                        +
+                    </span>
+
+                </button>
+
+                <div class="answer-wrap">
+
+                    <div class="answer">
+                        No. A withdrawal address can only be
+                        associated with one profile for
+                        withdrawals. The same address cannot
+                        be used for withdrawals across multiple
+                        profiles.
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="faq-item"
+                data-category="withdrawal"
+            >
+
+                <button
+                    type="button"
+                    class="faq-question"
+                >
+
+                    <span class="question-text">
+                        Why is my withdrawal still pending?
+                    </span>
+
+                    <span class="question-plus">
+                        +
+                    </span>
+
+                </button>
+
+                <div class="answer-wrap">
+
+                    <div class="answer">
+                        A pending status means the withdrawal
+                        has not reached a completed state yet.
+                        Check Records for the latest status
+                        and transaction details.
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- REFERRAL -->
+
+            <div
+                class="faq-item"
+                data-category="referral"
+            >
+
+                <button
+                    type="button"
+                    class="faq-question"
+                >
+
+                    <span class="question-text">
+                        How does the referral reward work?
+                    </span>
+
+                    <span class="question-plus">
+                        +
+                    </span>
+
+                </button>
+
+                <div class="answer-wrap">
+
+                    <div class="answer">
+                        Every account has a unique referral
+                        code. A referral reward is recorded
+                        when a referred user joins through
+                        your referral and completes a
+                        qualifying deposit.
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="faq-item"
+                data-category="referral"
+            >
+
+                <button
+                    type="button"
+                    class="faq-question"
+                >
+
+                    <span class="question-text">
+                        What is the current referral reward?
+                    </span>
+
+                    <span class="question-plus">
+                        +
+                    </span>
+
+                </button>
+
+                <div class="answer-wrap">
+
+                    <div class="answer">
+                        The current referral reward is 5%
+                        of the qualifying deposit.
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="faq-item"
+                data-category="referral"
+            >
+
+                <button
+                    type="button"
+                    class="faq-question"
+                >
+
+                    <span class="question-text">
+                        Where can I track my referral activity?
+                    </span>
+
+                    <span class="question-plus">
+                        +
+                    </span>
+
+                </button>
+
+                <div class="answer-wrap">
+
+                    <div class="answer">
+                        Open Refer & Earn to view your
+                        referral information. Referral
+                        activity and recorded rewards are
+                        also shown in Records.
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- SECURITY -->
+
+            <div
+                class="faq-item"
+                data-category="security"
+            >
+
+                <button
+                    type="button"
+                    class="faq-question"
+                >
+
+                    <span class="question-text">
+                        How can I keep my account secure?
+                    </span>
+
+                    <span class="question-plus">
+                        +
+                    </span>
+
+                </button>
+
+                <div class="answer-wrap">
+
+                    <div class="answer">
+                        Use a strong password, never share
+                        your password or recovery information,
+                        and review your account activity
+                        regularly.
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="faq-item"
+                data-category="security"
+            >
+
+                <button
+                    type="button"
+                    class="faq-question"
+                >
+
+                    <span class="question-text">
+                        Where can I change my password?
+                    </span>
+
+                    <span class="question-plus">
+                        +
+                    </span>
+
+                </button>
+
+                <div class="answer-wrap">
+
+                    <div class="answer">
+                        Open Profile → Change Password.
+                        If you do not remember your current
+                        password, use the Forgot Password
+                        option instead.
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- OTHER -->
+
+            <div
+                class="faq-item"
+                data-category="account"
+            >
+
+                <button
+                    type="button"
+                    class="faq-question"
+                >
+
+                    <span class="question-text">
+                        Where can I see my complete activity history?
+                    </span>
+
+                    <span class="question-plus">
+                        +
+                    </span>
+
+                </button>
+
+                <div class="answer-wrap">
+
+                    <div class="answer">
+                        Open Records from the bottom
+                        navigation. Deposits, withdrawals,
+                        subscription and referral activity
+                        can be tracked there.
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="faq-item"
+                data-category="account"
+            >
+
+                <button
+                    type="button"
+                    class="faq-question"
+                >
+
+                    <span class="question-text">
+                        What if my problem is not answered here?
+                    </span>
+
+                    <span class="question-plus">
+                        +
+                    </span>
+
+                </button>
+
+                <div class="answer-wrap">
+
+                    <div class="answer">
+                        Scroll to the Telegram Support
+                        section at the bottom of this page
+                        and contact support directly.
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div
+            class="no-results"
+            id="noResults"
+        >
+            No matching questions found.
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         TELEGRAM SUPPORT
+         THIS IS THE ONLY DIRECT
+         SUPPORT OPTION
+    ========================= -->
+
+    <section
+        class="telegram-card"
+        id="telegramSupport"
+    >
+
+        <div class="telegram-top">
+
+            <div class="telegram-icon">
+                ➤
+            </div>
+
+            <div>
+
+                <div class="telegram-title">
+                    Telegram Support
+                </div>
+
+                <div class="telegram-subtitle">
+                    Need personal assistance?
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="telegram-handle">
+            @ERISTICX
+        </div>
+
+
+        <a
+            href="https://t.me/ERISTICX"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="telegram-button"
+        >
+            Open Telegram Support
+        </a>
+
+
+        <div class="telegram-note">
+            If the FAQ above does not resolve your
+            issue, contact support directly through
+            the Telegram account shown above.
+        </div>
+
+    </section>
+
+</main>
+
+
+<!-- =========================
+     BOTTOM NAV
+========================= -->
+
+<nav class="bottom-nav">
+
+    <a
+        href="dashboard.html"
+        class="nav-item"
+    >
+        <span class="nav-icon">⌂</span>
+        Home
+    </a>
+
+
+    <a
+        href="subscription.html"
+        class="nav-item"
+    >
+        <span class="nav-icon">◇</span>
+        Tiers
+    </a>
+
+
+    <a
+        href="wallet.html"
+        class="nav-item"
+    >
+        <span class="nav-icon">◈</span>
+        Wallet
+    </a>
+
+
+    <a
+        href="records.html"
+        class="nav-item"
+    >
+        <span class="nav-icon">≡</span>
+        Records
+    </a>
+
+
+    <a
+        href="profile.html"
+        class="nav-item active"
+    >
+        <span class="nav-icon">○</span>
+        Profile
+    </a>
+
+</nav>
+
+
+<script>
+
+/* ==================================================
+   FAQ ACCORDION
+================================================== */
+
+const faqItems =
+    document.querySelectorAll(
+        ".faq-item"
+    );
+
+
+faqItems.forEach(
+    item => {
+
+        const button =
+            item.querySelector(
+                ".faq-question"
+            );
+
+
+        button.addEventListener(
+            "click",
+            function() {
+
+                const wasOpen =
+                    item.classList.contains(
+                        "open"
+                    );
+
+
+                faqItems.forEach(
+                    other => {
+
+                        other.classList.remove(
+                            "open"
+                        );
+
+                    }
+                );
+
+
+                if (!wasOpen) {
+
+                    item.classList.add(
+                        "open"
+                    );
+
+                }
+
+            }
+        );
+
+    }
+);
+
+
+/* ==================================================
+   CATEGORY FILTER
+================================================== */
+
+const categories =
+    document.querySelectorAll(
+        ".category"
+    );
+
+
+let activeCategory =
+    "all";
+
+
+categories.forEach(
+    category => {
+
+        category.addEventListener(
+            "click",
+            function() {
+
+                categories.forEach(
+                    item => {
+
+                        item.classList.remove(
+                            "active"
+                        );
+
+                    }
+                );
+
+
+                this.classList.add(
+                    "active"
+                );
+
+
+                activeCategory =
+                    this.dataset.category;
+
+
+                filterFAQs();
+
+            }
+        );
+
+    }
+);
+
+
+/* ==================================================
+   SEARCH
+================================================== */
+
+const searchInput =
+    document.getElementById(
+        "searchInput"
+    );
+
+
+searchInput.addEventListener(
+    "input",
+    filterFAQs
+);
+
+
+/* ==================================================
+   FILTER FAQS
+================================================== */
+
+function filterFAQs() {
+
+    const search =
+        searchInput.value
+            .trim()
+            .toLowerCase();
+
+
+    let visible =
+        0;
+
+
+    faqItems.forEach(
+        item => {
+
+            const category =
+                item.dataset.category;
+
+
+            const text =
+                item.textContent
+                    .toLowerCase();
+
+
+            const categoryMatch =
+                activeCategory === "all" ||
+                category === activeCategory;
+
+
+            const searchMatch =
+                !search ||
+                text.includes(
+                    search
+                );
+
+
+            if (
+                categoryMatch &&
+                searchMatch
+            ) {
+
+                item.style.display =
+                    "";
+
+
+                visible++;
+
+            } else {
+
+                item.style.display =
+                    "none";
+
+
+                item.classList.remove(
+                    "open"
+                );
+
+            }
+
+        }
+    );
+
+
+    document.getElementById(
+        "noResults"
+    ).style.display =
+        visible === 0
+            ? "block"
+            : "none";
+
+}
+
+</script>
+
+</body>
+</html>

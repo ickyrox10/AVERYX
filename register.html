@@ -1,0 +1,1651 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>AVERYX | Create Account</title>
+
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+
+        :root {
+
+            --bg: #08080b;
+            --card: #0f0f13;
+            --border: #292930;
+            --input: #0a0a0e;
+            --text: #f5f5f7;
+            --muted: #8d8d96;
+            --soft: #66666f;
+            --red: #e52249;
+            --red-dark: #c90d35;
+            --error: #ff6683;
+            --success: #55d6a7;
+
+        }
+
+
+        body {
+
+            min-height: 100vh;
+
+            background:
+                radial-gradient(
+                    circle at 50% 0%,
+                    rgba(
+                        126,
+                        20,
+                        52,
+                        0.20
+                    ),
+                    transparent 35%
+                ),
+                var(--bg);
+
+            color: var(--text);
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+            display: flex;
+            justify-content: center;
+
+        }
+
+
+        .app {
+
+            width: 100%;
+            max-width: 430px;
+            min-height: 100vh;
+
+            padding:
+                28px
+                22px
+                40px;
+
+            background:
+                radial-gradient(
+                    circle at 85% 15%,
+                    rgba(
+                        126,
+                        20,
+                        52,
+                        0.16
+                    ),
+                    transparent 35%
+                ),
+                var(--bg);
+
+        }
+
+
+        /* =========================
+           BRAND
+        ========================= */
+
+        .brand {
+
+            text-align: center;
+
+            margin-top: 20px;
+            margin-bottom: 30px;
+
+        }
+
+
+        .logo {
+
+            width: 92px;
+            height: 92px;
+
+            display: block;
+
+            margin:
+                0
+                auto
+                18px;
+
+            object-fit: contain;
+
+            filter:
+                drop-shadow(
+                    0
+                    0
+                    18px
+                    rgba(
+                        255,
+                        255,
+                        255,
+                        0.08
+                    )
+                );
+
+        }
+
+
+        .brand h1 {
+
+            font-family:
+                Georgia,
+                "Times New Roman",
+                serif;
+
+            font-size: 38px;
+
+            letter-spacing: 5px;
+
+            font-weight: 700;
+
+        }
+
+
+        .brand p {
+
+            margin-top: 8px;
+
+            color: var(--muted);
+
+            font-size: 11px;
+
+            letter-spacing: 3px;
+
+        }
+
+
+        /* =========================
+           AUTH SWITCH
+        ========================= */
+
+        .auth-switch {
+
+            display: flex;
+
+            width: 100%;
+            height: 58px;
+
+            padding: 4px;
+
+            margin-bottom: 20px;
+
+            border:
+                1px solid
+                var(--border);
+
+            border-radius: 14px;
+
+            background: #0b0b0f;
+
+        }
+
+
+        .auth-switch a {
+
+            flex: 1;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            color: #777780;
+
+            text-decoration: none;
+
+            font-size: 15px;
+
+            border-radius: 10px;
+
+            transition:
+                background 0.2s ease,
+                color 0.2s ease;
+
+        }
+
+
+        .auth-switch a.active {
+
+            color: white;
+
+            background:
+                rgba(
+                    126,
+                    20,
+                    52,
+                    0.30
+                );
+
+        }
+
+
+        /* =========================
+           CARD
+        ========================= */
+
+        .card {
+
+            border:
+                1px solid
+                var(--border);
+
+            border-radius: 18px;
+
+            background:
+                rgba(
+                    15,
+                    15,
+                    19,
+                    0.90
+                );
+
+            padding:
+                27px
+                24px
+                28px;
+
+            box-shadow:
+                0
+                20px
+                60px
+                rgba(
+                    0,
+                    0,
+                    0,
+                    0.38
+                );
+
+        }
+
+
+        /* =========================
+           HEADING
+        ========================= */
+
+        .heading {
+
+            margin-bottom: 25px;
+
+        }
+
+
+        .heading h2 {
+
+            font-family:
+                Georgia,
+                "Times New Roman",
+                serif;
+
+            font-size: 29px;
+
+            line-height: 1.2;
+
+        }
+
+
+        .heading p {
+
+            margin-top: 9px;
+
+            color: var(--muted);
+
+            font-size: 14px;
+
+            line-height: 1.5;
+
+        }
+
+
+        /* =========================
+           LABEL
+        ========================= */
+
+        .label {
+
+            display: block;
+
+            margin-top: 18px;
+
+            color: #8b8b94;
+
+            font-size: 11px;
+
+            letter-spacing: 2px;
+
+        }
+
+
+        .optional {
+
+            color: #62626b;
+
+            font-size: 10px;
+
+            letter-spacing: 0;
+
+            margin-left: 5px;
+
+        }
+
+
+        /* =========================
+           INPUT
+        ========================= */
+
+        .input {
+
+            width: 100%;
+            height: 54px;
+
+            margin-top: 9px;
+
+            padding:
+                0
+                17px;
+
+            border:
+                1px solid
+                #303038;
+
+            border-radius: 12px;
+
+            background: var(--input);
+
+            color: white;
+
+            outline: none;
+
+            font-size: 15px;
+
+            transition:
+                border-color 0.2s ease,
+                box-shadow 0.2s ease;
+
+        }
+
+
+        .input::placeholder {
+
+            color: var(--soft);
+
+        }
+
+
+        .input:focus {
+
+            border-color:
+                rgba(
+                    229,
+                    34,
+                    73,
+                    0.8
+                );
+
+            box-shadow:
+                0
+                0
+                0
+                3px
+                rgba(
+                    229,
+                    34,
+                    73,
+                    0.08
+                );
+
+        }
+
+
+        /* =========================
+           REFERRAL INFO
+        ========================= */
+
+        .referral-note {
+
+            margin-top: 8px;
+
+            color: #66666f;
+
+            font-size: 11px;
+
+            line-height: 1.45;
+
+        }
+
+
+        /* =========================
+           MESSAGE
+        ========================= */
+
+        .message {
+
+            display: none;
+
+            margin-top: 15px;
+
+            padding:
+                11px
+                13px;
+
+            border-radius: 10px;
+
+            font-size: 12px;
+
+            line-height: 1.45;
+
+        }
+
+
+        .message.error {
+
+            display: block;
+
+            border:
+                1px solid
+                rgba(
+                    229,
+                    34,
+                    73,
+                    0.35
+                );
+
+            background:
+                rgba(
+                    229,
+                    34,
+                    73,
+                    0.08
+                );
+
+            color: var(--error);
+
+        }
+
+
+        .message.success {
+
+            display: block;
+
+            border:
+                1px solid
+                rgba(
+                    85,
+                    214,
+                    167,
+                    0.30
+                );
+
+            background:
+                rgba(
+                    85,
+                    214,
+                    167,
+                    0.07
+                );
+
+            color: var(--success);
+
+        }
+
+
+        /* =========================
+           CREATE ACCOUNT BUTTON
+        ========================= */
+
+        .button {
+
+            width: 100%;
+            height: 56px;
+
+            margin-top: 27px;
+
+            border: none;
+
+            border-radius: 12px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--red),
+                    var(--red-dark)
+                );
+
+            color: white;
+
+            font-size: 16px;
+
+            font-weight: 600;
+
+            cursor: pointer;
+
+            transition:
+                transform 0.15s ease,
+                filter 0.15s ease,
+                opacity 0.15s ease;
+
+        }
+
+
+        .button:hover {
+
+            filter:
+                brightness(1.08);
+
+        }
+
+
+        .button:active {
+
+            transform:
+                scale(0.985);
+
+        }
+
+
+        .button:disabled {
+
+            cursor:
+                not-allowed;
+
+            opacity:
+                0.65;
+
+            transform:
+                none;
+
+        }
+
+
+        /* =========================
+           SIGN IN LINK
+        ========================= */
+
+        .login-link {
+
+            margin-top: 23px;
+
+            text-align: center;
+
+            color: #777780;
+
+            font-size: 13px;
+
+        }
+
+
+        .login-link a {
+
+            color: #f0f0f2;
+
+            text-decoration: none;
+
+        }
+
+
+        .login-link a:hover {
+
+            color: white;
+
+        }
+
+
+        /* =========================
+           SECURITY NOTICE
+        ========================= */
+
+        .security {
+
+            margin-top: 27px;
+
+            padding:
+                15px
+                16px;
+
+            border:
+                1px solid
+                rgba(
+                    50,
+                    110,
+                    100,
+                    0.45
+                );
+
+            border-radius: 12px;
+
+            background:
+                rgba(
+                    20,
+                    60,
+                    55,
+                    0.08
+                );
+
+            color: #7f9a94;
+
+            font-size: 11px;
+
+            line-height: 1.5;
+
+        }
+
+
+        .security strong {
+
+            color: #a7c1ba;
+
+            font-weight: 500;
+
+        }
+
+
+        /* =========================
+           DESKTOP
+        ========================= */
+
+        @media (min-width: 700px) {
+
+            body {
+
+                padding:
+                    40px
+                    0;
+
+            }
+
+
+            .app {
+
+                min-height:
+                    auto;
+
+                border:
+                    1px solid
+                    #25252c;
+
+                border-radius:
+                    25px;
+
+                padding:
+                    40px
+                    30px
+                    45px;
+
+            }
+
+
+            .brand {
+
+                margin-top:
+                    10px;
+
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+    <main class="app">
+
+
+        <!-- AVERYX BRAND -->
+
+        <section class="brand">
+
+            <img
+                src="logo.png"
+                alt="AVERYX Logo"
+                class="logo"
+            >
+
+            <h1>
+                AVERYX
+            </h1>
+
+            <p>
+                ASCEND BEYOND LIMITS
+            </p>
+
+        </section>
+
+
+        <!-- SIGN IN / REGISTER -->
+
+        <nav class="auth-switch">
+
+            <a
+                href="login.html"
+            >
+                Sign In
+            </a>
+
+            <a
+                href="register.html"
+                class="active"
+            >
+                Register
+            </a>
+
+        </nav>
+
+
+        <!-- REGISTER CARD -->
+
+        <section class="card">
+
+            <div class="heading">
+
+                <h2>
+                    Create your account
+                </h2>
+
+                <p>
+                    Create your AVERYX account
+                    to get started.
+                </p>
+
+            </div>
+
+
+            <!-- NICKNAME -->
+
+            <label
+                class="label"
+                for="nickname"
+            >
+                NICKNAME
+            </label>
+
+            <input
+                id="nickname"
+                class="input"
+                type="text"
+                placeholder="Choose a nickname"
+                autocomplete="nickname"
+                maxlength="50"
+            >
+
+
+            <!-- EMAIL -->
+
+            <label
+                class="label"
+                for="email"
+            >
+                EMAIL
+            </label>
+
+            <input
+                id="email"
+                class="input"
+                type="email"
+                placeholder="Enter your email address"
+                autocomplete="email"
+            >
+
+
+            <!-- PASSWORD -->
+
+            <label
+                class="label"
+                for="password"
+            >
+                PASSWORD
+            </label>
+
+            <input
+                id="password"
+                class="input"
+                type="password"
+                placeholder="Create a password"
+                autocomplete="new-password"
+            >
+
+
+            <!-- CONFIRM PASSWORD -->
+
+            <label
+                class="label"
+                for="confirmPassword"
+            >
+                CONFIRM PASSWORD
+            </label>
+
+            <input
+                id="confirmPassword"
+                class="input"
+                type="password"
+                placeholder="Confirm your password"
+                autocomplete="new-password"
+            >
+
+
+            <!-- REFERRAL CODE -->
+
+            <label
+                class="label"
+                for="referralCode"
+            >
+                REFERRAL CODE
+
+                <span class="optional">
+                    OPTIONAL
+                </span>
+
+            </label>
+
+            <input
+                id="referralCode"
+                class="input"
+                type="text"
+                placeholder="Enter referral code"
+                autocomplete="off"
+            >
+
+            <p class="referral-note">
+
+                If you joined through a referral link,
+                your referral code can be filled here
+                automatically.
+
+            </p>
+
+
+            <!-- MESSAGE -->
+
+            <div
+                id="registerMessage"
+                class="message"
+                role="alert"
+            ></div>
+
+
+            <!-- CREATE ACCOUNT -->
+
+            <button
+                class="button"
+                type="button"
+                id="registerButton"
+            >
+                Create Account
+            </button>
+
+
+            <!-- SIGN IN -->
+
+            <div class="login-link">
+
+                Already have an account?
+
+                <a href="login.html">
+                    Sign In
+                </a>
+
+            </div>
+
+
+            <!-- SECURITY -->
+
+            <div class="security">
+
+                <strong>
+                    Account security is important.
+                </strong>
+
+                Never share your password,
+                verification codes, or private
+                wallet keys.
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <script>
+
+
+        /* ==================================================
+           CONFIGURATION
+        ================================================== */
+
+        const API_BASE_URL =
+            "http://localhost:3000";
+
+
+        /* ==================================================
+           ELEMENTS
+        ================================================== */
+
+        const nicknameInput =
+            document.getElementById(
+                "nickname"
+            );
+
+
+        const emailInput =
+            document.getElementById(
+                "email"
+            );
+
+
+        const passwordInput =
+            document.getElementById(
+                "password"
+            );
+
+
+        const confirmPasswordInput =
+            document.getElementById(
+                "confirmPassword"
+            );
+
+
+        const referralCodeInput =
+            document.getElementById(
+                "referralCode"
+            );
+
+
+        const registerButton =
+            document.getElementById(
+                "registerButton"
+            );
+
+
+        const registerMessage =
+            document.getElementById(
+                "registerMessage"
+            );
+
+
+        /* ==================================================
+           MESSAGE
+        ================================================== */
+
+        function showMessage(
+            message,
+            type = "error"
+        ) {
+
+            registerMessage.textContent =
+                message;
+
+            registerMessage.className =
+                `message ${type}`;
+
+        }
+
+
+        function clearMessage() {
+
+            registerMessage.textContent =
+                "";
+
+            registerMessage.className =
+                "message";
+
+        }
+
+
+        /* ==================================================
+           CLEAR OLD AUTH SESSION
+           
+           IMPORTANT:
+           Registration must create a completely fresh
+           authenticated account session.
+
+           This prevents the previous account's token,
+           user object, and legacy session values from
+           being reused after registration.
+        ================================================== */
+
+        function clearExistingAuthSession() {
+
+            const authKeys = [
+
+                "averyx_token",
+
+                "averyx_user",
+
+                "authToken",
+
+                "token",
+
+                "user",
+
+                "currentUser",
+
+                "loggedInUser",
+
+                "current_user",
+
+                "userData",
+
+                "profileData"
+
+            ];
+
+
+            authKeys.forEach(
+                key => {
+
+                    try {
+
+                        localStorage.removeItem(
+                            key
+                        );
+
+                    } catch (error) {
+
+                        console.warn(
+                            `Unable to remove localStorage key ${key}:`,
+                            error
+                        );
+
+                    }
+
+
+                    try {
+
+                        sessionStorage.removeItem(
+                            key
+                        );
+
+                    } catch (error) {
+
+                        console.warn(
+                            `Unable to remove sessionStorage key ${key}:`,
+                            error
+                        );
+
+                    }
+
+                }
+            );
+
+
+            /*
+               Clear common profile-specific local
+               data from the previous account.
+
+               This does NOT touch server/database data.
+            */
+
+            const profileKeys = [
+
+                "averyx_profile",
+
+                "averyx_profile_data",
+
+                "averyx_profile_id",
+
+                "averyx_profile_logo",
+
+                "averyx_selected_logo",
+
+                "averyx_selected_profile_tier",
+
+                "averyx_nickname",
+
+                "averyx_public_uid",
+
+                "averyx_user_id"
+
+            ];
+
+
+            profileKeys.forEach(
+                key => {
+
+                    try {
+
+                        localStorage.removeItem(
+                            key
+                        );
+
+                    } catch (error) {
+
+                        console.warn(
+                            error
+                        );
+
+                    }
+
+
+                    try {
+
+                        sessionStorage.removeItem(
+                            key
+                        );
+
+                    } catch (error) {
+
+                        console.warn(
+                            error
+                        );
+
+                    }
+
+                }
+            );
+
+        }
+
+
+        /* ==================================================
+           REGISTER
+        ================================================== */
+
+        async function handleRegister() {
+
+            clearMessage();
+
+
+            const nickname =
+                nicknameInput.value.trim();
+
+
+            const email =
+                emailInput.value.trim();
+
+
+            const password =
+                passwordInput.value;
+
+
+            const confirmPassword =
+                confirmPasswordInput.value;
+
+
+            const referralCode =
+                referralCodeInput.value.trim();
+
+
+            /* -----------------------------
+               BASIC VALIDATION
+            ----------------------------- */
+
+            if (!nickname) {
+
+                showMessage(
+                    "Please enter a nickname."
+                );
+
+                nicknameInput.focus();
+
+                return;
+
+            }
+
+
+            if (
+                nickname.length < 2
+            ) {
+
+                showMessage(
+                    "Nickname must be at least 2 characters."
+                );
+
+                nicknameInput.focus();
+
+                return;
+
+            }
+
+
+            if (!email) {
+
+                showMessage(
+                    "Please enter your email address."
+                );
+
+                emailInput.focus();
+
+                return;
+
+            }
+
+
+            const emailPattern =
+                /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+
+            if (
+                !emailPattern.test(
+                    email
+                )
+            ) {
+
+                showMessage(
+                    "Please enter a valid email address."
+                );
+
+                emailInput.focus();
+
+                return;
+
+            }
+
+
+            if (!password) {
+
+                showMessage(
+                    "Please create a password."
+                );
+
+                passwordInput.focus();
+
+                return;
+
+            }
+
+
+            if (
+                password.length < 6
+            ) {
+
+                showMessage(
+                    "Password must be at least 6 characters."
+                );
+
+                passwordInput.focus();
+
+                return;
+
+            }
+
+
+            if (
+                !confirmPassword
+            ) {
+
+                showMessage(
+                    "Please confirm your password."
+                );
+
+                confirmPasswordInput.focus();
+
+                return;
+
+            }
+
+
+            if (
+                password !==
+                confirmPassword
+            ) {
+
+                showMessage(
+                    "Passwords do not match."
+                );
+
+                confirmPasswordInput.focus();
+
+                return;
+
+            }
+
+
+            /* -----------------------------
+               LOADING
+            ----------------------------- */
+
+            registerButton.disabled =
+                true;
+
+            registerButton.textContent =
+                "Creating Account...";
+
+
+            /*
+               IMPORTANT:
+
+               Clear the OLD account before creating
+               the NEW account.
+
+               This prevents the previous authenticated
+               session from being reused by the
+               destination page.
+            */
+
+            clearExistingAuthSession();
+
+
+            try {
+
+
+                /* -----------------------------
+                   SEND TO BACKEND
+                ----------------------------- */
+
+                const response =
+                    await fetch(
+                        `${API_BASE_URL}/api/auth/register`,
+                        {
+
+                            method:
+                                "POST",
+
+                            headers: {
+
+                                "Content-Type":
+                                    "application/json"
+
+                            },
+
+                            /*
+                               We do not rely on browser
+                               cookies for the AVERYX
+                               authentication session.
+
+                               The JWT returned below is
+                               the authoritative session.
+                            */
+
+                            credentials:
+                                "same-origin",
+
+                            body:
+                                JSON.stringify({
+
+                                    nickname:
+                                        nickname,
+
+                                    email:
+                                        email,
+
+                                    password:
+                                        password,
+
+                                    confirmPassword:
+                                        confirmPassword,
+
+                                    referralCode:
+                                        referralCode ||
+                                        null
+
+                                })
+
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                /* -----------------------------
+                   ERROR
+                ----------------------------- */
+
+                if (
+                    !response.ok
+                ) {
+
+                    throw new Error(
+                        data.message ||
+                        "Unable to create your account."
+                    );
+
+                }
+
+
+                if (
+                    !data.success ||
+                    !data.token ||
+                    !data.user
+                ) {
+
+                    throw new Error(
+                        "Invalid registration response."
+                    );
+
+                }
+
+
+                /* ==================================================
+                   SAVE ONLY THE NEW ACCOUNT SESSION
+                ================================================== */
+
+                /*
+                   Clear again immediately before storing
+                   the new account, so absolutely no stale
+                   value can overwrite it.
+                */
+
+                clearExistingAuthSession();
+
+
+                localStorage.setItem(
+                    "averyx_token",
+                    data.token
+                );
+
+
+                localStorage.setItem(
+                    "averyx_user",
+                    JSON.stringify(
+                        data.user
+                    )
+                );
+
+
+                /*
+                   Store the database UID explicitly.
+
+                   This is ONLY a cache of the backend value.
+                   The backend remains the source of truth.
+                */
+
+                if (
+                    data.user.publicUid
+                ) {
+
+                    localStorage.setItem(
+                        "averyx_public_uid",
+                        String(
+                            data.user.publicUid
+                        )
+                    );
+
+                }
+
+
+                if (
+                    data.user.id !==
+                    undefined &&
+                    data.user.id !==
+                    null
+                ) {
+
+                    localStorage.setItem(
+                        "averyx_user_id",
+                        String(
+                            data.user.id
+                        )
+                    );
+
+                }
+
+
+                /*
+                   Store nickname from the NEW account.
+                */
+
+                if (
+                    data.user.nickname
+                ) {
+
+                    localStorage.setItem(
+                        "averyx_nickname",
+                        String(
+                            data.user.nickname
+                        )
+                    );
+
+                }
+
+
+                /* -----------------------------
+                   SUCCESS
+                ----------------------------- */
+
+                showMessage(
+                    "Account created successfully. Redirecting...",
+                    "success"
+                );
+
+
+                /*
+                   Small delay only so the success
+                   message can be seen.
+
+                   The newly returned token is already
+                   stored before redirect.
+                */
+
+                setTimeout(
+                    () => {
+
+                        window.location.replace(
+                            "dashboard.html"
+                        );
+
+                    },
+                    700
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "Registration error:",
+                    error
+                );
+
+
+                showMessage(
+                    error.message ||
+                    "Unable to connect to the server."
+                );
+
+
+                registerButton.disabled =
+                    false;
+
+
+                registerButton.textContent =
+                    "Create Account";
+
+            }
+
+        }
+
+
+        /* ==================================================
+           BUTTON
+        ================================================== */
+
+        registerButton.addEventListener(
+            "click",
+            handleRegister
+        );
+
+
+        /* ==================================================
+           ENTER KEY
+        ================================================== */
+
+        confirmPasswordInput.addEventListener(
+            "keydown",
+            event => {
+
+                if (
+                    event.key ===
+                    "Enter"
+                ) {
+
+                    handleRegister();
+
+                }
+
+            }
+        );
+
+
+        /* ==================================================
+           REFERRAL CODE FROM URL
+           
+           Example:
+
+           register.html?ref=AVX-8K4HHAV
+        ================================================== */
+
+        const urlParams =
+            new URLSearchParams(
+                window.location.search
+            );
+
+
+        const referralFromURL =
+            urlParams.get(
+                "ref"
+            );
+
+
+        if (
+            referralFromURL
+        ) {
+
+            referralCodeInput.value =
+                referralFromURL
+                    .trim()
+                    .toUpperCase();
+
+        }
+
+
+        /* ==================================================
+           RESET BUTTON STATE
+        ================================================== */
+
+        window.addEventListener(
+            "pageshow",
+            () => {
+
+                registerButton.disabled =
+                    false;
+
+                registerButton.textContent =
+                    "Create Account";
+
+            }
+        );
+
+
+    </script>
+
+</body>
+
+</html>

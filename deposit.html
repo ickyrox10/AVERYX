@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AVERYX | Deposit</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #070709;
+            --panel: #101014;
+            --border: #292930;
+            --border-soft: #202026;
+            --text: #f5f5f7;
+            --muted: #898992;
+            --soft: #606069;
+            --red: #e52249;
+            --green: #42c998;
+        }
+
+        body {
+            min-height: 100vh;
+            background:
+                radial-gradient(
+                    circle at 82% 0%,
+                    rgba(126, 20, 52, .18),
+                    transparent 31%
+                ),
+                var(--bg);
+            color: var(--text);
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        button,
+        input {
+            font: inherit;
+        }
+
+        .app {
+            width: 100%;
+            max-width: 760px;
+            margin: auto;
+            padding: 18px 18px 50px;
+        }
+
+        .topbar {
+            height: 62px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+        }
+
+        .brand img {
+            width: 42px;
+            height: 42px;
+            object-fit: contain;
+        }
+
+        .brand-name {
+            font-family: Georgia, serif;
+            font-size: 22px;
+            letter-spacing: 3px;
+        }
+
+        .back {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .header {
+            padding: 31px 2px 24px;
+        }
+
+        .eyebrow {
+            color: var(--muted);
+            font-size: 10px;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+        }
+
+        .header h1 {
+            margin-top: 8px;
+            font-family: Georgia, serif;
+            font-size: clamp(35px, 8vw, 50px);
+        }
+
+        .header p {
+            margin-top: 9px;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+        .card {
+            margin-top: 13px;
+            padding: 21px;
+            border: 1px solid var(--border);
+            border-radius: 19px;
+            background: var(--panel);
+        }
+
+        .card:first-of-type {
+            margin-top: 0;
+        }
+
+        .card-title {
+            font-family: Georgia, serif;
+            font-size: 21px;
+        }
+
+        .card-subtitle {
+            margin-top: 6px;
+            color: var(--muted);
+            font-size: 9px;
+            line-height: 1.6;
+        }
+
+        /* NETWORKS */
+
+        .network-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin-top: 18px;
+        }
+
+        .network-btn {
+            min-height: 48px;
+
+            border: 1px solid var(--border);
+            border-radius: 10px;
+
+            background: #0b0b0f;
+            color: var(--muted);
+
+            cursor: pointer;
+
+            font-size: 9px;
+            font-weight: 600;
+        }
+
+        .network-btn:hover {
+            border-color: #44444c;
+            color: white;
+        }
+
+        .network-btn.active {
+            border-color: rgba(229, 34, 73, .45);
+            background: rgba(229, 34, 73, .09);
+            color: #ed5875;
+        }
+
+        /* QR */
+
+        .qr-section {
+            margin-top: 21px;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            padding: 20px;
+
+            border: 1px solid var(--border);
+            border-radius: 15px;
+
+            background: #09090c;
+        }
+
+        .qr-box {
+            width: 220px;
+            height: 220px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 10px;
+
+            border-radius: 13px;
+
+            background: white;
+        }
+
+        .qr-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .qr-network {
+            margin-top: 13px;
+
+            color: #dcdce1;
+
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .qr-asset {
+            margin-top: 5px;
+
+            color: var(--muted);
+
+            font-size: 8px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* ADDRESS */
+
+        .address-box {
+            margin-top: 17px;
+            padding: 15px;
+
+            border: 1px solid var(--border);
+            border-radius: 12px;
+
+            background: #09090c;
+        }
+
+        .address-label {
+            color: var(--muted);
+
+            font-size: 8px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .address-row {
+            display: flex;
+            align-items: center;
+
+            gap: 9px;
+
+            margin-top: 8px;
+        }
+
+        .address {
+            flex: 1;
+            min-width: 0;
+
+            overflow-wrap: anywhere;
+
+            color: #d9d9df;
+
+            font-family: monospace;
+            font-size: 10px;
+            line-height: 1.5;
+        }
+
+        .copy-btn {
+            flex-shrink: 0;
+
+            height: 36px;
+            padding: 0 12px;
+
+            border: 1px solid var(--border);
+            border-radius: 8px;
+
+            background: #141419;
+            color: #aaaab2;
+
+            cursor: pointer;
+
+            font-size: 8px;
+        }
+
+        .copy-btn:hover {
+            color: white;
+        }
+
+        .network-label {
+            margin-top: 10px;
+
+            color: var(--soft);
+
+            font-size: 8px;
+        }
+
+        /* AMOUNT */
+
+        .amount-label {
+            display: block;
+
+            margin-top: 18px;
+            margin-bottom: 7px;
+
+            color: var(--muted);
+
+            font-size: 8px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .input-wrap {
+            position: relative;
+        }
+
+        input {
+            width: 100%;
+            height: 52px;
+
+            padding:
+                0 65px 0 14px;
+
+            border: 1px solid var(--border);
+            border-radius: 11px;
+
+            outline: none;
+
+            background: #09090c;
+            color: var(--text);
+
+            font-size: 14px;
+        }
+
+        input:focus {
+            border-color: rgba(229, 34, 73, .5);
+        }
+
+        .input-unit {
+            position: absolute;
+
+            right: 15px;
+            top: 50%;
+
+            transform: translateY(-50%);
+
+            color: var(--muted);
+
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .quick-amounts {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+
+            gap: 7px;
+
+            margin-top: 10px;
+        }
+
+        .quick {
+            height: 36px;
+
+            border: 1px solid var(--border);
+            border-radius: 8px;
+
+            background: #111116;
+            color: #9999a2;
+
+            cursor: pointer;
+
+            font-size: 8px;
+        }
+
+        .quick:hover {
+            color: white;
+            border-color: #404049;
+        }
+
+        /* WARNING */
+
+        .warning {
+            margin-top: 14px;
+
+            padding: 13px;
+
+            border:
+                1px solid
+                rgba(229, 34, 73, .18);
+
+            border-radius: 10px;
+
+            background:
+                rgba(229, 34, 73, .05);
+
+            color: var(--muted);
+
+            font-size: 8px;
+            line-height: 1.65;
+        }
+
+        .demo-note {
+            margin-top: 10px;
+
+            color: var(--soft);
+
+            font-size: 8px;
+            line-height: 1.6;
+
+            text-align: center;
+        }
+
+        .demo-deposit-btn {
+            width: 100%;
+            height: 48px;
+            margin-top: 16px;
+            border: 1px solid rgba(229, 34, 73, .55);
+            border-radius: 10px;
+            background: linear-gradient(135deg, #e52249, #9e102a);
+            color: white;
+            cursor: pointer;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .demo-deposit-btn:hover {
+            filter: brightness(1.08);
+        }
+
+        .demo-deposit-btn:disabled {
+            opacity: .55;
+            cursor: not-allowed;
+        }
+
+        .deposit-message {
+            display: none;
+            margin-top: 11px;
+            padding: 11px 12px;
+            border-radius: 9px;
+            font-size: 9px;
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        .deposit-message.success {
+            display: block;
+            color: var(--green);
+            background: rgba(66, 201, 152, .07);
+            border: 1px solid rgba(66, 201, 152, .22);
+        }
+
+        .deposit-message.error {
+            display: block;
+            color: #ff7189;
+            background: rgba(229, 34, 73, .07);
+            border: 1px solid rgba(229, 34, 73, .22);
+        }
+
+        @media (max-width: 620px) {
+
+            .network-grid {
+                grid-template-columns:
+                    repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 430px) {
+
+            .app {
+                padding:
+                    15px 15px 40px;
+            }
+
+            .network-grid {
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+
+            .address-row {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .copy-btn {
+                width: 100%;
+            }
+
+            .qr-box {
+                width: 190px;
+                height: 190px;
+            }
+
+            .quick-amounts {
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<main class="app">
+
+    <header class="topbar">
+
+        <a
+            href="dashboard.html"
+            class="brand"
+        >
+
+            <img
+                src="logo.png"
+                alt="AVERYX Logo"
+            >
+
+            <span class="brand-name">
+                AVERYX
+            </span>
+
+        </a>
+
+        <a
+            href="wallet.html"
+            class="back"
+        >
+            ← Wallet
+        </a>
+
+    </header>
+
+
+    <section class="header">
+
+        <div class="eyebrow">
+            Wallet
+        </div>
+
+        <h1>
+            Deposit
+        </h1>
+
+        <p>
+            Select a network to view its USDT
+            deposit details.
+        </p>
+
+    </section>
+
+
+    <section class="card">
+
+        <div class="card-title">
+            Select Network
+        </div>
+
+        <div class="card-subtitle">
+            Choose the network you want to use.
+        </div>
+
+
+        <div
+            class="network-grid"
+            id="networkGrid"
+        ></div>
+
+
+        <div class="qr-section">
+
+            <div class="qr-box">
+
+                <img
+                    id="qrImage"
+                    src="BEP20.png"
+                    alt="USDT deposit QR"
+                >
+
+            </div>
+
+
+            <div
+                class="qr-network"
+                id="qrNetwork"
+            >
+                BEP20
+            </div>
+
+
+            <div class="qr-asset">
+                USDT
+            </div>
+
+        </div>
+
+
+        <div class="address-box">
+
+            <div class="address-label">
+                Deposit Address
+            </div>
+
+
+            <div class="address-row">
+
+                <div
+                    class="address"
+                    id="depositAddress"
+                >
+                    DEMO-BEP20-ADDRESS
+                </div>
+
+
+                <button
+                    type="button"
+                    class="copy-btn"
+                    id="copyAddress"
+                >
+                    COPY
+                </button>
+
+            </div>
+
+
+            <div
+                class="network-label"
+                id="networkLabel"
+            >
+                Network: BEP20
+            </div>
+
+        </div>
+
+
+        <div class="warning">
+
+            This is a frontend reference/demo interface.
+            Do not send real funds to the addresses shown
+            here until the payment infrastructure has been
+            independently configured and verified.
+
+        </div>
+
+    </section>
+
+
+    <section class="card">
+
+        <div class="card-title">
+            Deposit Amount
+        </div>
+
+        <div class="card-subtitle">
+            Enter the amount in USDT for the reference
+            transaction flow.
+        </div>
+
+
+        <label
+            class="amount-label"
+            for="amount"
+        >
+            Amount
+        </label>
+
+
+        <div class="input-wrap">
+
+            <input
+                id="amount"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="0.00"
+                autocomplete="off"
+            >
+
+            <span class="input-unit">
+                USDT
+            </span>
+
+        </div>
+
+
+        <div class="quick-amounts">
+
+            <button
+                type="button"
+                class="quick"
+                data-value="3.5"
+            >
+                3.5 USDT
+            </button>
+
+            <button
+                type="button"
+                class="quick"
+                data-value="16"
+            >
+                16 USDT
+            </button>
+
+            <button
+                type="button"
+                class="quick"
+                data-value="60"
+            >
+                60 USDT
+            </button>
+
+            <button
+                type="button"
+                class="quick"
+                data-value="165"
+            >
+                165 USDT
+            </button>
+
+        </div>
+
+
+        <button
+            type="button"
+            class="demo-deposit-btn"
+            id="demoDepositButton"
+        >
+            CONFIRM DEMO DEPOSIT
+        </button>
+
+        <div
+            id="depositMessage"
+            class="deposit-message"
+            aria-live="polite"
+        ></div>
+
+        <div class="demo-note">
+            This button records a DEMO deposit in the AVERYX
+            PostgreSQL wallet. It does not verify a real
+            blockchain payment.
+        </div>
+
+    </section>
+
+</main>
+
+
+<script>
+
+    /* =========================================
+       AVERYX API
+       ========================================= */
+
+    const API_BASE_URL =
+        "http://localhost:3000";
+
+
+    /*
+       The login page may store the JWT under the
+       normal AVERYX key. These fallbacks make the
+       page tolerant of older demo login versions.
+    */
+
+    function getAuthToken() {
+
+        return (
+            localStorage.getItem("averyx_token") ||
+            localStorage.getItem("token") ||
+            localStorage.getItem("authToken") ||
+            localStorage.getItem("averyxToken") ||
+            ""
+        );
+
+    }
+
+
+    /* =========================================
+       NETWORK CONFIGURATION
+       ========================================= */
+
+    const NETWORKS = {
+
+        BEP20: {
+
+            name: "BEP20",
+
+            address:
+                "0x7118eb3a0534a22fc9df39325c93b2291bacc157",
+
+            qr:
+                "BEP20.png"
+
+        },
+
+
+        TRC20: {
+
+            name: "TRC20",
+
+            address:
+                "TMEypMp6xVmvAEn13vGAibByCGVqBXG8kD",
+
+            qr:
+                "TRC20.png"
+
+        },
+
+
+        ERC20: {
+
+            name: "ERC20",
+
+            address:
+                "0x7118eb3a0534a22fc9df39325c93b2291bacc157",
+
+            qr:
+                "ERC20.png"
+
+        },
+
+
+        Polygon: {
+
+            name: "Polygon",
+
+            address:
+                "0x7118eb3a0534a22fc9df39325c93b2291bacc157",
+
+            qr:
+                "Polygon.png"
+
+        },
+
+
+        TON: {
+
+            name: "TON",
+
+            address:
+                "UQDV5T2HiovMVGcOul9puCd4jdS7Lp4xQBBX44n8K1esxiSd",
+
+            qr:
+                "TON.png"
+
+        }
+
+    };
+
+
+    let selectedNetwork =
+        "BEP20";
+
+
+    /* =========================================
+       ELEMENTS
+       ========================================= */
+
+    const networkGrid =
+        document.getElementById(
+            "networkGrid"
+        );
+
+
+    const qrImage =
+        document.getElementById(
+            "qrImage"
+        );
+
+
+    const qrNetwork =
+        document.getElementById(
+            "qrNetwork"
+        );
+
+
+    const depositAddress =
+        document.getElementById(
+            "depositAddress"
+        );
+
+
+    const networkLabel =
+        document.getElementById(
+            "networkLabel"
+        );
+
+
+    const copyButton =
+        document.getElementById(
+            "copyAddress"
+        );
+
+
+    const amountInput =
+        document.getElementById(
+            "amount"
+        );
+
+
+    const demoDepositButton =
+        document.getElementById(
+            "demoDepositButton"
+        );
+
+
+    const depositMessage =
+        document.getElementById(
+            "depositMessage"
+        );
+
+
+    /* =========================================
+       MESSAGE
+       ========================================= */
+
+    function showMessage(
+        message,
+        type
+    ) {
+
+        depositMessage.textContent =
+            message;
+
+        depositMessage.className =
+            `deposit-message ${type}`;
+
+    }
+
+
+    function clearMessage() {
+
+        depositMessage.textContent =
+            "";
+
+        depositMessage.className =
+            "deposit-message";
+
+    }
+
+
+    /* =========================================
+       AUTHENTICATED API REQUEST
+       ========================================= */
+
+    async function apiRequest(
+        endpoint,
+        options = {}
+    ) {
+
+        const token =
+            getAuthToken();
+
+
+        if (!token) {
+
+            throw new Error(
+                "Your login session is missing. Please log in again."
+            );
+
+        }
+
+
+        const response =
+            await fetch(
+                `${API_BASE_URL}${endpoint}`,
+                {
+                    ...options,
+
+                    headers: {
+
+                        ...(options.headers || {}),
+
+                        Authorization:
+                            `Bearer ${token}`,
+
+                        "Content-Type":
+                            "application/json"
+
+                    }
+
+                }
+            );
+
+
+        let data = null;
+
+        try {
+
+            data =
+                await response.json();
+
+        } catch (error) {
+
+            throw new Error(
+                "The server returned an invalid response."
+            );
+
+        }
+
+
+        if (
+            response.status === 401
+        ) {
+
+            localStorage.removeItem(
+                "averyx_token"
+            );
+
+            localStorage.removeItem(
+                "token"
+            );
+
+            localStorage.removeItem(
+                "authToken"
+            );
+
+            localStorage.removeItem(
+                "averyxToken"
+            );
+
+
+            window.location.href =
+                "login.html";
+
+
+            return null;
+
+        }
+
+
+        if (
+            !response.ok ||
+            !data.success
+        ) {
+
+            throw new Error(
+                data.message ||
+                "Request failed."
+            );
+
+        }
+
+
+        return data;
+
+    }
+
+
+    /* =========================================
+       NETWORK BUTTONS
+       ========================================= */
+
+    Object.keys(NETWORKS).forEach(
+        network => {
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+
+            button.type =
+                "button";
+
+
+            button.className =
+                "network-btn";
+
+
+            button.textContent =
+                NETWORKS[
+                    network
+                ].name;
+
+
+            button.dataset.network =
+                network;
+
+
+            button.addEventListener(
+                "click",
+                function() {
+
+                    selectNetwork(
+                        network
+                    );
+
+                }
+            );
+
+
+            networkGrid.appendChild(
+                button
+            );
+
+        }
+    );
+
+
+    /* =========================================
+       SELECT NETWORK
+       ========================================= */
+
+    function selectNetwork(
+        network
+    ) {
+
+        if (
+            !NETWORKS[network]
+        ) {
+
+            return;
+
+        }
+
+
+        selectedNetwork =
+            network;
+
+
+        const data =
+            NETWORKS[
+                network
+            ];
+
+
+        qrImage.src =
+            data.qr;
+
+
+        qrImage.alt =
+            `${data.name} USDT QR Code`;
+
+
+        qrNetwork.textContent =
+            data.name;
+
+
+        depositAddress.textContent =
+            data.address;
+
+
+        networkLabel.textContent =
+            `Network: ${data.name}`;
+
+
+        document
+            .querySelectorAll(
+                ".network-btn"
+            )
+            .forEach(
+                button => {
+
+                    button.classList.toggle(
+                        "active",
+                        button.dataset.network ===
+                        network
+                    );
+
+                }
+            );
+
+    }
+
+
+    /* =========================================
+       COPY ADDRESS
+       ========================================= */
+
+    copyButton.addEventListener(
+        "click",
+        async function() {
+
+            const address =
+                NETWORKS[
+                    selectedNetwork
+                ].address;
+
+
+            try {
+
+                await navigator.clipboard.writeText(
+                    address
+                );
+
+
+                const oldText =
+                    copyButton.textContent;
+
+
+                copyButton.textContent =
+                    "COPIED";
+
+
+                setTimeout(
+                    function() {
+
+                        copyButton.textContent =
+                            oldText;
+
+                    },
+                    1400
+                );
+
+
+            } catch (error) {
+
+                const textarea =
+                    document.createElement(
+                        "textarea"
+                    );
+
+
+                textarea.value =
+                    address;
+
+
+                document.body.appendChild(
+                    textarea
+                );
+
+
+                textarea.select();
+
+
+                document.execCommand(
+                    "copy"
+                );
+
+
+                textarea.remove();
+
+
+                copyButton.textContent =
+                    "COPIED";
+
+
+                setTimeout(
+                    function() {
+
+                        copyButton.textContent =
+                            "COPY";
+
+                    },
+                    1400
+                );
+
+            }
+
+        }
+    );
+
+
+    /* =========================================
+       QUICK AMOUNTS
+       ========================================= */
+
+    document
+        .querySelectorAll(
+            ".quick"
+        )
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    function() {
+
+                        amountInput.value =
+                            this.dataset.value;
+
+                        clearMessage();
+
+                    }
+                );
+
+            }
+        );
+
+
+    /* =========================================
+       CREATE DEMO DEPOSIT
+       ========================================= */
+
+    async function createDemoDeposit() {
+
+        clearMessage();
+
+
+        const amount =
+            Number(
+                amountInput.value
+            );
+
+
+        if (
+            !Number.isFinite(amount) ||
+            amount <= 0
+        ) {
+
+            showMessage(
+                "Enter a valid deposit amount greater than 0.",
+                "error"
+            );
+
+            amountInput.focus();
+
+            return;
+
+        }
+
+
+        if (
+            amount > 1000000
+        ) {
+
+            showMessage(
+                "Deposit amount is too large.",
+                "error"
+            );
+
+            return;
+
+        }
+
+
+        demoDepositButton.disabled =
+            true;
+
+
+        demoDepositButton.textContent =
+            "PROCESSING...";
+
+
+        try {
+
+            const reference =
+                `WEB-${selectedNetwork}-${Date.now()}`;
+
+
+            const data =
+                await apiRequest(
+                    "/api/wallet/deposit",
+                    {
+
+                        method:
+                            "POST",
+
+                        body:
+                            JSON.stringify({
+
+                                amount:
+                                    amount,
+
+                                reference:
+                                    reference
+
+                            })
+
+                    }
+                );
+
+
+            if (!data) {
+
+                return;
+
+            }
+
+
+            showMessage(
+                `Deposit successful: +${Number(amount).toFixed(2)} USDT. Redirecting to dashboard...`,
+                "success"
+            );
+
+
+            amountInput.value =
+                "";
+
+
+            /*
+               Give the user a moment to see the
+               success message, then return to the
+               dashboard. The dashboard will read the
+               new balance from PostgreSQL.
+            */
+
+            setTimeout(
+                function() {
+
+                    window.location.href =
+                        "dashboard.html";
+
+                },
+                900
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                "Demo deposit error:",
+                error
+            );
+
+
+            showMessage(
+                error.message ||
+                "Unable to process the deposit.",
+                "error"
+            );
+
+        } finally {
+
+            demoDepositButton.disabled =
+                false;
+
+
+            demoDepositButton.textContent =
+                "CONFIRM DEMO DEPOSIT";
+
+        }
+
+    }
+
+
+    demoDepositButton.addEventListener(
+        "click",
+        createDemoDeposit
+    );
+
+
+    /* =========================================
+       INITIAL NETWORK
+       ========================================= */
+
+    selectNetwork(
+        "BEP20"
+    );
+
+</script>
+
+</body>
+</html>

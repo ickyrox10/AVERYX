@@ -1,0 +1,2053 @@
+<!-- records.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>AVERYX | Records</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+:root{
+    --bg:#070709;
+    --panel:#101014;
+    --border:#292930;
+    --border-soft:#202026;
+    --text:#f5f5f7;
+    --muted:#898992;
+    --soft:#606069;
+    --red:#e52249;
+    --green:#42c998;
+}
+
+body{
+    min-height:100vh;
+    background:
+        radial-gradient(
+            circle at 82% 0%,
+            rgba(126,20,52,.18),
+            transparent 31%
+        ),
+        var(--bg);
+    color:var(--text);
+    font-family:Arial,Helvetica,sans-serif;
+}
+
+a{
+    color:inherit;
+    text-decoration:none;
+}
+
+button{
+    font:inherit;
+}
+
+.app{
+    width:100%;
+    max-width:850px;
+    margin:auto;
+    padding:18px 18px 115px;
+}
+
+
+/* =========================
+   TOP BAR
+========================= */
+
+.topbar{
+    height:62px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+}
+
+.brand{
+    display:flex;
+    align-items:center;
+    gap:11px;
+}
+
+.brand img{
+    width:42px;
+    height:42px;
+    object-fit:contain;
+}
+
+.brand-name{
+    font-family:Georgia,serif;
+    font-size:22px;
+    letter-spacing:3px;
+}
+
+.profile-button{
+    min-width:176px;
+    height:52px;
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:9px;
+    padding:4px 5px 4px 10px;
+    overflow:hidden;
+    border:none;
+    border-radius:0;
+    background:transparent;
+    cursor:pointer;
+}
+
+.top-profile-details{
+    min-width:0;
+    flex:1;
+    text-align:right;
+    line-height:1.15;
+}
+
+.top-profile-name{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    color:#f5f5f7;
+    font-size:10px;
+    font-weight:600;
+}
+
+.top-profile-id{
+    margin-top:4px;
+    color:var(--muted);
+    font-family:monospace;
+    font-size:8px;
+    letter-spacing:.5px;
+}
+
+.top-profile-avatar{
+    width:42px;
+    height:42px;
+    flex:0 0 42px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+    border:none;
+    border-radius:50%;
+    background:transparent;
+}
+
+.top-profile-avatar img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+}
+
+.back{
+    color:var(--muted);
+    font-size:13px;
+}
+
+
+/* =========================
+   HEADER
+========================= */
+
+.header{
+    padding:31px 2px 23px;
+}
+
+.eyebrow{
+    color:var(--muted);
+    font-size:10px;
+    letter-spacing:2.5px;
+    text-transform:uppercase;
+}
+
+.header h1{
+    margin-top:8px;
+    font-family:Georgia,serif;
+    font-size:clamp(35px,8vw,50px);
+}
+
+.header p{
+    margin-top:9px;
+    color:var(--muted);
+    font-size:12px;
+    line-height:1.7;
+}
+
+
+/* =========================
+   FILTERS
+========================= */
+
+.filters{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:8px;
+    margin-bottom:13px;
+}
+
+.filter-btn{
+    height:39px;
+    border:1px solid var(--border);
+    border-radius:9px;
+    background:var(--panel);
+    color:var(--muted);
+    cursor:pointer;
+    font-size:8px;
+    text-transform:uppercase;
+}
+
+.filter-btn:hover{
+    color:white;
+    border-color:#3b3b43;
+}
+
+.filter-btn.active{
+    border-color:rgba(229,34,73,.38);
+    background:rgba(229,34,73,.08);
+    color:#ed5875;
+}
+
+
+/* =========================
+   RECORDS
+========================= */
+
+.records{
+    overflow:hidden;
+    border:1px solid var(--border);
+    border-radius:18px;
+    background:var(--panel);
+}
+
+.record{
+    min-height:77px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:15px;
+    padding:13px 16px;
+    border-bottom:1px solid var(--border-soft);
+}
+
+.record:last-child{
+    border-bottom:0;
+}
+
+.record-left{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    min-width:0;
+}
+
+.record-icon{
+    width:40px;
+    height:40px;
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:11px;
+    background:#18181d;
+    color:#9999a2;
+    font-size:15px;
+}
+
+.record-info{
+    min-width:0;
+}
+
+.record-name{
+    font-size:10px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.record-date{
+    margin-top:5px;
+    color:var(--soft);
+    font-size:8px;
+}
+
+.record-referral{
+    margin-top:4px;
+    color:#8f8f98;
+    font-size:7px;
+}
+
+.record-right{
+    flex-shrink:0;
+    text-align:right;
+}
+
+.record-amount{
+    font-size:10px;
+}
+
+.record-status{
+    display:inline-block;
+    margin-top:5px;
+    font-size:7px;
+    text-transform:uppercase;
+}
+
+.record-status.completed{
+    color:var(--green);
+}
+
+.record-status.pending{
+    color:#d5a54a;
+}
+
+.record-status.failed{
+    color:var(--red);
+}
+
+
+/* =========================
+   EMPTY
+========================= */
+
+.empty{
+    padding:50px 20px;
+    text-align:center;
+}
+
+.empty-icon{
+    width:48px;
+    height:48px;
+    margin:0 auto 13px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:1px solid var(--border);
+    border-radius:13px;
+    background:#0b0b0f;
+    color:#6d6d75;
+    font-size:19px;
+}
+
+.empty-title{
+    font-family:Georgia,serif;
+    font-size:18px;
+}
+
+.empty-text{
+    max-width:280px;
+    margin:7px auto 0;
+    color:var(--soft);
+    font-size:9px;
+    line-height:1.6;
+}
+
+
+/* =========================
+   SUMMARY
+========================= */
+
+.summary{
+    margin-top:13px;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+}
+
+.summary-card{
+    padding:16px;
+    border:1px solid var(--border);
+    border-radius:15px;
+    background:var(--panel);
+}
+
+.summary-label{
+    color:var(--soft);
+    font-size:7px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+}
+
+.summary-value{
+    margin-top:6px;
+    font-family:Georgia,serif;
+    font-size:21px;
+}
+
+.summary-unit{
+    color:var(--muted);
+    font-family:Arial,sans-serif;
+    font-size:9px;
+}
+
+
+/* =========================
+   REFERRAL SUMMARY
+========================= */
+
+.referral-card{
+    margin-top:13px;
+    padding:18px;
+    border:1px solid rgba(229,34,73,.22);
+    border-radius:17px;
+    background:
+        radial-gradient(
+            circle at 100% 0%,
+            rgba(229,34,73,.09),
+            transparent 45%
+        ),
+        var(--panel);
+}
+
+.referral-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:15px;
+}
+
+.referral-title{
+    font-family:Georgia,serif;
+    font-size:20px;
+}
+
+.referral-rate{
+    color:#ed5875;
+    font-size:10px;
+    font-weight:600;
+}
+
+.referral-code-box{
+    margin-top:13px;
+    padding:12px;
+    border:1px solid var(--border-soft);
+    border-radius:10px;
+    background:#0b0b0f;
+}
+
+.referral-code-label{
+    color:var(--soft);
+    font-size:7px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+}
+
+.referral-code{
+    margin-top:5px;
+    color:#dddde2;
+    font-family:monospace;
+    font-size:11px;
+    letter-spacing:1px;
+}
+
+.referral-info{
+    margin-top:10px;
+    color:var(--muted);
+    font-size:8px;
+    line-height:1.6;
+}
+
+
+/* =========================
+   BOTTOM NAV
+========================= */
+
+.bottom-nav{
+    position:fixed;
+    left:50%;
+    bottom:14px;
+    transform:translateX(-50%);
+    width:calc(100% - 28px);
+    max-width:700px;
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:4px;
+    padding:7px;
+    border:1px solid var(--border);
+    border-radius:18px;
+    background:rgba(11,11,15,.94);
+    backdrop-filter:blur(16px);
+    z-index:20;
+}
+
+.nav-item{
+    min-height:49px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:4px;
+    border-radius:12px;
+    color:#707078;
+    font-size:9px;
+}
+
+.nav-icon{
+    font-size:16px;
+}
+
+.nav-item.active{
+    color:white;
+    background:rgba(229,34,73,.12);
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:600px){
+
+    .app{
+        padding:15px 15px 115px;
+    }
+
+    .filters{
+        grid-template-columns:repeat(3,1fr);
+    }
+
+    .summary{
+        grid-template-columns:1fr;
+    }
+}
+
+@media(max-width:430px){
+
+    .filters{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .record{
+        padding:12px;
+    }
+
+    .record-icon{
+        width:36px;
+        height:36px;
+    }
+
+    .record-name{
+        font-size:9px;
+    }
+
+    .record-amount{
+        font-size:9px;
+    }
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+<main class="app">
+
+
+<header class="topbar">
+
+    <a
+        href="dashboard.html"
+        class="brand"
+    >
+
+        <img
+            src="logo.png"
+            alt="AVERYX Logo"
+        >
+
+        <span class="brand-name">
+            AVERYX
+        </span>
+
+    </a>
+
+
+    <a
+        href="profile.html"
+        class="profile-button"
+        aria-label="Open Profile"
+    >
+
+        <div class="top-profile-details">
+
+            <div
+                class="top-profile-name"
+                id="topProfileName"
+            >
+                Your Nickname
+            </div>
+
+            <div
+                class="top-profile-id"
+                id="topProfileId"
+            >
+                ID: 00000
+            </div>
+
+        </div>
+
+
+        <div
+            class="top-profile-avatar"
+            id="topProfileAvatar"
+        ></div>
+
+    </a>
+
+</header>
+
+
+
+<section class="header">
+
+    <div class="eyebrow">
+        Activity
+    </div>
+
+    <h1>
+        Records
+    </h1>
+
+    <p>
+        Track your deposits, withdrawals,
+        subscription and referral rewards.
+    </p>
+
+</section>
+
+
+
+<!-- =========================
+     FILTERS
+========================= -->
+
+<div class="filters">
+
+    <button
+        type="button"
+        class="filter-btn active"
+        data-filter="all"
+    >
+        All
+    </button>
+
+
+    <button
+        type="button"
+        class="filter-btn"
+        data-filter="deposit"
+    >
+        Deposits
+    </button>
+
+
+    <button
+        type="button"
+        class="filter-btn"
+        data-filter="withdraw"
+    >
+        Withdrawals
+    </button>
+
+
+    <button
+        type="button"
+        class="filter-btn"
+        data-filter="subscription"
+    >
+        subscription
+    </button>
+
+
+    <button
+        type="button"
+        class="filter-btn"
+        data-filter="referral"
+    >
+        Referrals
+    </button>
+
+</div>
+
+
+
+<!-- =========================
+     RECORD LIST
+========================= -->
+
+<div
+    class="records"
+    id="records"
+></div>
+
+
+
+<!-- =========================
+     SUMMARY
+========================= -->
+
+<section class="summary">
+
+    <div class="summary-card">
+
+        <div class="summary-label">
+            Total Deposited
+        </div>
+
+        <div class="summary-value">
+
+            <span id="totalDeposit">
+                0.00
+            </span>
+
+            <span class="summary-unit">
+                USDT
+            </span>
+
+        </div>
+
+    </div>
+
+
+
+    <div class="summary-card">
+
+        <div class="summary-label">
+            Total Withdrawn
+        </div>
+
+        <div class="summary-value">
+
+            <span id="totalWithdraw">
+                0.00
+            </span>
+
+            <span class="summary-unit">
+                USDT
+            </span>
+
+        </div>
+
+    </div>
+
+
+
+    <div class="summary-card">
+
+        <div class="summary-label">
+            Referral Rewards
+        </div>
+
+        <div class="summary-value">
+
+            <span id="referralRewards">
+                0.00
+            </span>
+
+            <span class="summary-unit">
+                USDT
+            </span>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =========================
+     REFERRAL TRACKING
+========================= -->
+
+<section class="referral-card">
+
+    <div class="referral-head">
+
+        <div class="referral-title">
+            Referral Activity
+        </div>
+
+        <div class="referral-rate">
+            5% Reward
+        </div>
+
+    </div>
+
+
+    <div class="referral-code-box">
+
+        <div class="referral-code-label">
+            Your Referral Code
+        </div>
+
+        <div
+            class="referral-code"
+            id="referralCode"
+        >
+            Loading...
+        </div>
+
+    </div>
+
+
+    <div class="referral-info">
+        Referral activity is tracked using the unique
+        referral code connected to your profile. A
+        referral reward is recorded only when the
+        referred profile completes a qualifying deposit.
+    </div>
+
+</section>
+
+
+</main>
+
+
+
+<!-- =========================
+     BOTTOM NAV
+========================= -->
+
+<nav class="bottom-nav">
+
+    <a
+        href="dashboard.html"
+        class="nav-item"
+    >
+        <span class="nav-icon">⌂</span>
+        Home
+    </a>
+
+
+    <a
+        href="subscription.html"
+        class="nav-item"
+    >
+        <span class="nav-icon">◇</span>
+        Tiers
+    </a>
+
+
+    <a
+        href="wallet.html"
+        class="nav-item"
+    >
+        <span class="nav-icon">◈</span>
+        Wallet
+    </a>
+
+
+    <a
+        href="records.html"
+        class="nav-item active"
+    >
+        <span class="nav-icon">≡</span>
+        Records
+    </a>
+
+
+    <a
+        href="profile.html"
+        class="nav-item"
+    >
+        <span class="nav-icon">○</span>
+        Profile
+    </a>
+
+</nav>
+
+
+
+<script>
+
+/* ==================================================
+   AVERYX RECORDS - LIVE DATA
+   Source of truth: backend transaction API
+================================================== */
+
+const API = "http://localhost:3000";
+
+let records = [];
+
+let activeFilter = "all";
+
+
+const TIERS = [
+
+    {
+        level:1,
+        logo:"tier-fool.png"
+    },
+
+    {
+        level:2,
+        logo:"tier-prodigy.png"
+    },
+
+    {
+        level:3,
+        logo:"tier-magician.png"
+    },
+
+    {
+        level:4,
+        logo:"tier-conqueror.png"
+    },
+
+    {
+        level:5,
+        logo:"tier-emperor.png"
+    },
+
+    {
+        level:6,
+        logo:"shadow-monarch.png"
+    },
+
+    {
+        level:7,
+        logo:"tier-berserk.png"
+    }
+
+];
+
+
+
+function getToken(){
+
+    return (
+
+        localStorage.getItem(
+            "averyx_token"
+        )
+
+        ||
+
+        localStorage.getItem(
+            "token"
+        )
+
+        ||
+
+        localStorage.getItem(
+            "authToken"
+        )
+
+        ||
+
+        ""
+
+    );
+
+}
+
+
+
+async function apiGet(endpoint){
+
+    const token = getToken();
+
+
+    if(!token){
+
+        throw new Error(
+            "Please log in again."
+        );
+
+    }
+
+
+    const response = await fetch(
+
+        `${API}${endpoint}`,
+
+        {
+
+            method:"GET",
+
+            headers:{
+
+                "Content-Type":
+                    "application/json",
+
+                "Authorization":
+                    `Bearer ${token}`
+
+            },
+
+            cache:"no-store"
+
+        }
+
+    );
+
+
+    const data =
+        await response
+            .json()
+            .catch(() => ({}));
+
+
+    if(!response.ok){
+
+        throw new Error(
+
+            data.message ||
+            "Unable to load records."
+
+        );
+
+    }
+
+
+    return data;
+
+}
+
+
+
+/* ==================================================
+   PROFILE HEADER
+================================================== */
+
+const DEFAULT_PROFILE = {
+
+    nickname:"Your Nickname",
+
+    uniqueId:"00000",
+
+    publicUid:"00000",
+
+    referralCode:"",
+
+    selectedProfileTier:1,
+
+    highestUnlockedTier:1
+
+};
+
+
+
+function readLocalProfile(){
+
+    try{
+
+        const raw =
+            localStorage.getItem(
+                "averyx_profile"
+            );
+
+        const saved =
+            raw
+                ? JSON.parse(raw)
+                : {};
+
+
+        return {
+
+            ...DEFAULT_PROFILE,
+
+            ...(
+                saved &&
+                typeof saved === "object"
+                    ? saved
+                    : {}
+            )
+
+        };
+
+    }catch(error){
+
+        return {
+            ...DEFAULT_PROFILE
+        };
+
+    }
+
+}
+
+
+
+/* ==================================================
+   REFERRAL CODE
+================================================== */
+
+function renderReferralCode(){
+
+    const profile =
+        readLocalProfile();
+
+
+    const referralCode =
+
+        profile.referralCode
+
+        ||
+
+        profile.referral_code
+
+        ||
+
+        profile.referral
+
+        ||
+
+        "";
+
+
+    const element =
+        document.getElementById(
+            "referralCode"
+        );
+
+
+    if(!element){
+
+        return;
+
+    }
+
+
+    element.textContent =
+        referralCode || "Not available";
+
+}
+
+
+
+/* ==================================================
+   TIER
+================================================== */
+
+function getTierLevel(profile){
+
+    const value = Number(
+
+        profile.selectedProfileTier
+
+        ||
+
+        profile.selectedTier
+
+        ||
+
+        1
+
+    );
+
+
+    if(!Number.isFinite(value)){
+
+        return 1;
+
+    }
+
+
+    return Math.min(
+
+        Math.max(
+            Math.floor(value),
+            1
+        ),
+
+        TIERS.length
+
+    );
+
+}
+
+
+
+/* ==================================================
+   PROFILE HEADER RENDER
+================================================== */
+
+function renderProfileHeader(){
+
+    const profile =
+        readLocalProfile();
+
+
+    const tier =
+        TIERS[
+            getTierLevel(profile) - 1
+        ];
+
+
+    const nickname =
+
+        profile.nickname
+
+        ||
+
+        "Your Nickname";
+
+
+    const id =
+
+        profile.uniqueId
+
+        ||
+
+        profile.publicUid
+
+        ||
+
+        "00000";
+
+
+    const nameElement =
+        document.getElementById(
+            "topProfileName"
+        );
+
+
+    const idElement =
+        document.getElementById(
+            "topProfileId"
+        );
+
+
+    const avatarElement =
+        document.getElementById(
+            "topProfileAvatar"
+        );
+
+
+    if(nameElement){
+
+        nameElement.textContent =
+            nickname;
+
+    }
+
+
+    if(idElement){
+
+        idElement.textContent =
+            `ID: ${id}`;
+
+    }
+
+
+    if(avatarElement){
+
+        avatarElement.innerHTML = "";
+
+
+        const image =
+            document.createElement("img");
+
+
+        image.src =
+            tier.logo;
+
+
+        image.alt =
+            "Profile";
+
+
+        image.onerror = () => {
+
+            avatarElement.innerHTML =
+                "";
+
+        };
+
+
+        avatarElement.appendChild(
+            image
+        );
+
+    }
+
+}
+
+
+
+/* ==================================================
+   RECORD HELPERS
+================================================== */
+
+function normalizeRecord(record){
+
+    return {
+
+        id:record.id,
+
+        type:
+            String(
+                record.type ||
+                "activity"
+            ),
+
+        amountUSDT:
+            Number(
+                record.amountUSDT ??
+                record.amount_usdt ??
+                record.amount
+            ) || 0,
+
+        status:
+            String(
+                record.status ||
+                "completed"
+            ),
+
+        reference:
+            record.reference ||
+            "",
+
+        createdAt:
+            record.createdAt ||
+            record.created_at ||
+            null
+
+    };
+
+}
+
+
+
+function getRecordType(record){
+
+    const type =
+        String(
+            record.type || ""
+        ).toLowerCase();
+
+
+    if(
+        type.includes("deposit")
+    ){
+
+        return "deposit";
+
+    }
+
+
+    if(
+
+        type.includes("withdraw")
+
+        ||
+
+        type.includes("withdrawal")
+
+    ){
+
+        return "withdraw";
+
+    }
+
+
+    if(
+
+        type.includes("subscription")
+
+        ||
+
+        type.includes("tier")
+
+        ||
+
+        type.includes("reward")
+
+    ){
+
+        return "subscription";
+
+    }
+
+
+    if(
+
+        type.includes("referral")
+
+        ||
+
+        type.includes("refer")
+
+    ){
+
+        return "referral";
+
+    }
+
+
+    return "other";
+
+}
+
+
+
+function getIcon(type){
+
+    if(type === "deposit")
+        return "↓";
+
+    if(type === "withdraw")
+        return "↑";
+
+    if(type === "subscription")
+        return "◇";
+
+    if(type === "referral")
+        return "♢";
+
+    return "•";
+
+}
+
+
+
+function getStatusClass(status){
+
+    const value =
+        String(
+            status || ""
+        ).toLowerCase();
+
+
+    if(
+        value.includes("pending")
+    ){
+
+        return "pending";
+
+    }
+
+
+    if(
+
+        value.includes("failed")
+
+        ||
+
+        value.includes("rejected")
+
+    ){
+
+        return "failed";
+
+    }
+
+
+    return "completed";
+
+}
+
+
+
+function formatDate(value){
+
+    if(!value){
+
+        return "";
+
+    }
+
+
+    const date =
+        new Date(value);
+
+
+    if(
+        Number.isNaN(
+            date.getTime()
+        )
+    ){
+
+        return String(value);
+
+    }
+
+
+    return date.toLocaleString(
+
+        undefined,
+
+        {
+
+            day:"2-digit",
+
+            month:"short",
+
+            year:"numeric",
+
+            hour:"2-digit",
+
+            minute:"2-digit"
+
+        }
+
+    );
+
+}
+
+
+
+/* ==================================================
+   SUMMARY
+================================================== */
+
+function updateSummary(){
+
+    let totalDeposit = 0;
+
+    let totalWithdraw = 0;
+
+    let referralRewards = 0;
+
+
+    records.forEach(record => {
+
+        const type =
+            getRecordType(record);
+
+
+        const amount =
+            Number(
+                record.amountUSDT
+            ) || 0;
+
+
+        if(
+            type === "deposit"
+        ){
+
+            totalDeposit +=
+                amount;
+
+        }
+
+
+        if(
+            type === "withdraw"
+        ){
+
+            totalWithdraw +=
+                amount;
+
+        }
+
+
+        if(
+
+            type === "referral"
+
+            &&
+
+            String(
+                record.status
+            ).toLowerCase()
+                === "completed"
+
+        ){
+
+            referralRewards +=
+                amount;
+
+        }
+
+    });
+
+
+    document.getElementById(
+        "totalDeposit"
+    ).textContent =
+        totalDeposit.toFixed(2);
+
+
+    document.getElementById(
+        "totalWithdraw"
+    ).textContent =
+        totalWithdraw.toFixed(2);
+
+
+    document.getElementById(
+        "referralRewards"
+    ).textContent =
+        referralRewards.toFixed(2);
+
+}
+
+
+
+/* ==================================================
+   RENDER RECORDS
+================================================== */
+
+function renderRecords(
+    filter = activeFilter
+){
+
+    activeFilter =
+        filter;
+
+
+    const container =
+        document.getElementById(
+            "records"
+        );
+
+
+    let filtered =
+        records;
+
+
+    if(
+        filter !== "all"
+    ){
+
+        filtered =
+            records.filter(
+
+                record =>
+
+                    getRecordType(
+                        record
+                    ) === filter
+
+            );
+
+    }
+
+
+    if(
+        filtered.length === 0
+    ){
+
+        container.innerHTML = `
+
+            <div class="empty">
+
+                <div class="empty-icon">
+                    ≡
+                </div>
+
+                <div class="empty-title">
+                    No Records Yet
+                </div>
+
+                <div class="empty-text">
+
+                    Your ${
+                        filter === "all"
+                            ? "activity"
+                            : filter +
+                              " activity"
+                    }
+
+                    will appear here
+                    when records are available.
+
+                </div>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    container.innerHTML =
+        "";
+
+
+    filtered.forEach(record => {
+
+        const type =
+            getRecordType(
+                record
+            );
+
+
+        const icon =
+            getIcon(type);
+
+
+        const name =
+            record.type ||
+            "Activity";
+
+
+        const amount =
+            Number(
+                record.amountUSDT
+            ) || 0;
+
+
+        const status =
+            record.status ||
+            "Completed";
+
+
+        const date =
+            formatDate(
+                record.createdAt
+            );
+
+
+        const reference =
+            record.reference ||
+            "";
+
+
+        const row =
+            document.createElement(
+                "div"
+            );
+
+
+        row.className =
+            "record";
+
+
+        row.innerHTML = `
+
+            <div class="record-left">
+
+                <div class="record-icon">
+                    ${icon}
+                </div>
+
+
+                <div class="record-info">
+
+                    <div class="record-name">
+                        ${escapeHTML(name)}
+                    </div>
+
+
+                    <div class="record-date">
+                        ${escapeHTML(date)}
+                    </div>
+
+
+                    ${
+                        reference
+
+                            ? `
+
+                                <div
+                                    class="record-referral"
+                                >
+                                    ${escapeHTML(
+                                        reference
+                                    )}
+                                </div>
+
+                              `
+
+                            : ""
+
+                    }
+
+                </div>
+
+            </div>
+
+
+            <div class="record-right">
+
+                <div class="record-amount">
+                    ${amount.toFixed(2)} USDT
+                </div>
+
+
+                <div
+                    class="
+                        record-status
+                        ${getStatusClass(status)}
+                    "
+                >
+                    ${escapeHTML(status)}
+                </div>
+
+            </div>
+
+        `;
+
+
+        container.appendChild(
+            row
+        );
+
+    });
+
+}
+
+
+
+/* ==================================================
+   ESCAPE HTML
+================================================== */
+
+function escapeHTML(value){
+
+    return String(
+        value ?? ""
+    )
+
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+
+        .replace(
+            /</g,
+            "&lt;"
+        )
+
+        .replace(
+            />/g,
+            "&gt;"
+        )
+
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+
+
+/* ==================================================
+   LOAD LIVE TRANSACTIONS
+================================================== */
+
+async function loadRecords(){
+
+    try{
+
+        const data =
+            await apiGet(
+                "/api/wallet/transactions"
+            );
+
+
+        records =
+            Array.isArray(
+                data.transactions
+            )
+
+                ? data.transactions.map(
+                    normalizeRecord
+                )
+
+                : [];
+
+
+        updateSummary();
+
+        renderRecords(
+            activeFilter
+        );
+
+
+    }catch(error){
+
+        console.error(
+            "AVERYX records load error:",
+            error
+        );
+
+
+        const container =
+            document.getElementById(
+                "records"
+            );
+
+
+        container.innerHTML = `
+
+            <div class="empty">
+
+                <div class="empty-icon">
+                    !
+                </div>
+
+                <div class="empty-title">
+                    Unable to Load Records
+                </div>
+
+                <div class="empty-text">
+                    ${escapeHTML(
+                        error.message
+                    )}
+                </div>
+
+            </div>
+
+        `;
+
+
+        updateSummary();
+
+    }
+
+}
+
+
+
+/* ==================================================
+   FILTER BUTTONS
+================================================== */
+
+document
+    .querySelectorAll(
+        ".filter-btn"
+    )
+    .forEach(button => {
+
+        button.addEventListener(
+
+            "click",
+
+            function(){
+
+                document
+                    .querySelectorAll(
+                        ".filter-btn"
+                    )
+                    .forEach(btn =>
+
+                        btn.classList.remove(
+                            "active"
+                        )
+
+                    );
+
+
+                this.classList.add(
+                    "active"
+                );
+
+
+                renderRecords(
+                    this.dataset.filter
+                );
+
+            }
+
+        );
+
+    });
+
+
+
+/* ==================================================
+   INITIAL LOAD
+================================================== */
+
+renderProfileHeader();
+
+renderReferralCode();
+
+loadRecords();
+
+
+
+/* ==================================================
+   PAGE SHOW SYNC
+================================================== */
+
+window.addEventListener(
+
+    "pageshow",
+
+    () => {
+
+        renderProfileHeader();
+
+        renderReferralCode();
+
+        loadRecords();
+
+    }
+
+);
+
+
+
+/* ==================================================
+   STORAGE SYNC
+================================================== */
+
+window.addEventListener(
+
+    "storage",
+
+    event => {
+
+        if(
+
+            [
+
+                "averyx_profile",
+
+                "averyx_subscription",
+
+                "averyx_subscription_data"
+
+            ].includes(
+                event.key
+            )
+
+        ){
+
+            renderProfileHeader();
+
+            renderReferralCode();
+
+        }
+
+    }
+
+);
+
+
+
+/*
+   Keep records current while
+   the page is open.
+
+   Backend remains the source
+   of truth.
+*/
+
+setInterval(
+
+    loadRecords,
+
+    15000
+
+);
+
+</script>
+
+</body>
+
+</html>
