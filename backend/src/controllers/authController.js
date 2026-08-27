@@ -1,8 +1,6 @@
 const argon2 = require("argon2");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
-const nodemailer = require("nodemailer");
-const dns = require("dns");
 
 const { pool } = require("../db");
 
@@ -18,64 +16,105 @@ const RESET_TOKEN_EXPIRY_MS =
 
 
 /* ==================================================
-   EMAIL TRANSPORT
+   EMAIL DELIVERY - RESEND API
 ================================================== */
 
-const mailTransporter =
-    nodemailer.createTransport({
+/*
+   Uses HTTPS instead of SMTP.
 
-        host:
-            process.env.SMTP_HOST ||
-            "smtp.gmail.com",
+   Required Render environment variables:
 
-        port:
-            Number(
-                process.env.SMTP_PORT || 587
-            ),
+   RESEND_API_KEY
+   RESEND_FROM
 
-        secure: false,
+   Example RESEND_FROM:
+   AVERYX <no-reply@your-verified-domain.com>
+*/
 
-        auth: {
+async function sendEmail({
+    to,
+    subject,
+    text,
+    html
+}) {
 
-            user:
-                process.env.SMTP_USER,
+    const apiKey =
+        process.env.RESEND_API_KEY;
 
-            pass:
-                process.env.SMTP_PASS
+    const from =
+        process.env.RESEND_FROM;
 
-        },
+    if (
+        !apiKey ||
+        !from
+    ) {
 
-        /*
-           Force DNS resolution to IPv4 explicitly.
-           family: 4 alone was not sufficient on Render.
-        */
-        lookup: (
-            hostname,
-            options,
-            callback
-        ) => {
+        throw new Error(
+            "Email service is not configured. Missing RESEND_API_KEY or RESEND_FROM."
+        );
 
-            dns.lookup(
-                hostname,
-                {
-                    family: 4,
-                    all: false
+    }
+
+    const response =
+        await fetch(
+            "https://api.resend.com/emails",
+            {
+
+                method:
+                    "POST",
+
+                headers: {
+
+                    Authorization:
+                        `Bearer ${apiKey}`,
+
+                    "Content-Type":
+                        "application/json"
+
                 },
-                callback
+
+                body:
+                    JSON.stringify({
+
+                        from,
+
+                        to: [to],
+
+                        subject,
+
+                        text,
+
+                        html
+
+                    })
+
+            }
+        );
+
+
+    const data =
+        await response.json()
+            .catch(
+                () => ({})
             );
-        },
 
-        connectionTimeout:
-            15000,
 
-        greetingTimeout:
-            15000,
+    if (
+        !response.ok
+    ) {
 
-        socketTimeout:
-            20000
+        throw new Error(
+            data.message ||
+            data.error ||
+            `Email delivery failed with status ${response.status}.`
+        );
 
-    });
+    }
 
+
+    return data;
+
+}
 
 /* ==================================================
    GENERATE UNIQUE REFERRAL CODE
@@ -1349,7 +1388,7 @@ async function requestPasswordReset(req, res) {
            SEND OTP BY EMAIL
         ================================================== */
 
-        await mailTransporter.sendMail({
+        await sendEmail({
 
             from:
                 process.env.SMTP_FROM ||
