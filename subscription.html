@@ -1011,20 +1011,13 @@
         </a>
 
         <a
-            href="dashboard.html"
-            class="back"
-        >
-            ← Dashboard
-        </a>
-
-        <a
             href="profile.html"
             class="subscription-profile"
             id="subscriptionProfile"
         >
             <div class="subscription-profile-details">
-                <div class="subscription-profile-name" id="subscriptionProfileName">Your Nickname</div>
-                <div class="subscription-profile-id" id="subscriptionProfileId">ID: 05031</div>
+                <div class="subscription-profile-name" id="subscriptionProfileName">Loading...</div>
+                <div class="subscription-profile-id" id="subscriptionProfileId">ID: —</div>
             </div>
             <div class="subscription-profile-avatar" id="subscriptionProfileAvatar"></div>
         </a>
@@ -1282,7 +1275,13 @@
    LIVE BACKEND VERSION
 ================================================== */
 
-const API_BASE_URL = "http://localhost:3000";
+const API_BASE_URL =
+    window.AVERYX_API_BASE_URL ||
+    (
+        window.location.protocol === "file:"
+            ? "https://averyx.onrender.com"
+            : ""
+    );
 
 
 /* ==================================================
@@ -1593,7 +1592,7 @@ function renderSubscriptionProfileHeader() {
     const id =
         String(
             profile.uniqueId ||
-            "05031"
+            "—"
         );
 
     const selectedLevel =
@@ -2302,135 +2301,117 @@ async function initializesubscription() {
 
     try {
 
-        const data =
-            await apiGet(
-                "/api/auth/me"
-            );
+        /*
+           Load identity and wallet independently.
+           Running these in parallel avoids unnecessary delay.
+        */
+        const [
+            accountData,
+            walletData
+        ] = await Promise.all([
+            apiGet("/api/auth/me"),
+            apiGet("/api/wallet/")
+        ]);
 
-
-        if (!data) {
+        if (!accountData || !walletData) {
             return;
         }
 
-
         const user =
-            data.user ||
-            {};
-
-        const backendProfile =
-            data.profile ||
-            {};
+            accountData.user || {};
 
         const wallet =
-            data.wallet ||
+            walletData.wallet ||
+            walletData.data ||
             {};
 
-
         /*
-           PostgreSQL wallet balance.
+           The wallet endpoint is the source of truth
+           for the qualifying balance.
         */
-
         const balance =
             Number(
-                wallet.balanceUSDT
-            ) || 0;
-
-
-        /*
-           Calculate unlock status from REAL balance.
-        */
+                wallet.balanceUSDT ??
+                wallet.balance ??
+                wallet.totalDeposit ??
+                0
+            );
 
         const highestTier =
             calculateHighestUnlocked(
                 balance
             );
 
-
         const nextTier =
             getNextTier(
                 highestTier.level
             );
 
-
         /*
-           CURRENT SUBSCRIPTION IS AUTOMATICALLY
-           DETERMINED BY THE LIVE QUALIFYING BALANCE.
-
-           Example:
-           230 USDT balance -> The Emperor
-
-           We intentionally do NOT use the old
-           selectedProfileTier value here, because that
-           value was still "The Fool" in the profile.
+           The subscription tier is determined by the
+           live qualifying balance.
         */
+        const selectedTier =
+            highestTier;
 
         const localProfile =
             getLocalProfile();
 
-
-        const selectedTier =
-            highestTier;
-
-
         /*
-           Keep the local profile synchronized with
-           the real unlocked tier.
+           Keep account identity from the backend.
+           Keep only visual tier preference locally.
         */
+        profile = {
+            ...localProfile,
 
-        profile =
-            {
-                ...localProfile,
+            nickname:
+                user.nickname ||
+                localProfile.nickname ||
+                DEFAULT_PROFILE.nickname,
 
-                nickname:
-                    localProfile.nickname ||
-                    user.nickname ||
-                    DEFAULT_PROFILE.nickname,
+            email:
+                user.email ||
+                localProfile.email ||
+                DEFAULT_PROFILE.email,
 
-                email:
-                    localProfile.email ||
-                    user.email ||
-                    DEFAULT_PROFILE.email,
+            phone:
+                user.phone ||
+                localProfile.phone ||
+                DEFAULT_PROFILE.phone,
 
-                phone:
-                    localProfile.phone ||
-                    user.phone ||
-                    DEFAULT_PROFILE.phone,
+            referralCode:
+                user.referralCode ||
+                localProfile.referralCode ||
+                DEFAULT_PROFILE.referralCode,
 
-                referralCode:
-                    localProfile.referralCode ||
-                    user.referralCode ||
-                    DEFAULT_PROFILE.referralCode,
+            uniqueId:
+                user.publicUid ||
+                user.public_uid ||
+                user.uniqueId ||
+                user.id ||
+                localProfile.uniqueId ||
+                "",
 
-                uniqueId:
-                    localProfile.uniqueId ||
-                    user.uniqueId ||
-                    user.publicUid ||
-                    user.public_uid ||
-                    "05031",
+            highestUnlockedTier:
+                highestTier.level,
 
-                highestUnlockedTier:
-                    highestTier.level,
-
-                selectedProfileTier:
+            selectedProfileTier:
+                Math.min(
                     Number(
                         localProfile.selectedProfileTier
-                    ) || highestTier.level
-            };
+                    ) || highestTier.level,
+                    highestTier.level
+                )
+        };
 
+        saveLocalProfile(profile);
 
-        saveLocalProfile(
-            profile
-        );
-
-
-        /* =========================
-           RENDER
-        ========================= */
-
+        /*
+           The current subscription reflects the live tier.
+        */
         renderCurrentTier(
             selectedTier
         );
-
 
         renderProgress(
             balance,
@@ -2438,21 +2419,25 @@ async function initializesubscription() {
             nextTier
         );
 
+        /*
+           Keep the selected visual logo if it is unlocked.
+        */
+        const visualSelectedTier =
+            getSelectedTier(
+                profile.selectedProfileTier,
+                highestTier.level
+            );
 
         renderTierCards(
             balance,
             highestTier.level,
-            selectedTier.level
+            visualSelectedTier.level
         );
 
-
-        /*
-           Helpful page title.
-        */
+        renderSubscriptionProfileHeader();
 
         document.title =
-            `AVERYX | Subscription`;
-
+            "AVERYX | Subscription";
 
         console.log(
             "AVERYX subscription data:",
@@ -2469,7 +2454,6 @@ async function initializesubscription() {
             }
         );
 
-
     } catch (error) {
 
         console.error(
@@ -2477,23 +2461,16 @@ async function initializesubscription() {
             error
         );
 
-
         document.getElementById(
             "progressText"
         ).textContent =
             error.message ||
             "Unable to load subscription data.";
 
-
-        /*
-           Do not silently show fake wallet data.
-        */
-
         document.getElementById(
             "progressPercent"
         ).textContent =
             "ERROR";
-
 
         document.getElementById(
             "progressFill"
@@ -2503,7 +2480,6 @@ async function initializesubscription() {
     }
 
 }
-
 
 /* ==================================================
    START

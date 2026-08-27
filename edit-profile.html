@@ -758,7 +758,7 @@
                     class="top-profile-id"
                     id="topProfileId"
                 >
-                    ID: 05031
+                    ID: —
                 </div>
             </div>
 
@@ -1028,6 +1028,19 @@
 
 
 <script>
+
+/* ==================================================
+   API
+================================================== */
+
+const API_BASE_URL =
+    window.AVERYX_API_BASE_URL ||
+    (
+        window.location.protocol === "file:"
+            ? "https://averyx.onrender.com"
+            : ""
+    );
+
 
 /* ==================================================
    DEFAULT PROFILE
@@ -1315,7 +1328,7 @@ function formatAccountId(rawId) {
     }
 
     // Never hash an ID. Hashing made the visible ID change unpredictably.
-    return "05031";
+    return value || "";
 }
 
 let accountId = null;
@@ -1694,68 +1707,134 @@ async function syncLiveUnlockedTiers() {
 
         if (!token) return;
 
-        // Load the real account identity when available.
-        const accountResponse = await fetch("/api/auth/me", {
-            method: "GET",
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
+        const headers = {
+            Authorization: `Bearer ${token}`
+        };
+
+        const [
+            accountResponse,
+            walletResponse
+        ] = await Promise.all([
+            fetch(
+                `${API_BASE_URL}/api/auth/me`,
+                {
+                    method: "GET",
+                    headers
+                }
+            ),
+            fetch(
+                `${API_BASE_URL}/api/wallet/`,
+                {
+                    method: "GET",
+                    headers
+                }
+            )
+        ]);
 
         if (accountResponse.ok) {
-            const accountData = await accountResponse.json().catch(() => ({}));
-            if (accountData.success && accountData.user) {
-                const user = accountData.user;
-                profile.nickname = user.nickname || profile.nickname;
-                profile.email = user.email || profile.email;
-                profile.referralCode = user.referralCode || profile.referralCode;
+            const accountData =
+                await accountResponse
+                    .json()
+                    .catch(() => ({}));
 
-                // Always derive the public ID from the stable numeric account ID.
-                profile.uniqueId = formatAccountId(
-                    user.id ?? user.userId ?? user.publicUid ?? profile.uniqueId
-                );
+            const user =
+                accountData.user || {};
 
-                document.getElementById("nickname").value = profile.nickname || "";
-                document.getElementById("email").value = profile.email || "";
-                document.getElementById("referralCode").value = profile.referralCode || "";
-            }
+            profile.nickname =
+                user.nickname ||
+                profile.nickname;
+
+            profile.email =
+                user.email ||
+                profile.email;
+
+            profile.referralCode =
+                user.referralCode ||
+                user.referral_code ||
+                profile.referralCode;
+
+            profile.uniqueId =
+                user.publicUid ||
+                user.public_uid ||
+                user.uniqueId ||
+                user.id ||
+                profile.uniqueId ||
+                "";
+
+            document.getElementById(
+                "nickname"
+            ).value =
+                profile.nickname || "";
+
+            document.getElementById(
+                "email"
+            ).value =
+                profile.email || "";
+
+            document.getElementById(
+                "referralCode"
+            ).value =
+                profile.referralCode || "";
         }
 
-        // The wallet endpoint only unlocks tiers. It must never overwrite the
-        // user's selected profile logo.
-        const walletResponse = await fetch("/api/wallet/", {
-            method: "GET",
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
-
         if (walletResponse.ok) {
-            const data = await walletResponse.json().catch(() => ({}));
-            const liveWallet = data?.wallet || {};
-            const liveBalance = Number(liveWallet.balanceUSDT) || 0;
+            const data =
+                await walletResponse
+                    .json()
+                    .catch(() => ({}));
+
+            const liveWallet =
+                data.wallet ||
+                data.data ||
+                {};
+
+            const liveBalance =
+                Number(
+                    liveWallet.balanceUSDT ??
+                    liveWallet.balance ??
+                    liveWallet.totalDeposit ??
+                    0
+                );
 
             let liveHighest = 1;
+
             TIERS.forEach(tier => {
-                if (liveBalance >= Number(tier.deposit)) {
-                    liveHighest = tier.level;
+                if (
+                    liveBalance >=
+                    Number(tier.deposit)
+                ) {
+                    liveHighest =
+                        tier.level;
                 }
             });
 
-            if (liveHighest > highestUnlocked) {
-                highestUnlocked = liveHighest;
-                profile.highestUnlockedTier = highestUnlocked;
-            }
+            highestUnlocked =
+                liveHighest;
+
+            profile.highestUnlockedTier =
+                highestUnlocked;
         }
 
-        // Keep the saved selection. Only fall back to the highest unlocked
-        // tier if the saved selection is missing/invalid.
-        const savedSelected = Number(profile.selectedProfileTier);
-        if (savedSelected >= 1 && savedSelected <= highestUnlocked) {
-            selectedTierLevel = savedSelected;
+        const savedSelected =
+            Number(
+                profile.selectedProfileTier
+            );
+
+        if (
+            savedSelected >= 1 &&
+            savedSelected <= highestUnlocked
+        ) {
+            selectedTierLevel =
+                savedSelected;
         } else {
-            selectedTierLevel = Math.min(highestUnlocked, TIERS.length);
-            profile.selectedProfileTier = selectedTierLevel;
+            selectedTierLevel =
+                Math.min(
+                    highestUnlocked,
+                    TIERS.length
+                );
+
+            profile.selectedProfileTier =
+                selectedTierLevel;
         }
 
         localStorage.setItem(
@@ -1763,37 +1842,99 @@ async function syncLiveUnlockedTiers() {
             JSON.stringify(profile)
         );
 
-        document.getElementById("topProfileName").textContent =
-            profile.nickname || "Your Nickname";
-        document.getElementById("topProfileId").textContent =
-            `ID: ${profile.uniqueId || "05031"}`;
+        document.getElementById(
+            "topProfileName"
+        ).textContent =
+            profile.nickname ||
+            "Your Nickname";
 
-        const tier = TIERS.find(item => item.level === selectedTierLevel) || TIERS[0];
-        document.getElementById("topProfileAvatar").innerHTML = `
-            <img src="${tier.logo}" alt="${tier.name}">
+        document.getElementById(
+            "topProfileId"
+        ).textContent =
+            `ID: ${
+                profile.uniqueId || "—"
+            }`;
+
+        const tier =
+            TIERS.find(
+                item =>
+                    item.level ===
+                    selectedTierLevel
+            ) ||
+            TIERS[0];
+
+        document.getElementById(
+            "topProfileAvatar"
+        ).innerHTML = `
+            <img
+                src="${tier.logo}"
+                alt="${tier.name}"
+            >
         `;
 
         updatePreview();
 
-        // Rebuild only the state of existing cards. The visual layout remains untouched.
-        document.querySelectorAll(".tier-option").forEach((option, index) => {
-            const level = index + 1;
-            const unlocked = level <= highestUnlocked;
-            option.classList.toggle("locked", !unlocked);
-            option.classList.toggle("selected", level === selectedTierLevel);
+        document
+            .querySelectorAll(
+                ".tier-option"
+            )
+            .forEach(
+                (option, index) => {
 
-            const status = option.querySelector(".tier-option-status");
-            if (status) {
-                status.textContent = !unlocked
-                    ? "Locked"
-                    : (level === selectedTierLevel ? "Selected" : "Unlocked");
-            }
+                    const level =
+                        index + 1;
 
-            const lock = option.querySelector(".lock");
-            if (lock && unlocked) lock.remove();
-        });
+                    const unlocked =
+                        level <=
+                        highestUnlocked;
+
+                    option.classList.toggle(
+                        "locked",
+                        !unlocked
+                    );
+
+                    option.classList.toggle(
+                        "selected",
+                        level ===
+                        selectedTierLevel
+                    );
+
+                    const status =
+                        option.querySelector(
+                            ".tier-option-status"
+                        );
+
+                    if (status) {
+                        status.textContent =
+                            !unlocked
+                                ? "Locked"
+                                : (
+                                    level ===
+                                    selectedTierLevel
+                                        ? "Selected"
+                                        : "Unlocked"
+                                );
+                    }
+
+                    const lock =
+                        option.querySelector(
+                            ".lock"
+                        );
+
+                    if (
+                        lock &&
+                        unlocked
+                    ) {
+                        lock.remove();
+                    }
+                }
+            );
+
     } catch (error) {
-        console.warn("Edit Profile live sync skipped:", error.message);
+        console.warn(
+            "Edit Profile live sync skipped:",
+            error.message
+        );
     }
 }
 
@@ -1808,40 +1949,174 @@ document.getElementById(
     "saveButton"
 ).addEventListener(
     "click",
-    function() {
+    async function() {
+
+        const button =
+            document.getElementById(
+                "saveButton"
+            );
+
         const nickname =
-            document.getElementById("nickname").value.trim();
+            document.getElementById(
+                "nickname"
+            ).value.trim();
+
         const email =
-            document.getElementById("email").value.trim();
-        profile.nickname = nickname || "Your Nickname";
-        profile.email = email;
-        profile.uniqueId = profile.uniqueId || "05031";
-        profile.selectedProfileTier = selectedTierLevel;
-        profile.highestUnlockedTier = highestUnlocked;
+            document.getElementById(
+                "email"
+            ).value.trim();
 
-        // Edit Profile is deliberately self-contained for this page.
-        // Do not call the broken profile PUT endpoint here.
-        localStorage.setItem(
-            "averyx_profile",
-            JSON.stringify(profile)
-        );
+        profile.nickname =
+            nickname ||
+            "Your Nickname";
 
-        document.getElementById("topProfileName").textContent =
-            profile.nickname;
-        document.getElementById("topProfileId").textContent =
-            `ID: ${profile.uniqueId}`;
+        profile.email =
+            email;
 
-        const tier = TIERS.find(item => item.level === selectedTierLevel) || TIERS[0];
-        document.getElementById("topProfileAvatar").innerHTML = `
-            <img src="${tier.logo}" alt="${tier.name}">
-        `;
+        profile.selectedProfileTier =
+            selectedTierLevel;
 
-        updatePreview();
-        showToast("Profile saved successfully");
+        profile.highestUnlockedTier =
+            highestUnlocked;
 
-        setTimeout(function() {
-            window.location.href = "profile.html";
-        }, 150);
+        const token =
+            localStorage.getItem(
+                "averyx_token"
+            ) ||
+            localStorage.getItem(
+                "token"
+            ) ||
+            localStorage.getItem(
+                "authToken"
+            ) ||
+            "";
+
+        button.disabled = true;
+        button.textContent =
+            "Saving...";
+
+        try {
+            if (token) {
+                const response =
+                    await fetch(
+                        `${API_BASE_URL}/api/auth/profile`,
+                        {
+                            method: "PUT",
+                            headers: {
+                                "Content-Type":
+                                    "application/json",
+                                Authorization:
+                                    `Bearer ${token}`
+                            },
+                            body:
+                                JSON.stringify({
+                                    nickname:
+                                        profile.nickname,
+                                    email:
+                                        profile.email
+                                })
+                        }
+                    );
+
+                if (
+                    response.ok
+                ) {
+                    const data =
+                        await response
+                            .json()
+                            .catch(
+                                () => ({})
+                            );
+
+                    const user =
+                        data.user || {};
+
+                    profile.nickname =
+                        user.nickname ||
+                        profile.nickname;
+
+                    profile.email =
+                        user.email ||
+                        profile.email;
+
+                } else if (
+                    response.status !== 404 &&
+                    response.status !== 405
+                ) {
+                    throw new Error(
+                        "Unable to save profile"
+                    );
+                }
+            }
+
+            /*
+               Keep the selected logo locally because
+               it is a visual preference.
+            */
+            localStorage.setItem(
+                "averyx_profile",
+                JSON.stringify(profile)
+            );
+
+            document.getElementById(
+                "topProfileName"
+            ).textContent =
+                profile.nickname;
+
+            document.getElementById(
+                "topProfileId"
+            ).textContent =
+                `ID: ${
+                    profile.uniqueId || "—"
+                }`;
+
+            const tier =
+                TIERS.find(
+                    item =>
+                        item.level ===
+                        selectedTierLevel
+                ) ||
+                TIERS[0];
+
+            document.getElementById(
+                "topProfileAvatar"
+            ).innerHTML = `
+                <img
+                    src="${tier.logo}"
+                    alt="${tier.name}"
+                >
+            `;
+
+            updatePreview();
+
+            showToast(
+                "Profile saved successfully"
+            );
+
+            setTimeout(
+                function() {
+                    window.location.href =
+                        "profile.html";
+                },
+                500
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Profile save error:",
+                error
+            );
+
+            showToast(
+                error.message ||
+                "Unable to save profile"
+            );
+
+            button.disabled = false;
+            button.textContent =
+                "Save Changes";
+        }
     }
 );
 

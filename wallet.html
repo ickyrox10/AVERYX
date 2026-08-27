@@ -708,7 +708,7 @@ button {
                 class="wallet-profile-id"
                 id="walletProfileId"
             >
-                ID: 05031
+                ID: —
             </div>
         </div>
 
@@ -1088,7 +1088,12 @@ button {
 <script>
 
 const API_BASE_URL =
-    "http://localhost:3000";
+    window.AVERYX_API_BASE_URL ||
+    (
+        window.location.protocol === "file:"
+            ? "https://averyx.onrender.com"
+            : ""
+    );
 
 
 const TIERS = [
@@ -1591,7 +1596,7 @@ function renderWalletProfile() {
         String(
             profile.uniqueId ||
             profile.uid ||
-            "05031"
+            "—"
         );
 
     const selectedLevel =
@@ -1660,13 +1665,20 @@ async function initializeWallet() {
            wallet.withdrawableUSDT
         */
 
-        const walletResponse =
-            await apiGet(
-                "/api/wallet/"
-            );
+        /*
+           Load wallet and transaction data in parallel
+           to reduce page wait time.
+        */
+        const [
+            walletResponse,
+            transactionData
+        ] = await Promise.all([
+            apiGet("/api/wallet/"),
+            apiGet("/api/wallet/transactions")
+        ]);
 
 
-        if (!walletResponse) {
+        if (!walletResponse || !transactionData) {
             return;
         }
 
@@ -1782,17 +1794,6 @@ async function initializeWallet() {
         /*
            Transaction history
         */
-
-        const transactionData =
-            await apiGet(
-                "/api/wallet/transactions"
-            );
-
-
-        if (!transactionData) {
-            return;
-        }
-
 
         const transactionList =
             Array.isArray(

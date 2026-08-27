@@ -964,12 +964,12 @@
             <div class="detail-row">
 
                 <div class="detail-label">
-                    Phone
+                    Referral Code
                 </div>
 
                 <div
                     class="detail-value"
-                    id="phone"
+                    id="referralCodeAccount"
                 >
                     Not added
                 </div>
@@ -1284,7 +1284,13 @@
        - subscription return
     ================================================== */
 
-    const API_BASE_URL = "";
+    const API_BASE_URL =
+        window.AVERYX_API_BASE_URL ||
+        (
+            window.location.protocol === "file:"
+                ? "https://averyx.onrender.com"
+                : ""
+        );
 
     const TIERS = [
         { level: 1, name: "The Fool", deposit: 0, daily: 0, logo: "tier-fool.png" },
@@ -1301,10 +1307,42 @@
         email: "",
         phone: "",
         referralCode: "AVX-DEMO7K4M",
-        uniqueId: "05031",
+        uniqueId: "",
         selectedProfileTier: 1,
         highestUnlockedTier: 1
     };
+
+    function getAuthToken() {
+        return (
+            localStorage.getItem("averyx_token") ||
+            localStorage.getItem("token") ||
+            localStorage.getItem("authToken") ||
+            ""
+        );
+    }
+
+    async function apiGet(path) {
+        const token = getAuthToken();
+
+        const response = await fetch(
+            `${API_BASE_URL}${path}`,
+            {
+                headers: token
+                    ? {
+                        Authorization: `Bearer ${token}`
+                    }
+                    : {}
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                `Request failed (${response.status})`
+            );
+        }
+
+        return response.json();
+    }
 
     function readProfile() {
         try {
@@ -1409,7 +1447,7 @@
             }
         }
 
-        return "05031";
+        return "—";
     }
 
     function getStoredObject(key) {
@@ -1503,79 +1541,216 @@
         `;
     }
 
-    function renderProfile() {
-        const profile = readProfile();
+    async function renderProfile() {
+        let profile = readProfile();
 
-        // Keep the same stable ID format established by Edit Profile.
-        profile.uniqueId = normalizePublicId(profile.uniqueId);
+        try {
+            const [
+                accountData,
+                walletData
+            ] = await Promise.all([
+                apiGet("/api/auth/me"),
+                apiGet("/api/wallet/")
+            ]);
 
-        const highestUnlocked = getHighestUnlocked(profile);
+            const user =
+                accountData?.user || {};
 
-        // Selected PFP is independent from the highest unlocked tier.
-        // Never silently replace the user's selected unlocked PFP.
-        let selectedLevel = Number(profile.selectedProfileTier) || 1;
+            const wallet =
+                walletData?.wallet ||
+                walletData?.data ||
+                {};
 
-        if (selectedLevel < 1 || selectedLevel > highestUnlocked) {
-            selectedLevel = Math.min(
-                Math.max(1, selectedLevel),
-                highestUnlocked
+            const balance = Number(
+                wallet.balanceUSDT ??
+                wallet.balance ??
+                wallet.totalDeposit ??
+                0
+            );
+
+            let highestUnlocked = 1;
+
+            for (const tier of TIERS) {
+                if (balance >= tier.deposit) {
+                    highestUnlocked = tier.level;
+                }
+            }
+
+            profile = {
+                ...profile,
+                nickname:
+                    user.nickname ||
+                    profile.nickname ||
+                    DEFAULT_PROFILE.nickname,
+                email:
+                    user.email ||
+                    profile.email ||
+                    "",
+                phone:
+                    user.phone ||
+                    profile.phone ||
+                    "",
+                referralCode:
+                    user.referralCode ||
+                    user.referral_code ||
+                    profile.referralCode ||
+                    DEFAULT_PROFILE.referralCode,
+                uniqueId:
+                    user.publicUid ||
+                    user.public_uid ||
+                    user.uniqueId ||
+                    user.id ||
+                    profile.uniqueId ||
+                    "",
+                highestUnlockedTier:
+                    highestUnlocked
+            };
+
+        } catch (error) {
+            console.error(
+                "Profile API loading error:",
+                error
             );
         }
 
-        profile.selectedProfileTier = selectedLevel;
-        profile.highestUnlockedTier = highestUnlocked;
-        writeProfile(profile);
+        profile.uniqueId =
+            normalizePublicId(
+                profile.uniqueId
+            );
 
-        const selectedTier = getTier(selectedLevel);
-        const highestTier = getTier(highestUnlocked);
+        const highestUnlocked =
+            getHighestUnlocked(profile);
 
-        const nickname = profile.nickname || "Your Nickname";
-        const email = profile.email || "Not added";
-        const phone = profile.phone || "Not added";
-        const referralCode = profile.referralCode || "AVX-DEMO7K4M";
-        const id = profile.uniqueId;
+        let selectedLevel =
+            Number(
+                profile.selectedProfileTier
+            ) || 1;
 
-        const profileName = document.getElementById("profileName");
-        const nicknameElement = document.getElementById("nickname");
-        const emailElement = document.getElementById("email");
-        const phoneElement = document.getElementById("phone");
-        const referralElement = document.getElementById("referralCode");
-        const topName = document.getElementById("topProfileName");
-        const topId = document.getElementById("topProfileId");
-        const profileId = document.getElementById("profileUniqueId");
-        const tierBadge = document.getElementById("tierBadge");
-        const subscriptionName = document.getElementById("subscriptionName");
-        const subscriptionReturn = document.getElementById("subscriptionReturn");
-
-        if (profileName) profileName.textContent = nickname;
-        if (nicknameElement) nicknameElement.textContent = nickname;
-        if (emailElement) emailElement.textContent = email;
-        if (phoneElement) phoneElement.textContent = phone;
-        if (referralElement) referralElement.textContent = referralCode;
-
-        if (topName) topName.textContent = nickname;
-        if (topId) topId.textContent = `ID: ${id}`;
-        if (profileId) profileId.textContent = `ID: ${id}`;
-
-        if (tierBadge) tierBadge.textContent = selectedTier.name;
-
-        // Subscription remains the highest unlocked tier.
-        if (subscriptionName) subscriptionName.textContent = highestTier.name;
-        if (subscriptionReturn) {
-            subscriptionReturn.textContent = `${highestTier.daily} USDT/day`;
+        if (
+            selectedLevel < 1 ||
+            selectedLevel > highestUnlocked
+        ) {
+            selectedLevel =
+                Math.min(
+                    Math.max(1, selectedLevel),
+                    highestUnlocked
+                );
         }
 
-        // The selected PFP is shown consistently everywhere on Profile.
-        setImage(document.getElementById("profileDP"), selectedTier);
-        setImage(document.getElementById("topProfileAvatar"), selectedTier);
-        setImage(document.getElementById("subscriptionLogo"), highestTier);
+        profile.selectedProfileTier =
+            selectedLevel;
 
-        console.log("AVERYX PROFILE SYNC:", {
-            nickname,
-            id,
-            selectedProfileTier: selectedTier.name,
-            highestUnlockedTier: highestTier.name
-        });
+        profile.highestUnlockedTier =
+            highestUnlocked;
+
+        writeProfile(profile);
+
+        const selectedTier =
+            getTier(selectedLevel);
+
+        const highestTier =
+            getTier(highestUnlocked);
+
+        const nickname =
+            profile.nickname ||
+            "Your Nickname";
+
+        const email =
+            profile.email ||
+            "Not added";
+
+        const referralCode =
+            profile.referralCode ||
+            "Not added";
+
+        const id =
+            profile.uniqueId ||
+            "—";
+
+        const profileName =
+            document.getElementById("profileName");
+
+        const nicknameElement =
+            document.getElementById("nickname");
+
+        const emailElement =
+            document.getElementById("email");
+
+        const referralElement =
+            document.getElementById("referralCode");
+
+        const referralAccountElement =
+            document.getElementById("referralCodeAccount");
+
+        const topName =
+            document.getElementById("topProfileName");
+
+        const topId =
+            document.getElementById("topProfileId");
+
+        const profileId =
+            document.getElementById("profileUniqueId");
+
+        const tierBadge =
+            document.getElementById("tierBadge");
+
+        const subscriptionName =
+            document.getElementById("subscriptionName");
+
+        const subscriptionReturn =
+            document.getElementById("subscriptionReturn");
+
+        if (profileName)
+            profileName.textContent = nickname;
+
+        if (nicknameElement)
+            nicknameElement.textContent = nickname;
+
+        if (emailElement)
+            emailElement.textContent = email;
+
+        if (referralAccountElement)
+            referralAccountElement.textContent = referralCode;
+
+        if (referralElement)
+            referralElement.textContent = referralCode;
+
+        if (topName)
+            topName.textContent = nickname;
+
+        if (topId)
+            topId.textContent = `ID: ${id}`;
+
+        if (profileId)
+            profileId.textContent = `ID: ${id}`;
+
+        if (tierBadge)
+            tierBadge.textContent =
+                selectedTier.name;
+
+        if (subscriptionName)
+            subscriptionName.textContent =
+                highestTier.name;
+
+        if (subscriptionReturn) {
+            subscriptionReturn.textContent =
+                `${highestTier.daily} USDT/day`;
+        }
+
+        setImage(
+            document.getElementById("profileDP"),
+            selectedTier
+        );
+
+        setImage(
+            document.getElementById("topProfileAvatar"),
+            selectedTier
+        );
+
+        setImage(
+            document.getElementById("subscriptionLogo"),
+            highestTier
+        );
     }
 
     // Render immediately from the same state used by Edit Profile.

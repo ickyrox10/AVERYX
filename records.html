@@ -878,7 +878,13 @@ button{
    Source of truth: backend transaction API
 ================================================== */
 
-const API = "http://localhost:3000";
+const API =
+    window.AVERYX_API_BASE_URL ||
+    (
+        window.location.protocol === "file:"
+            ? "https://averyx.onrender.com"
+            : ""
+    );
 
 let records = [];
 
@@ -1027,9 +1033,9 @@ const DEFAULT_PROFILE = {
 
     nickname:"Your Nickname",
 
-    uniqueId:"00000",
+    uniqueId:"",
 
-    publicUid:"00000",
+    publicUid:"",
 
     referralCode:"",
 

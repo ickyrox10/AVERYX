@@ -44,7 +44,23 @@ const mailTransporter =
             pass:
                 process.env.SMTP_PASS
 
-        }
+        },
+
+        /*
+           Render may resolve Gmail to IPv6 first.
+           Force IPv4 so the SMTP connection uses
+           an address Render can reach.
+        */
+        family: 4,
+
+        connectionTimeout:
+            15000,
+
+        greetingTimeout:
+            15000,
+
+        socketTimeout:
+            20000
 
     });
 
