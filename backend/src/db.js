@@ -17,13 +17,33 @@ pool.on("error", (error) => {
 
 async function testDatabaseConnection() {
     try {
-        const result = await pool.query(
-            "SELECT NOW() AS current_time"
+
+        const result = await pool.query(`
+            SELECT
+                current_database() AS database_name,
+                current_schema() AS schema_name,
+                current_user AS user_name
+        `);
+
+        console.log(
+            "PostgreSQL connected successfully:"
         );
 
         console.log(
-            "PostgreSQL connected successfully:",
-            result.rows[0].current_time
+            result.rows[0]
+        );
+
+        const tables = await pool.query(`
+            SELECT
+                table_schema,
+                table_name
+            FROM information_schema.tables
+            WHERE table_name = 'wallets'
+        `);
+
+        console.log(
+            "Wallet table check:",
+            tables.rows
         );
 
     } catch (error) {

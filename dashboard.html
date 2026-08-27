@@ -961,13 +961,13 @@
                     class="top-profile-name"
                     id="topProfileName"
                 >
-                    Your Nickname
+                    Loading...
                 </div>
                 <div
                     class="top-profile-id"
                     id="topProfileId"
                 >
-                    ID: 05031
+                    ID: —
                 </div>
             </div>
 
@@ -1384,7 +1384,7 @@
                     class="referral-code"
                     id="referralCode"
                 >
-                    AVX-DEMO7K4M
+                    —
                 </div>
 
                 <div class="referral-rate">
@@ -1454,7 +1454,19 @@
 
 
 <script>
-const API_BASE_URL = "http://localhost:3000";
+/*
+   AVERYX Dashboard
+   Data is loaded from the live backend in parallel.
+   The visual layout above is intentionally unchanged.
+*/
+
+const API_BASE_URL =
+    window.AVERYX_API_BASE_URL ||
+    (
+        window.location.protocol === "file:"
+            ? "https://averyx.onrender.com"
+            : ""
+    );
 
 const TIERS = [
     { level: 1, name: "The Fool", deposit: 0, daily: 0, logo: "tier-fool.png" },
@@ -1480,66 +1492,121 @@ function money(value) {
 }
 
 function getTier(level) {
-    return (
-        TIERS.find(
-            tier =>
-                tier.level === Number(level)
-        ) || TIERS[0]
+    return TIERS.find(
+        tier => tier.level === Number(level)
+    ) || TIERS[0];
+}
+
+function getSavedProfile() {
+    try {
+        const raw = localStorage.getItem("averyx_profile");
+        return raw ? (JSON.parse(raw) || {}) : {};
+    } catch (error) {
+        return {};
+    }
+}
+
+function getSelectedProfileTier(activeTierLevel) {
+    const savedProfile = getSavedProfile();
+    const savedTier = Number(savedProfile.selectedProfileTier);
+
+    if (
+        Number.isInteger(savedTier) &&
+        savedTier >= 1 &&
+        savedTier <= TIERS.length
+    ) {
+        return savedTier;
+    }
+
+    return Number(activeTierLevel) || 1;
+}
+
+function renderTopProfile(user = null, activeTierLevel = 1) {
+    const savedProfile = getSavedProfile();
+
+    const selectedTier = getTier(
+        getSelectedProfileTier(activeTierLevel)
     );
+
+    /*
+       The backend is the source of truth for account identity.
+       localStorage is used only for the locally selected profile logo.
+    */
+    const profileName =
+        user?.nickname ||
+        savedProfile.nickname ||
+        "Your Nickname";
+
+    const profileId =
+        user?.publicUid ||
+        user?.public_uid ||
+        savedProfile.uniqueId ||
+        "—";
+
+    const nameElement =
+        document.getElementById("topProfileName");
+
+    const idElement =
+        document.getElementById("topProfileId");
+
+    const avatarElement =
+        document.getElementById("topProfileAvatar");
+
+    if (nameElement) {
+        nameElement.textContent = profileName;
+    }
+
+    if (idElement) {
+        idElement.textContent =
+            profileId === "—"
+                ? "ID: —"
+                : `ID: ${profileId}`;
+    }
+
+    if (avatarElement) {
+        avatarElement.innerHTML =
+            `<img src="${selectedTier.logo}" alt="${selectedTier.name}">`;
+    }
 }
 
 async function apiRequest(endpoint) {
-
-    const token =
-        getToken();
+    const token = getToken();
 
     if (!token) {
-        window.location.href =
-            "login.html";
+        window.location.href = "login.html";
         return null;
     }
 
-    const response =
-        await fetch(
-            `${API_BASE_URL}${endpoint}`,
-            {
-                headers: {
-                    Authorization:
-                        `Bearer ${token}`
-                }
+    const response = await fetch(
+        `${API_BASE_URL}${endpoint}`,
+        {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${token}`
             }
-        );
+        }
+    );
 
-    const data =
-        await response.json();
+    let data = {};
+
+    try {
+        data = await response.json();
+    } catch (error) {
+        data = {};
+    }
 
     if (response.status === 401) {
+        localStorage.removeItem("averyx_token");
+        localStorage.removeItem("token");
+        localStorage.removeItem("authToken");
 
-        localStorage.removeItem(
-            "averyx_token"
-        );
-
-        localStorage.removeItem(
-            "token"
-        );
-
-        localStorage.removeItem(
-            "authToken"
-        );
-
-        window.location.href =
-            "login.html";
-
+        window.location.href = "login.html";
         return null;
     }
 
-    if (
-        !response.ok ||
-        !data.success
-    ) {
+    if (!response.ok || data.success === false) {
         throw new Error(
-            data.message ||
-            "Request failed."
+            data.message || "Request failed."
         );
     }
 
@@ -1547,36 +1614,25 @@ async function apiRequest(endpoint) {
 }
 
 function renderRecord(record) {
-
     const rawType =
-        String(
-            record.type ||
-            "activity"
-        ).toLowerCase();
+        String(record.type || "activity").toLowerCase();
 
     const amount =
         Number(
-            record.amountUSDT ||
-            record.amount ||
+            record.amountUSDT ??
+            record.amount ??
             0
         );
 
     const date =
         record.createdAt
-            ? new Date(
-                record.createdAt
-            ).toLocaleString()
-            : record.date || "";
+            ? new Date(record.createdAt).toLocaleString()
+            : (record.date || "");
 
     let icon = "•";
     let displayType =
         record.type || "Activity";
 
-    /*
-       DAILY REWARD
-       Show reward credits in Dashboard
-       Recent Activity. Wallet UI is unchanged.
-    */
     if (
         rawType === "reward" ||
         rawType.includes("daily-reward") ||
@@ -1584,92 +1640,62 @@ function renderRecord(record) {
     ) {
         icon = "✦";
         displayType = "Daily Reward";
-    } else if (
-        rawType.includes("deposit")
-    ) {
+    } else if (rawType.includes("deposit")) {
         icon = "↓";
         displayType = "Deposit";
-    } else if (
-        rawType.includes("withdraw")
-    ) {
+    } else if (rawType.includes("withdraw")) {
         icon = "↑";
         displayType = "Withdrawal";
-    } else if (
-        rawType.includes("subscription")
-    ) {
+    } else if (rawType.includes("subscription")) {
         icon = "◇";
         displayType = "Subscription";
     }
 
-    const row =
-        document.createElement(
-            "div"
-        );
-
-    row.className =
-        "record";
+    const row = document.createElement("div");
+    row.className = "record";
 
     row.innerHTML = `
         <div class="record-left">
-
-            <div class="record-icon">
-                ${icon}
-            </div>
-
+            <div class="record-icon">${icon}</div>
             <div>
-
-                <div class="record-name">
-                    ${displayType}
-                </div>
-
-                <div class="record-date">
-                    ${date}
-                </div>
-
+                <div class="record-name">${displayType}</div>
+                <div class="record-date">${date}</div>
             </div>
-
         </div>
 
         <div class="record-right">
-
             <div class="record-amount">
-                ${rawType === "reward" ? "+" : ""}${money(amount)} USDT
+                ${
+                    rawType === "reward"
+                        ? "+"
+                        : ""
+                }${money(amount)} USDT
             </div>
 
             <div class="record-status">
                 ${record.status || "Completed"}
             </div>
-
         </div>
     `;
 
     return row;
 }
 
-
 /* ==================================================
    DAILY REWARD COUNTDOWN
 ================================================== */
 
 function formatCountdown(totalSeconds) {
-
-    const safeSeconds =
-        Math.max(
-            0,
-            Math.floor(
-                Number(totalSeconds) || 0
-            )
-        );
+    const safeSeconds = Math.max(
+        0,
+        Math.floor(Number(totalSeconds) || 0)
+    );
 
     const hours =
-        Math.floor(
-            safeSeconds / 3600
-        );
+        Math.floor(safeSeconds / 3600);
 
     const minutes =
-        Math.floor(
-            (safeSeconds % 3600) / 60
-        );
+        Math.floor((safeSeconds % 3600) / 60);
 
     const seconds =
         safeSeconds % 60;
@@ -1681,37 +1707,22 @@ function formatCountdown(totalSeconds) {
     ]
         .map(
             value =>
-                String(value)
-                    .padStart(2, "0")
+                String(value).padStart(2, "0")
         )
         .join(":");
 }
 
-
 function getNextRewardBoundary() {
+    const now = new Date();
 
-    /*
-       India is fixed at UTC+05:30.
-       The UI only shows the remaining countdown.
-    */
+    const istNow = new Date(
+        now.getTime() +
+        (5.5 * 60 * 60 * 1000)
+    );
 
-    const now =
-        new Date();
-
-    const istNow =
-        new Date(
-            now.getTime() +
-            (5.5 * 60 * 60 * 1000)
-        );
-
-    const year =
-        istNow.getUTCFullYear();
-
-    const month =
-        istNow.getUTCMonth();
-
-    const day =
-        istNow.getUTCDate();
+    const year = istNow.getUTCFullYear();
+    const month = istNow.getUTCMonth();
+    const day = istNow.getUTCDate();
 
     const resetTodayUTC =
         Date.UTC(
@@ -1726,17 +1737,10 @@ function getNextRewardBoundary() {
         (5.5 * 60 * 60 * 1000);
 
     const resetToday =
-        new Date(
-            resetTodayUTC
-        );
+        new Date(resetTodayUTC);
 
-    if (
-        now.getTime() <
-        resetToday.getTime()
-    ) {
-
+    if (now.getTime() < resetToday.getTime()) {
         return resetToday;
-
     }
 
     return new Date(
@@ -1745,30 +1749,17 @@ function getNextRewardBoundary() {
     );
 }
 
+let rewardCountdownTimer = null;
 
-let rewardCountdownTimer =
-    null;
-
-
-function startRewardCountdown(
-    tierName
-) {
-
+function startRewardCountdown(tierName) {
     const wrapper =
-        document.getElementById(
-            "rewardCountdown"
-        );
+        document.getElementById("rewardCountdown");
 
     const tierElement =
-        document.getElementById(
-            "rewardTierName"
-        );
+        document.getElementById("rewardTierName");
 
     const valueElement =
-        document.getElementById(
-            "rewardCountdownValue"
-        );
-
+        document.getElementById("rewardCountdownValue");
 
     if (
         !wrapper ||
@@ -1778,448 +1769,349 @@ function startRewardCountdown(
         return;
     }
 
-
     tierElement.textContent =
-        tierName ||
-        "Current Tier";
+        tierName || "Current Tier";
 
-
-    if (
-        rewardCountdownTimer
-    ) {
-
-        clearInterval(
-            rewardCountdownTimer
-        );
-
+    if (rewardCountdownTimer) {
+        clearInterval(rewardCountdownTimer);
     }
 
-
-    let refreshing =
-        false;
-
-
     async function tick() {
-
         const next =
             getNextRewardBoundary();
 
-        const seconds =
-            Math.max(
-                0,
-                Math.ceil(
-                    (
-                        next.getTime() -
-                        Date.now()
-                    ) / 1000
-                )
-            );
-
-
-        if (
-            seconds <= 0
-        ) {
-
-            valueElement.textContent =
-                "00:00:00";
-
-
-            if (!refreshing) {
-
-                refreshing = true;
-
-                try {
-
-                    await initDashboard();
-
-                } finally {
-
-                    refreshing = false;
-
-                }
-
-            }
-
-            return;
-
-        }
-
+        const seconds = Math.max(
+            0,
+            Math.ceil(
+                (
+                    next.getTime() -
+                    Date.now()
+                ) / 1000
+            )
+        );
 
         valueElement.textContent =
-            formatCountdown(
-                seconds
-            );
-
+            formatCountdown(seconds);
     }
-
 
     tick();
 
     rewardCountdownTimer =
-        setInterval(
-            tick,
-            1000
-        );
-
+        setInterval(tick, 1000);
 }
 
+function renderRecentActivity(transactions) {
+    const recordsContainer =
+        document.getElementById("records");
+
+    if (!recordsContainer) {
+        return;
+    }
+
+    recordsContainer.innerHTML = "";
+
+    if (!transactions.length) {
+        recordsContainer.innerHTML = `
+            <div class="empty-records">
+                No recent activity yet.
+            </div>
+        `;
+        return;
+    }
+
+    const dailyRewards =
+        transactions.filter(transaction => {
+            const type =
+                String(
+                    transaction.type || ""
+                ).toLowerCase();
+
+            return (
+                type === "reward" ||
+                type.includes("daily-reward") ||
+                type.includes("daily reward")
+            );
+        });
+
+    const dashboardTransactions =
+        transactions.filter(transaction => {
+            const type =
+                String(
+                    transaction.type || ""
+                ).toLowerCase();
+
+            if (!type.includes("subscription")) {
+                return true;
+            }
+
+            const subscriptionAmount =
+                Number(
+                    transaction.amountUSDT ??
+                    transaction.amount ??
+                    0
+                );
+
+            const subscriptionDate =
+                transaction.createdAt
+                    ? new Date(
+                        transaction.createdAt
+                    ).getTime()
+                    : 0;
+
+            const matchingReward =
+                dailyRewards.some(reward => {
+                    const rewardAmount =
+                        Number(
+                            reward.amountUSDT ??
+                            reward.amount ??
+                            0
+                        );
+
+                    const rewardDate =
+                        reward.createdAt
+                            ? new Date(
+                                reward.createdAt
+                            ).getTime()
+                            : 0;
+
+                    const sameAmount =
+                        Math.abs(
+                            rewardAmount -
+                            subscriptionAmount
+                        ) < 0.000001;
+
+                    const sameCycle =
+                        subscriptionDate &&
+                        rewardDate
+                            ? Math.abs(
+                                subscriptionDate -
+                                rewardDate
+                            ) <=
+                              24 * 60 * 60 * 1000
+                            : true;
+
+                    return (
+                        sameAmount &&
+                        sameCycle
+                    );
+                });
+
+            return !matchingReward;
+        });
+
+    dashboardTransactions
+        .slice(0, 5)
+        .forEach(transaction => {
+            recordsContainer.appendChild(
+                renderRecord(transaction)
+            );
+        });
+}
+
+function calculateTotalWithdrawn(transactions) {
+    return transactions
+        .filter(
+            transaction =>
+                String(
+                    transaction.type || ""
+                ).toLowerCase() ===
+                "withdrawal"
+        )
+        .reduce(
+            (sum, transaction) =>
+                sum +
+                Number(
+                    transaction.amountUSDT ??
+                    transaction.amount ??
+                    0
+                ),
+            0
+        );
+}
 
 async function initDashboard() {
-
     try {
+        /*
+           Render the saved logo immediately so the top-right
+           avatar is never blank while the API is loading.
+        */
+        renderTopProfile(null, 1);
 
         /*
-           1. Authenticate using the existing token.
+           IMPORTANT:
+           These three requests are independent, so they run
+           in parallel instead of waiting one after another.
+           This removes the artificial 3-request loading delay.
         */
+        const [
+            accountData,
+            walletData,
+            transactionData
+        ] = await Promise.all([
+            apiRequest("/api/auth/me"),
+            apiRequest("/api/wallet/"),
+            apiRequest("/api/wallet/transactions")
+        ]);
 
-        const account =
-            await apiRequest(
-                "/api/auth/me"
-            );
-
-        if (!account) {
+        if (
+            !accountData ||
+            !walletData ||
+            !transactionData
+        ) {
             return;
         }
-
 
         const user =
-            account.user || {};
-
-
-        /*
-           2. Get the wallet DIRECTLY from the wallet endpoint.
-
-           This is the same endpoint that already returned
-           your real balance in PowerShell.
-
-           Example:
-           231.98 USDT
-        */
-
-        const walletData =
-            await apiRequest(
-                "/api/wallet/"
-            );
-
-        if (!walletData) {
-            return;
-        }
-
+            accountData.user || {};
 
         const wallet =
             walletData.wallet ||
             walletData.data ||
             {};
 
-
-        const balance =
-            Number(
-                wallet.balanceUSDT
-            ) || 0;
-
-
-        const withdrawable =
-            Number(
-                wallet.withdrawableUSDT
-            ) || 0;
-
-
-        /*
-           3. Get transactions BEFORE calculating
-              total withdrawn.
-        */
-
-        const transactionData =
-            await apiRequest(
-                "/api/wallet/transactions"
-            );
-
-
         const transactions =
-            transactionData &&
             Array.isArray(
                 transactionData.transactions
             )
                 ? transactionData.transactions
                 : [];
 
+        const balance =
+            Number(
+                wallet.balanceUSDT ??
+                wallet.balance ??
+                wallet.totalDeposit ??
+                0
+            );
 
-        /*
-           4. Calculate total withdrawn from
-              actual completed withdrawal transactions.
-        */
+        const withdrawable =
+            Number(
+                wallet.withdrawableUSDT ??
+                wallet.withdrawable ??
+                0
+            );
 
         const totalWithdrawn =
-            transactions
-                .filter(
-                    transaction =>
-                        String(
-                            transaction.type ||
-                            ""
-                        ).toLowerCase() ===
-                        "withdrawal"
-                )
-                .reduce(
-                    (sum, transaction) =>
-                        sum +
-                        (
-                            Number(
-                                transaction.amountUSDT
-                            ) || 0
-                        ),
-                    0
-                );
+            calculateTotalWithdrawn(
+                transactions
+            );
 
-
-        /*
-           5. Determine the highest tier from
-              the LIVE PostgreSQL wallet balance.
-        */
-
-        const highestUnlocked =
+        const activeTier =
             [...TIERS]
                 .reverse()
                 .find(
                     tier =>
                         balance >=
-                        Number(
-                            tier.deposit
-                        )
-                ) || TIERS[0];
-
-
-        /*
-           The current dashboard tier follows
-           the qualifying deposited balance.
-
-           231.98 USDT -> The Emperor
-        */
-
-        const activeTier =
-            highestUnlocked;
-
+                        Number(tier.deposit)
+                ) ||
+            TIERS[0];
 
         const nextUnlock =
             TIERS.find(
                 tier =>
-                    Number(
-                        tier.deposit
-                    ) >
+                    Number(tier.deposit) >
                     balance
-            ) || null;
+            ) ||
+            null;
 
-
-        startRewardCountdown(
-            activeTier.name
+        /*
+           Live identity always wins over stale localStorage.
+        */
+        renderTopProfile(
+            user,
+            activeTier.level
         );
 
+        const savedProfile =
+            getSavedProfile();
 
-        /* =========================
-           HEADER
-        ========================= */
+        /*
+           Keep only profile appearance preferences locally.
+           Never let an old local ID overwrite a new account ID.
+        */
+        const mergedProfile = {
+            ...savedProfile,
+            nickname:
+                user.nickname ||
+                savedProfile.nickname ||
+                "",
+            selectedProfileTier:
+                getSelectedProfileTier(
+                    activeTier.level
+                )
+        };
+
+        localStorage.setItem(
+            "averyx_profile",
+            JSON.stringify(mergedProfile)
+        );
 
         document.getElementById(
             "welcomeText"
         ).textContent =
             `Good to see you, ${
-                user.nickname ||
-                "there"
+                user.nickname || "there"
             }.`;
-
-
-
-        /* =========================
-           MAIN SPLIT BALANCE
-        ========================= */
 
         document.getElementById(
             "balanceAmount"
         ).textContent =
             money(balance);
 
-
         const withdrawnDisplay =
             document.getElementById(
                 "withdrawnAmount"
             );
 
-
         if (withdrawnDisplay) {
-
             withdrawnDisplay.textContent =
                 money(withdrawable);
-
         }
-
-
-        /*
-           Deposited funds are NOT withdrawable.
-        */
-
-        const withdrawableLabel =
-            document.querySelector(
-                ".balance-subline"
-            );
-
-
-        if (withdrawableLabel) {
-
-            withdrawableLabel.textContent =
-                "Withdrawable: 0.00 USDT";
-
-        }
-
-
-        const dailyReturnElement =
-            document.getElementById(
-                "dailyReturn"
-            );
-
-        if (dailyReturnElement) {
-
-            dailyReturnElement.textContent =
-                `${activeTier.daily} USDT/day`;
-
-        }
-
-
-
-        /* =========================
-           CURRENT TIER
-        ========================= */
 
         document.getElementById(
             "tierName"
         ).textContent =
             activeTier.name;
 
-
         document.getElementById(
             "tierReturn"
         ).innerHTML =
             `<strong>${activeTier.daily}</strong> USDT / day`;
-
 
         document.getElementById(
             "tierLogo"
         ).innerHTML =
             `<img src="${activeTier.logo}" alt="${activeTier.name}">`;
 
-
-        /* =========================
-           PROFILE HEADER SYNC
-           Uses the same saved profile state
-           as Edit Profile.
-        ========================= */
-
-        /* =========================
-           PROFILE HEADER SYNC
-           Same profile state used by
-           Edit Profile / Profile.
-        ========================= */
-
-        let savedProfile = {};
-
-        try {
-            const rawProfile =
-                localStorage.getItem("averyx_profile");
-
-            if (rawProfile) {
-                savedProfile =
-                    JSON.parse(rawProfile) || {};
-            }
-        } catch (error) {
-            savedProfile = {};
-        }
-
-        const selectedProfileTier =
-            Number(
-                savedProfile.selectedProfileTier
-            ) || activeTier.level;
-
-        const selectedProfile =
-            getTier(selectedProfileTier);
-
-        const profileName =
-            savedProfile.nickname ||
-            user.nickname ||
-            "Your Nickname";
-
-        const profileId =
-            String(
-                savedProfile.uniqueId ||
-                user.publicUid ||
-                user.public_uid ||
-                "05031"
-            );
-
-        const topProfileName =
-            document.getElementById(
-                "topProfileName"
-            );
-
-        const topProfileId =
-            document.getElementById(
-                "topProfileId"
-            );
-
-        const topProfileAvatar =
-            document.getElementById(
-                "topProfileAvatar"
-            );
-
-        if (topProfileName) {
-            topProfileName.textContent =
-                profileName;
-        }
-
-        if (topProfileId) {
-            topProfileId.textContent =
-                `ID: ${profileId}`;
-        }
-
-        if (topProfileAvatar) {
-            topProfileAvatar.innerHTML =
-                `<img src="${selectedProfile.logo}" alt="${selectedProfile.name}">`;
-        }
-
-
-
-        /* =========================
-           NEXT TIER PROGRESS
-        ========================= */
+        startRewardCountdown(
+            activeTier.name
+        );
 
         const progressFill =
             document.getElementById(
                 "progressFill"
             );
 
-
         const progressPercent =
             document.getElementById(
                 "progressPercent"
             );
-
 
         const progressDescription =
             document.getElementById(
                 "progressDescription"
             );
 
-
         if (nextUnlock) {
-
             const previousRequirement =
                 Number(
-                    highestUnlocked.deposit
+                    activeTier.deposit
                 );
-
 
             const nextRequirement =
                 Number(
                     nextUnlock.deposit
                 );
-
 
             const range =
                 Math.max(
@@ -2227,7 +2119,6 @@ async function initDashboard() {
                     nextRequirement -
                     previousRequirement
                 );
-
 
             const progress =
                 Math.min(
@@ -2244,14 +2135,11 @@ async function initDashboard() {
                     )
                 );
 
-
             progressFill.style.width =
                 `${progress}%`;
 
-
             progressPercent.textContent =
                 `${Math.floor(progress)}%`;
-
 
             const needed =
                 Math.max(
@@ -2260,55 +2148,40 @@ async function initDashboard() {
                     balance
                 );
 
-
             progressDescription.textContent =
-                `${highestUnlocked.name} unlocked. ` +
+                `${activeTier.name} unlocked. ` +
                 `${money(needed)} USDT more to unlock ${nextUnlock.name}.`;
-
         } else {
-
             progressFill.style.width =
                 "100%";
-
 
             progressPercent.textContent =
                 "100%";
 
-
             progressDescription.textContent =
-                `${highestUnlocked.name} is the highest tier currently unlocked by your wallet balance.`;
-
+                `${activeTier.name} is the highest tier currently unlocked by your wallet balance.`;
         }
-
-
-
-        /* =========================
-           OVERVIEW
-        ========================= */
 
         document.getElementById(
             "totalDeposit"
         ).textContent =
             money(balance);
 
-
         document.getElementById(
             "withdrawableAmount"
         ).textContent =
             money(withdrawable);
-
 
         document.getElementById(
             "totalWithdraw"
         ).textContent =
             money(totalWithdrawn);
 
-
         document.getElementById(
             "referralCode"
         ).textContent =
             user.referralCode ||
-            "AVX-DEMO7K4M";
+            "—";
 
         const referralCountElement =
             document.getElementById(
@@ -2316,184 +2189,23 @@ async function initDashboard() {
             );
 
         if (referralCountElement) {
-
             referralCountElement.textContent =
                 Number(
-                    user.referralCount ||
-                    0
+                    user.referralCount || 0
                 );
-
         }
 
-
-
-        /* =========================
-           RECENT ACTIVITY
-        ========================= */
-
-        const recordsContainer =
-            document.getElementById(
-                "records"
-            );
-
-
-        recordsContainer.innerHTML =
-            "";
-
-
-        if (
-            transactions.length === 0
-        ) {
-
-            recordsContainer.innerHTML = `
-                <div class="empty-records">
-                    No recent activity yet.
-                </div>
-            `;
-
-        } else {
-
-            /*
-               Subscription reward and Daily Reward represent
-               the same daily credit.
-
-               If both records exist for the same credit, keep
-               only the Daily Reward entry on Dashboard.
-               Deposits and withdrawals remain unchanged.
-            */
-
-            const dailyRewards =
-                transactions.filter(
-                    transaction => {
-
-                        const type =
-                            String(
-                                transaction.type || ""
-                            ).toLowerCase();
-
-                        return (
-                            type === "reward" ||
-                            type.includes("daily-reward") ||
-                            type.includes("daily reward")
-                        );
-
-                    }
-                );
-
-            const dashboardTransactions =
-                transactions.filter(
-                    transaction => {
-
-                        const type =
-                            String(
-                                transaction.type || ""
-                            ).toLowerCase();
-
-                        const isSubscription =
-                            type.includes("subscription");
-
-                        if (!isSubscription) {
-                            return true;
-                        }
-
-                        const subscriptionAmount =
-                            Number(
-                                transaction.amountUSDT ||
-                                transaction.amount ||
-                                0
-                            );
-
-                        const subscriptionDate =
-                            transaction.createdAt
-                                ? new Date(
-                                    transaction.createdAt
-                                ).getTime()
-                                : 0;
-
-                        /*
-                           Hide the subscription entry only when
-                           a matching Daily Reward exists for the
-                           same amount on the same reward cycle.
-                        */
-                        const matchingReward =
-                            dailyRewards.some(
-                                reward => {
-
-                                    const rewardAmount =
-                                        Number(
-                                            reward.amountUSDT ||
-                                            reward.amount ||
-                                            0
-                                        );
-
-                                    const rewardDate =
-                                        reward.createdAt
-                                            ? new Date(
-                                                reward.createdAt
-                                            ).getTime()
-                                            : 0;
-
-                                    const sameAmount =
-                                        Math.abs(
-                                            rewardAmount -
-                                            subscriptionAmount
-                                        ) < 0.000001;
-
-                                    const sameCycle =
-                                        subscriptionDate &&
-                                        rewardDate
-                                            ? Math.abs(
-                                                subscriptionDate -
-                                                rewardDate
-                                            ) <=
-                                              24 * 60 * 60 * 1000
-                                            : true;
-
-                                    return (
-                                        sameAmount &&
-                                        sameCycle
-                                    );
-
-                                }
-                            );
-
-                        return !matchingReward;
-
-                    }
-                );
-
-            dashboardTransactions
-                .slice(0, 5)
-                .forEach(
-                    transaction => {
-
-                        recordsContainer.appendChild(
-                            renderRecord(
-                                transaction
-                            )
-                        );
-
-                    }
-                );
-
-        }
-
+        renderRecentActivity(
+            transactions
+        );
 
         console.log(
             "AVERYX dashboard loaded:",
             {
-                deposited:
-                    balance,
-
-                withdrawn:
-                    totalWithdrawn,
-
-                withdrawable:
-                    withdrawable,
-
-                activeTier:
-                    activeTier.name,
-
+                deposited: balance,
+                withdrawn: totalWithdrawn,
+                withdrawable,
+                activeTier: activeTier.name,
                 nextTier:
                     nextUnlock
                         ? nextUnlock.name
@@ -2501,24 +2213,41 @@ async function initDashboard() {
             }
         );
 
-
     } catch (error) {
-
         console.error(
             "Dashboard error:",
             error
         );
 
+        const welcomeText =
+            document.getElementById(
+                "welcomeText"
+            );
 
-        document.getElementById(
-            "welcomeText"
-        ).textContent =
-            error.message ||
-            "Unable to load dashboard.";
-
+        if (welcomeText) {
+            welcomeText.textContent =
+                error.message ||
+                "Unable to load dashboard.";
+        }
     }
-
 }
+
+/*
+   If Edit Profile changes local profile data and this
+   dashboard remains open, update the logo immediately.
+*/
+window.addEventListener(
+    "storage",
+    event => {
+        if (event.key === "averyx_profile") {
+            renderTopProfile(
+                null,
+                1
+            );
+        }
+    }
+);
+
 initDashboard();
 </script>
 
