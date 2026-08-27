@@ -2,6 +2,7 @@ const argon2 = require("argon2");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
+const dns = require("dns");
 
 const { pool } = require("../db");
 
@@ -24,17 +25,15 @@ const mailTransporter =
     nodemailer.createTransport({
 
         host:
-            process.env.SMTP_HOST,
+            process.env.SMTP_HOST ||
+            "smtp.gmail.com",
 
         port:
             Number(
                 process.env.SMTP_PORT || 587
             ),
 
-        secure:
-            Number(
-                process.env.SMTP_PORT || 587
-            ) === 465,
+        secure: false,
 
         auth: {
 
@@ -47,11 +46,24 @@ const mailTransporter =
         },
 
         /*
-           Render may resolve Gmail to IPv6 first.
-           Force IPv4 so the SMTP connection uses
-           an address Render can reach.
+           Force DNS resolution to IPv4 explicitly.
+           family: 4 alone was not sufficient on Render.
         */
-        family: 4,
+        lookup: (
+            hostname,
+            options,
+            callback
+        ) => {
+
+            dns.lookup(
+                hostname,
+                {
+                    family: 4,
+                    all: false
+                },
+                callback
+            );
+        },
 
         connectionTimeout:
             15000,
