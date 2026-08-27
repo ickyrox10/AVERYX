@@ -1,5 +1,23 @@
 const { pool } = require("../db");
 
+const { ethers } = require("ethers");
+
+const BSC_RPC_URL = process.env.BSC_RPC_URL;
+const BSC_USDT_CONTRACT = process.env.BSC_USDT_CONTRACT;
+const BEP20_DEPOSIT_ADDRESS = process.env.BEP20_DEPOSIT_ADDRESS;
+
+const usdtInterface = new ethers.Interface([
+    "event Transfer(address indexed from, address indexed to, uint256 value)"
+]);
+
+function getBscProvider() {
+    if (!BSC_RPC_URL) {
+        throw new Error("BSC_RPC_URL is not configured.");
+    }
+
+    return new ethers.JsonRpcProvider(BSC_RPC_URL);
+}
+
 
 /* ==================================================
    AVERYX DAILY REWARD CONFIGURATION
@@ -742,83 +760,182 @@ async function createDeposit(
     const client =
         await pool.connect();
 
-
     try {
 
         const userId =
             req.user.userId;
 
-
-        const {
-            amount,
-            reference
-        } = req.body;
-
-
-        const numericAmount =
-            Number(amount);
-
+        const { txHash } =
+            req.body;
 
         if (
-            !Number.isFinite(
-                numericAmount
-            )
+            !txHash ||
+            typeof txHash !== "string"
         ) {
-
             return res.status(400).json({
-
                 success: false,
-
-                message:
-                    "Please enter a valid deposit amount."
-
+                message: "Transaction hash is required."
             });
-
         }
 
+        const cleanTxHash =
+            txHash.trim();
 
         if (
-            numericAmount <= 0
+            !ethers.isHexString(cleanTxHash, 32)
         ) {
-
             return res.status(400).json({
-
                 success: false,
-
-                message:
-                    "Deposit amount must be greater than 0."
-
+                message: "Invalid transaction hash."
             });
-
         }
-
 
         if (
-            numericAmount > 1000000
+            !BSC_USDT_CONTRACT ||
+            !BEP20_DEPOSIT_ADDRESS
         ) {
-
-            return res.status(400).json({
-
-                success: false,
-
-                message:
-                    "Deposit amount is too large."
-
-            });
-
+            throw new Error(
+                "BEP20 deposit configuration is missing."
+            );
         }
 
+        const usdtContractAddress =
+            ethers.getAddress(BSC_USDT_CONTRACT);
 
-        const roundedAmount =
-            roundUSDT(
-                numericAmount
+        const depositAddress =
+            ethers.getAddress(BEP20_DEPOSIT_ADDRESS);
+
+        const provider =
+            getBscProvider();
+
+        /* ------------------------------------------
+           CHECK BLOCKCHAIN FIRST
+        ------------------------------------------ */
+
+        const receipt =
+            await provider.getTransactionReceipt(
+                cleanTxHash
             );
 
+        if (!receipt) {
+            return res.status(400).json({
+                success: false,
+                message: "Transaction was not found yet. Please wait and try again."
+            });
+        }
 
-        await client.query(
-            "BEGIN"
-        );
+        if (receipt.status !== 1) {
+            return res.status(400).json({
+                success: false,
+                message: "Blockchain transaction failed."
+            });
+        }
 
+        let verifiedTransfer = null;
+
+        for (const log of receipt.logs) {
+
+            if (
+                log.address.toLowerCase() !==
+                usdtContractAddress.toLowerCase()
+            ) {
+                continue;
+            }
+
+            try {
+
+                const parsedLog =
+                    usdtInterface.parseLog({
+                        topics: log.topics,
+                        data: log.data
+                    });
+
+                if (
+                    !parsedLog ||
+                    parsedLog.name !== "Transfer"
+                ) {
+                    continue;
+                }
+
+                const fromAddress =
+                    ethers.getAddress(
+                        parsedLog.args.from
+                    );
+
+                const toAddress =
+                    ethers.getAddress(
+                        parsedLog.args.to
+                    );
+
+                if (
+                    toAddress.toLowerCase() !==
+                    depositAddress.toLowerCase()
+                ) {
+                    continue;
+                }
+
+                verifiedTransfer = {
+                    fromAddress,
+                    toAddress,
+                    value: parsedLog.args.value
+                };
+
+                break;
+
+            } catch (error) {
+                continue;
+            }
+        }
+
+        if (!verifiedTransfer) {
+            return res.status(400).json({
+                success: false,
+                message: "No valid BEP20 USDT transfer to the AVERYX deposit address was found."
+            });
+        }
+
+        /* BSC USDT contract uses 18 decimals. */
+        const verifiedAmount =
+            roundUSDT(
+                Number(
+                    ethers.formatUnits(
+                        verifiedTransfer.value,
+                        18
+                    )
+                )
+            );
+
+        if (
+            !Number.isFinite(verifiedAmount) ||
+            verifiedAmount <= 0
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid USDT amount in this transaction."
+            });
+        }
+
+        await client.query("BEGIN");
+
+        const existingTransaction =
+            await client.query(
+                `
+                SELECT id
+                FROM transactions
+                WHERE tx_hash = $1
+                LIMIT 1
+                `,
+                [cleanTxHash]
+            );
+
+        if (existingTransaction.rows.length > 0) {
+            await client.query("ROLLBACK");
+
+            return res.status(409).json({
+                success: false,
+                message: "This transaction hash has already been used."
+            });
+        }
 
         const walletResult =
             await client.query(
@@ -826,83 +943,49 @@ async function createDeposit(
                 SELECT
                     id,
                     balance_usdt,
+                    withdrawable_usdt,
                     last_reward_reset_at
                 FROM wallets
                 WHERE user_id = $1
                 FOR UPDATE
                 `,
-                [
-                    userId
-                ]
+                [userId]
             );
 
-
-        if (
-            walletResult.rows.length === 0
-        ) {
-
-            await client.query(
-                "ROLLBACK"
-            );
-
+        if (walletResult.rows.length === 0) {
+            await client.query("ROLLBACK");
 
             return res.status(404).json({
-
                 success: false,
-
-                message:
-                    "Wallet not found."
-
+                message: "Wallet not found."
             });
-
         }
-
 
         const wallet =
             walletResult.rows[0];
 
+        const oldBalance =
+            Number(wallet.balance_usdt) || 0;
 
-        const currentReset =
-            getLatestResetBoundary(
-                new Date()
+        const newBalance =
+            roundUSDT(
+                oldBalance + verifiedAmount
             );
 
+        const currentReset =
+            getLatestResetBoundary(new Date());
 
         let lastRewardReset =
             wallet.last_reward_reset_at
-                ? new Date(
-                    wallet.last_reward_reset_at
-                )
+                ? new Date(wallet.last_reward_reset_at)
                 : currentReset;
-
 
         if (
             lastRewardReset.getTime() <
             currentReset.getTime()
         ) {
-
-            lastRewardReset =
-                currentReset;
-
+            lastRewardReset = currentReset;
         }
-
-
-        const oldBalance =
-            Number(
-                wallet.balance_usdt
-            ) || 0;
-
-
-        const newBalance =
-            roundUSDT(
-                oldBalance +
-                roundedAmount
-            );
-
-
-        /* ==================================================
-           CREATE DEPOSIT TRANSACTION
-        ================================================== */
 
         const transactionResult =
             await client.query(
@@ -912,40 +995,36 @@ async function createDeposit(
                     type,
                     amount_usdt,
                     status,
-                    reference
+                    reference,
+                    tx_hash,
+                    network,
+                    from_address,
+                    to_address
                 )
                 VALUES (
                     $1,
                     'deposit',
                     $2,
                     'completed',
-                    $3
+                    $3,
+                    $4,
+                    'BEP20',
+                    $5,
+                    $6
                 )
-                RETURNING
-                    id,
-                    type,
-                    amount_usdt,
-                    status,
-                    reference,
-                    created_at
+                RETURNING *
                 `,
                 [
                     userId,
-                    roundedAmount,
-                    reference || null
+                    verifiedAmount,
+                    `BEP20-USDT-${cleanTxHash}`,
+                    cleanTxHash,
+                    verifiedTransfer.fromAddress,
+                    verifiedTransfer.toAddress
                 ]
             );
 
-
-        const depositTransaction =
-            transactionResult.rows[0];
-
-
-        /* ==================================================
-           UPDATE DEPOSITED BALANCE
-        ================================================== */
-
-        const updatedWallet =
+        const updatedWalletResult =
             await client.query(
                 `
                 UPDATE wallets
@@ -957,8 +1036,7 @@ async function createDeposit(
                 RETURNING
                     balance_usdt,
                     withdrawable_usdt,
-                    updated_at,
-                    last_reward_reset_at
+                    updated_at
                 `,
                 [
                     newBalance,
@@ -967,32 +1045,20 @@ async function createDeposit(
                 ]
             );
 
-
-        /* ==================================================
+        /* ------------------------------------------
            REFERRAL REWARD
-           
-           The user who registered using another user's
-           referral code has users.referred_by pointing
-           to the referrer.
-
-           Every completed deposit generates 5% reward
-           for the referrer.
-        ================================================== */
+        ------------------------------------------ */
 
         const referralResult =
             await client.query(
                 `
-                SELECT
-                    referred_by
+                SELECT referred_by
                 FROM users
                 WHERE id = $1
                 LIMIT 1
                 `,
-                [
-                    userId
-                ]
+                [userId]
             );
-
 
         if (
             referralResult.rows.length > 0 &&
@@ -1002,37 +1068,25 @@ async function createDeposit(
             const referrerId =
                 referralResult.rows[0].referred_by;
 
-
             const referralReward =
                 roundUSDT(
-                    roundedAmount *
+                    verifiedAmount *
                     REFERRAL_PERCENTAGE
                 );
 
-
-            if (
-                referralReward > 0
-            ) {
+            if (referralReward > 0) {
 
                 const referralReference =
-                    `REFERRAL-REWARD-${depositTransaction.id}`;
-
-
-                /*
-                   Prevent duplicate referral reward
-                   for the same deposit.
-                */
+                    `REFERRAL-REWARD-${transactionResult.rows[0].id}`;
 
                 const existingReward =
                     await client.query(
                         `
-                        SELECT
-                            id
+                        SELECT id
                         FROM transactions
-                        WHERE
-                            user_id = $1
-                            AND type = 'referral'
-                            AND reference = $2
+                        WHERE user_id = $1
+                        AND type = 'referral'
+                        AND reference = $2
                         LIMIT 1
                         `,
                         [
@@ -1041,54 +1095,31 @@ async function createDeposit(
                         ]
                     );
 
-
-                if (
-                    existingReward.rows.length === 0
-                ) {
-
-                    /*
-                       Lock the referrer's wallet before
-                       changing withdrawable balance.
-                    */
+                if (existingReward.rows.length === 0) {
 
                     const referrerWalletResult =
                         await client.query(
                             `
-                            SELECT
-                                id,
-                                withdrawable_usdt
+                            SELECT id, withdrawable_usdt
                             FROM wallets
                             WHERE user_id = $1
                             FOR UPDATE
                             `,
-                            [
-                                referrerId
-                            ]
+                            [referrerId]
                         );
-
 
                     if (
                         referrerWalletResult.rows.length > 0
                     ) {
 
                         const referrerWallet =
-                            referrerWalletResult
-                                .rows[0];
-
-
-                        const oldReferrerWithdrawable =
-                            Number(
-                                referrerWallet
-                                    .withdrawable_usdt
-                            ) || 0;
-
+                            referrerWalletResult.rows[0];
 
                         const newReferrerWithdrawable =
                             roundUSDT(
-                                oldReferrerWithdrawable +
+                                (Number(referrerWallet.withdrawable_usdt) || 0) +
                                 referralReward
                             );
-
 
                         await client.query(
                             `
@@ -1103,12 +1134,6 @@ async function createDeposit(
                                 referrerWallet.id
                             ]
                         );
-
-
-                        /*
-                           Save referral reward in
-                           transaction history.
-                        */
 
                         await client.query(
                             `
@@ -1133,122 +1158,67 @@ async function createDeposit(
                                 referralReference
                             ]
                         );
-
                     }
-
                 }
-
             }
-
         }
 
+        await client.query("COMMIT");
 
-        /* ==================================================
-           COMMIT EVERYTHING
-        ================================================== */
-
-        await client.query(
-            "COMMIT"
-        );
-
-
-        const transaction =
-            depositTransaction;
-
+        const depositTransaction =
+            transactionResult.rows[0];
 
         const finalWallet =
-            updatedWallet.rows[0];
-
+            updatedWalletResult.rows[0];
 
         return res.status(201).json({
-
             success: true,
-
-            message:
-                "Deposit recorded successfully.",
-
+            message: "USDT deposit verified and credited successfully.",
             transaction: {
-
-                id:
-                    transaction.id,
-
-                type:
-                    transaction.type,
-
-                amountUSDT:
-                    Number(
-                        transaction.amount_usdt
-                    ),
-
-                status:
-                    transaction.status,
-
-                reference:
-                    transaction.reference,
-
-                createdAt:
-                    transaction.created_at
-
+                id: depositTransaction.id,
+                type: depositTransaction.type,
+                amountUSDT: Number(depositTransaction.amount_usdt),
+                status: depositTransaction.status,
+                txHash: depositTransaction.tx_hash,
+                network: depositTransaction.network,
+                fromAddress: depositTransaction.from_address,
+                toAddress: depositTransaction.to_address,
+                createdAt: depositTransaction.created_at
             },
-
             wallet: {
-
-                balanceUSDT:
-                    Number(
-                        finalWallet.balance_usdt
-                    ),
-
-                withdrawableUSDT:
-                    Number(
-                        finalWallet.withdrawable_usdt
-                    ),
-
-                updatedAt:
-                    finalWallet.updated_at
-
+                balanceUSDT: Number(finalWallet.balance_usdt),
+                withdrawableUSDT: Number(finalWallet.withdrawable_usdt),
+                updatedAt: finalWallet.updated_at
             }
-
         });
-
 
     } catch (error) {
 
         try {
-
-            await client.query(
-                "ROLLBACK"
-            );
-
+            await client.query("ROLLBACK");
         } catch (rollbackError) {
-
-            console.error(
-                "Wallet rollback error:",
-                rollbackError
-            );
-
+            /* Transaction may not have started yet. */
         }
 
+        if (error && error.code === "23505") {
+            return res.status(409).json({
+                success: false,
+                message: "This transaction hash has already been used."
+            });
+        }
 
         console.error(
             "Create deposit error:",
             error
         );
 
-
         return res.status(500).json({
-
             success: false,
-
-            message:
-                "Unable to process deposit."
-
+            message: "Unable to verify and process deposit."
         });
 
-
     } finally {
-
         client.release();
-
     }
 
 }

@@ -5,26 +5,67 @@ const { Pool } = require("pg");
    POSTGRESQL CONNECTION
 ================================================== */
 
-const pool = new Pool({
+const databaseConfig = {
 
     host:
         process.env.DB_HOST,
+
 
     port:
         Number(
             process.env.DB_PORT
         ),
 
+
     database:
         process.env.DB_NAME,
+
 
     user:
         process.env.DB_USER,
 
-    password:
-        process.env.DB_PASSWORD
 
-});
+    password:
+        process.env.DB_PASSWORD,
+
+
+    connectionTimeoutMillis:
+        15000
+
+};
+
+
+/* ==================================================
+   SSL CONFIGURATION
+
+   Required when connecting locally to many
+   cloud-hosted PostgreSQL databases.
+
+   Set DB_SSL=true in local .env when needed.
+================================================== */
+
+if (
+    process.env.DB_SSL === "true"
+) {
+
+    databaseConfig.ssl = {
+
+        rejectUnauthorized:
+            false
+
+    };
+
+}
+
+
+/* ==================================================
+   CREATE CONNECTION POOL
+================================================== */
+
+const pool =
+    new Pool(
+        databaseConfig
+    );
 
 
 /* ==================================================
@@ -39,9 +80,14 @@ pool.on(
 
         console.error(
 
-            "Unexpected PostgreSQL error:",
+            "Unexpected PostgreSQL error:"
 
-            error
+        );
+
+
+        console.error(
+
+            error.message
 
         );
 
@@ -57,6 +103,55 @@ pool.on(
 async function testDatabaseConnection() {
 
     try {
+
+
+        /* ------------------------------------------
+           CHECK ENVIRONMENT CONFIGURATION
+        ------------------------------------------ */
+
+        console.log(
+
+            "Testing PostgreSQL connection..."
+
+        );
+
+
+        console.log({
+
+            host:
+                process.env.DB_HOST
+                    ? "configured"
+                    : "missing",
+
+
+            port:
+                process.env.DB_PORT
+                    ? "configured"
+                    : "missing",
+
+
+            database:
+                process.env.DB_NAME
+                    ? "configured"
+                    : "missing",
+
+
+            user:
+                process.env.DB_USER
+                    ? "configured"
+                    : "missing",
+
+
+            password:
+                process.env.DB_PASSWORD
+                    ? "configured"
+                    : "missing",
+
+
+            ssl:
+                process.env.DB_SSL === "true"
+
+        });
 
 
         /* ------------------------------------------
@@ -185,6 +280,15 @@ async function testDatabaseConnection() {
         console.error(
 
             error.message
+
+        );
+
+
+        console.error(
+
+            "Error code:",
+
+            error.code
 
         );
 
