@@ -375,9 +375,9 @@
 
         <a
             class="back"
-            href="wallet.html"
+            href="dashboard.html"
         >
-            ← Wallet
+            ← Dashboard
         </a>
 
     </div>
@@ -622,7 +622,12 @@
 <script>
 
 const API =
-    "http://localhost:3000";
+    window.AVERYX_API_BASE_URL ||
+    (
+        window.location.protocol === "file:"
+            ? "https://averyx.onrender.com"
+            : ""
+    );
 
 
 function getToken() {

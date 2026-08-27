@@ -1321,6 +1321,26 @@
         );
     }
 
+    /* ==================================================
+       AUTH GUARD
+       Prevent protected profile data from being shown
+       after logout or when this page is restored with
+       the browser Back button.
+    ================================================== */
+    function redirectToLoginIfLoggedOut() {
+        if (!getAuthToken()) {
+            window.location.replace("login.html");
+            return true;
+        }
+
+        return false;
+    }
+
+    if (redirectToLoginIfLoggedOut()) {
+        // Stop the protected page from continuing to load.
+        throw new Error("Authentication required");
+    }
+
     async function apiGet(path) {
         const token = getAuthToken();
 
@@ -1771,8 +1791,12 @@
         }
     });
 
-    // Re-render when this tab returns to the foreground.
-    window.addEventListener("pageshow", renderProfile);
+    // Check authentication whenever the browser restores this page
+    // through Back/Forward cache, then render only for an active session.
+    window.addEventListener("pageshow", function() {
+        if (redirectToLoginIfLoggedOut()) return;
+        renderProfile();
+    });
 
     /* ==================================================
        LOG OUT
@@ -1789,7 +1813,9 @@
                 localStorage.removeItem("averyx_token");
                 localStorage.removeItem("token");
                 localStorage.removeItem("authToken");
-                window.location.href = "login.html";
+
+                // Replace the current protected page in browser history.
+                window.location.replace("login.html");
             }
         );
 

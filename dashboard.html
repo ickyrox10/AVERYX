@@ -1946,17 +1946,20 @@ async function initDashboard() {
         const [
             accountData,
             walletData,
-            transactionData
+            transactionData,
+            referralData
         ] = await Promise.all([
             apiRequest("/api/auth/me"),
             apiRequest("/api/wallet/"),
-            apiRequest("/api/wallet/transactions")
+            apiRequest("/api/wallet/transactions"),
+            apiRequest("/api/referrals")
         ]);
 
         if (
             !accountData ||
             !walletData ||
-            !transactionData
+            !transactionData ||
+            !referralData
         ) {
             return;
         }
@@ -2189,9 +2192,18 @@ async function initDashboard() {
             );
 
         if (referralCountElement) {
+            const referralStats =
+                referralData.data ||
+                referralData.stats ||
+                referralData;
+
             referralCountElement.textContent =
                 Number(
-                    user.referralCount || 0
+                    referralStats.totalReferrals ??
+                    referralStats.totalReferral ??
+                    referralStats.referralCount ??
+                    user.referralCount ??
+                    0
                 );
         }
 
