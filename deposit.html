@@ -540,6 +540,157 @@
         }
 
 
+
+        .network-options {
+
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+
+            gap: 10px;
+
+            margin:
+                10px
+                0
+                18px;
+
+        }
+
+
+        .network-option {
+
+            width: 100%;
+
+            min-height: 92px;
+
+            padding: 14px;
+
+            border:
+                1px
+                solid
+                var(--border);
+
+            border-radius: 14px;
+
+            background:
+                #0b0b0f;
+
+            color:
+                var(--text);
+
+            text-align: left;
+
+            cursor: pointer;
+
+            transition:
+                border-color .2s ease,
+                background .2s ease,
+                transform .2s ease;
+
+        }
+
+
+        .network-option:hover {
+
+            transform:
+                translateY(-1px);
+
+        }
+
+
+        .network-option.active {
+
+            border-color:
+                var(--red);
+
+            background:
+                rgba(229, 34, 73, .08);
+
+        }
+
+
+        .network-option-top {
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 8px;
+
+        }
+
+
+        .network-option-name {
+
+            font-size: 14px;
+
+            font-weight: 700;
+
+        }
+
+
+        .network-option-check {
+
+            width: 18px;
+            height: 18px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border:
+                1px
+                solid
+                var(--border);
+
+            border-radius: 50%;
+
+            color:
+                transparent;
+
+            font-size: 11px;
+
+        }
+
+
+        .network-option.active .network-option-check {
+
+            border-color:
+                var(--red);
+
+            background:
+                var(--red);
+
+            color:
+                white;
+
+        }
+
+
+        .network-option-sub {
+
+            margin-top: 7px;
+
+            color:
+                var(--muted);
+
+            font-size: 10px;
+
+            line-height: 1.4;
+
+        }
+
+
+        @media (max-width: 420px) {
+
+            .network-options {
+
+                grid-template-columns: 1fr;
+
+            }
+
+        }
+
+
         .amount-summary-label {
 
             color:
@@ -1086,6 +1237,94 @@
         </div>
 
 
+        <div class="amount-label">
+
+            Choose Network
+
+        </div>
+
+
+        <div
+            class="network-options"
+            role="group"
+            aria-label="Choose deposit network"
+        >
+
+            <button
+                type="button"
+                class="network-option active"
+                data-network="BEP20"
+            >
+
+                <div class="network-option-top">
+
+                    <span class="network-option-name">
+
+                        BEP20
+
+                    </span>
+
+
+                    <span class="network-option-check">
+
+                        ✓
+
+                    </span>
+
+                </div>
+
+
+                <div class="network-option-sub">
+
+                    BNB Smart Chain
+
+                </div>
+
+            </button>
+
+
+            <button
+                type="button"
+                class="network-option"
+                data-network="TRC20"
+            >
+
+                <div class="network-option-top">
+
+                    <span class="network-option-name">
+
+                        TRC20
+
+                    </span>
+
+
+                    <span class="network-option-check">
+
+                        ✓
+
+                    </span>
+
+                </div>
+
+
+                <div class="network-option-sub">
+
+                    TRON Network
+
+                </div>
+
+            </button>
+
+        </div>
+
+
+        <input
+            type="hidden"
+            id="depositNetwork"
+            value="BEP20"
+        >
+
+
         <label
             class="amount-label"
             for="amount"
@@ -1237,9 +1476,11 @@
             </div>
 
 
-            <div class="amount-summary-network">
+            <div
+                class="amount-summary-network"
+                id="summaryNetwork"
+            >
 
-                Network:
                 BEP20 / BNB Smart Chain
 
             </div>
@@ -1259,7 +1500,10 @@
             </div>
 
 
-            <div class="qr-network">
+            <div
+                class="qr-network"
+                id="qrNetwork"
+            >
 
                 BEP20
 
@@ -1309,17 +1553,16 @@
             </div>
 
 
-            <div class="network-label">
+            <div class="network-label" id="networkLabel">
 
-                Network:
-                BEP20 (BNB Smart Chain)
+                Network: BEP20 (BNB Smart Chain)
 
             </div>
 
         </div>
 
 
-        <div class="warning">
+        <div class="warning" id="networkWarning">
 
             Send only USDT using the BEP20
             (BNB Smart Chain) network to this address.
@@ -1438,11 +1681,90 @@
     ========================================= */
 
     const API_BASE_URL =
-        "http://localhost:3000";
+  window.AVERYX_API_BASE_URL ||
+  (window.location.protocol === "file:"
+    ? "https://averyx.onrender.com"
+    : "");
 
 
     const BEP20_DEPOSIT_ADDRESS =
         "0x168e21a93B18b8136CD3b06AFa98cDFBdB788Ec3";
+
+    const TRC20_DEPOSIT_ADDRESS =
+        "TEWrqEDkPJ4cm3LKKoxZdQotpAMkiBhNNq";
+
+    const depositNetworkSelect =
+        document.getElementById("depositNetwork");
+
+    const networkOptionButtons =
+        document.querySelectorAll(".network-option");
+
+    const summaryNetwork = document.getElementById("summaryNetwork");
+    const qrNetwork = document.getElementById("qrNetwork");
+    const networkLabel = document.getElementById("networkLabel");
+    const networkWarning = document.getElementById("networkWarning");
+
+    function getSelectedNetwork() {
+        return depositNetworkSelect.value;
+    }
+
+    function getSelectedDepositAddress() {
+        return getSelectedNetwork() === "TRC20"
+            ? TRC20_DEPOSIT_ADDRESS
+            : BEP20_DEPOSIT_ADDRESS;
+    }
+
+    function updateNetworkDisplay() {
+        const network = getSelectedNetwork();
+        const isTrc20 = network === "TRC20";
+        const address = getSelectedDepositAddress();
+
+        if (depositAddress) {
+            depositAddress.textContent = address;
+        }
+
+        if (qrNetwork) {
+            qrNetwork.textContent = network;
+        }
+
+        if (summaryNetwork) {
+            summaryNetwork.textContent = isTrc20
+                ? "TRC20 / TRON"
+                : "BEP20 / BNB Smart Chain";
+        }
+
+        if (networkLabel) {
+            networkLabel.textContent = isTrc20
+                ? "Network: TRC20 (TRON)"
+                : "Network: BEP20 (BNB Smart Chain)";
+        }
+
+        if (networkWarning) {
+            networkWarning.textContent = isTrc20
+                ? "Send only USDT using the TRC20 (TRON) network to this address. Sending another asset or using another network may result in permanent loss."
+                : "Send only USDT using the BEP20 (BNB Smart Chain) network to this address. Sending another asset or using another network may result in permanent loss.";
+        }
+
+        if (transactionHashInput) {
+            transactionHashInput.placeholder = isTrc20
+                ? "TRON transaction hash"
+                : "0x...";
+        }
+
+        if (qrImage) {
+            qrImage.alt = isTrc20
+                ? "AVERYX TRC20 USDT Deposit QR Code"
+                : "AVERYX BEP20 USDT Deposit QR Code";
+
+            // Cache-busting parameter guarantees the visible QR refreshes
+            // immediately when the network/address changes.
+            qrImage.src =
+                "https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=" +
+                encodeURIComponent(address) +
+                "&t=" +
+                Date.now();
+        }
+    }
 
 
     /* =========================================
@@ -1532,7 +1854,7 @@
     qrImage.src =
         "https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=" +
         encodeURIComponent(
-            BEP20_DEPOSIT_ADDRESS
+            getSelectedDepositAddress()
         );
 
 
@@ -1765,7 +2087,7 @@
 
 
                 await navigator.clipboard.writeText(
-                    BEP20_DEPOSIT_ADDRESS
+                    getSelectedDepositAddress()
                 );
 
 
@@ -1801,7 +2123,7 @@
 
 
                 textarea.value =
-                    BEP20_DEPOSIT_ADDRESS;
+                    getSelectedDepositAddress();
 
 
                 document.body.appendChild(
@@ -1844,6 +2166,53 @@
         }
 
     );
+
+
+    networkOptionButtons.forEach(
+
+        function(button) {
+
+            button.addEventListener(
+
+                "click",
+
+                function() {
+
+                    const network =
+                        button.dataset.network;
+
+                    depositNetworkSelect.value =
+                        network;
+
+                    networkOptionButtons.forEach(
+
+                        function(option) {
+
+                            option.classList.toggle(
+
+                                "active",
+
+                                option.dataset.network ===
+                                network
+
+                            );
+
+                        }
+
+                    );
+
+                    updateNetworkDisplay();
+
+                }
+
+            );
+
+        }
+
+    );
+
+
+    updateNetworkDisplay();
 
 
     /* =========================================
@@ -1977,16 +2346,14 @@
             }
 
 
+            const selectedNetwork = getSelectedNetwork();
+
             if (
-
-                !txHash.startsWith(
-                    "0x"
-                )
-
+                (selectedNetwork === "BEP20"
+                    && (!/^0x[a-fA-F0-9]{64}$/.test(txHash)))
                 ||
-
-                txHash.length < 20
-
+                (selectedNetwork === "TRC20"
+                    && (!/^[a-fA-F0-9]{64}$/.test(txHash)))
             ) {
 
                 showMessage(
@@ -2055,8 +2422,8 @@
 
                                 JSON.stringify({
 
-                                    txHash:
-                                        txHash
+                                    txHash: txHash,
+                                    network: selectedNetwork
 
                                 })
 

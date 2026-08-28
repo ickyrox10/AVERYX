@@ -15,7 +15,8 @@
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "nodemailer": "^9.0.5",
-    "pg": "^8.23.0"
+    "pg": "^8.23.0",
+    "tronweb": "^6.5.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"

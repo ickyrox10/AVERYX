@@ -1,10 +1,15 @@
 const { pool } = require("../db");
 
 const { ethers } = require("ethers");
+const { TronWeb } = require("tronweb");
 
 const BSC_RPC_URL = process.env.BSC_RPC_URL;
 const BSC_USDT_CONTRACT = process.env.BSC_USDT_CONTRACT;
 const BEP20_DEPOSIT_ADDRESS = process.env.BEP20_DEPOSIT_ADDRESS;
+
+const TRON_API_URL = process.env.TRON_API_URL;
+const TRC20_USDT_CONTRACT = process.env.TRC20_USDT_CONTRACT;
+const TRC20_DEPOSIT_ADDRESS = process.env.TRC20_DEPOSIT_ADDRESS;
 
 const usdtInterface = new ethers.Interface([
     "event Transfer(address indexed from, address indexed to, uint256 value)"
@@ -16,6 +21,16 @@ function getBscProvider() {
     }
 
     return new ethers.JsonRpcProvider(BSC_RPC_URL);
+}
+
+function getTronWeb() {
+    if (!TRON_API_URL) {
+        throw new Error("TRON_API_URL is not configured.");
+    }
+
+    return new TronWeb({
+        fullHost: TRON_API_URL
+    });
 }
 
 
@@ -757,153 +772,276 @@ async function createDeposit(
     res
 ) {
 
-    const client =
-        await pool.connect();
+    const client = await pool.connect();
 
     try {
 
-        const userId =
-            req.user.userId;
+        const userId = req.user.userId;
+        const { txHash, network } = req.body;
 
-        const { txHash } =
-            req.body;
+        const selectedNetwork = String(network || "BEP20")
+            .trim()
+            .toUpperCase();
 
         if (
-            !txHash ||
-            typeof txHash !== "string"
+            selectedNetwork !== "BEP20" &&
+            selectedNetwork !== "TRC20"
         ) {
+            return res.status(400).json({
+                success: false,
+                message: "Unsupported deposit network."
+            });
+        }
+
+        if (!txHash || typeof txHash !== "string") {
             return res.status(400).json({
                 success: false,
                 message: "Transaction hash is required."
             });
         }
 
-        const cleanTxHash =
-            txHash.trim();
+        const cleanTxHash = txHash.trim();
+        const normalizedTxHash = cleanTxHash.toLowerCase();
 
-        if (
-            !ethers.isHexString(cleanTxHash, 32)
-        ) {
+        if (!/^(0x)?[a-fA-F0-9]{64}$/.test(cleanTxHash)) {
             return res.status(400).json({
                 success: false,
                 message: "Invalid transaction hash."
             });
         }
 
-        if (
-            !BSC_USDT_CONTRACT ||
-            !BEP20_DEPOSIT_ADDRESS
-        ) {
-            throw new Error(
-                "BEP20 deposit configuration is missing."
-            );
-        }
-
-        const usdtContractAddress =
-            ethers.getAddress(BSC_USDT_CONTRACT);
-
-        const depositAddress =
-            ethers.getAddress(BEP20_DEPOSIT_ADDRESS);
-
-        const provider =
-            getBscProvider();
+        let verifiedTransfer = null;
+        let verifiedAmount = 0;
 
         /* ------------------------------------------
-           CHECK BLOCKCHAIN FIRST
+           BEP20 / BNB SMART CHAIN VERIFICATION
         ------------------------------------------ */
 
-        const receipt =
-            await provider.getTransactionReceipt(
-                cleanTxHash
-            );
+        if (selectedNetwork === "BEP20") {
 
-        if (!receipt) {
-            return res.status(400).json({
-                success: false,
-                message: "Transaction was not found yet. Please wait and try again."
-            });
-        }
+            const bscTxHash = cleanTxHash.startsWith("0x")
+                ? cleanTxHash
+                : `0x${cleanTxHash}`;
 
-        if (receipt.status !== 1) {
-            return res.status(400).json({
-                success: false,
-                message: "Blockchain transaction failed."
-            });
-        }
-
-        let verifiedTransfer = null;
-
-        for (const log of receipt.logs) {
-
-            if (
-                log.address.toLowerCase() !==
-                usdtContractAddress.toLowerCase()
-            ) {
-                continue;
+            if (!BSC_USDT_CONTRACT || !BEP20_DEPOSIT_ADDRESS) {
+                throw new Error("BEP20 deposit configuration is missing.");
             }
 
-            try {
+            const usdtContractAddress =
+                ethers.getAddress(BSC_USDT_CONTRACT);
 
-                const parsedLog =
-                    usdtInterface.parseLog({
+            const depositAddress =
+                ethers.getAddress(BEP20_DEPOSIT_ADDRESS);
+
+            const provider = getBscProvider();
+
+            const receipt = await provider.getTransactionReceipt(
+                bscTxHash
+            );
+
+            if (!receipt) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Transaction was not found yet. Please wait and try again."
+                });
+            }
+
+            if (receipt.status !== 1) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Blockchain transaction failed."
+                });
+            }
+
+            for (const log of receipt.logs) {
+
+                if (
+                    log.address.toLowerCase() !==
+                    usdtContractAddress.toLowerCase()
+                ) {
+                    continue;
+                }
+
+                try {
+                    const parsedLog = usdtInterface.parseLog({
                         topics: log.topics,
                         data: log.data
                     });
 
-                if (
-                    !parsedLog ||
-                    parsedLog.name !== "Transfer"
-                ) {
-                    continue;
-                }
+                    if (!parsedLog || parsedLog.name !== "Transfer") {
+                        continue;
+                    }
 
-                const fromAddress =
-                    ethers.getAddress(
+                    const fromAddress = ethers.getAddress(
                         parsedLog.args.from
                     );
 
-                const toAddress =
-                    ethers.getAddress(
+                    const toAddress = ethers.getAddress(
                         parsedLog.args.to
                     );
 
+                    if (
+                        toAddress.toLowerCase() !==
+                        depositAddress.toLowerCase()
+                    ) {
+                        continue;
+                    }
+
+                    verifiedTransfer = {
+                        fromAddress,
+                        toAddress
+                    };
+
+                    verifiedAmount = roundUSDT(
+                        Number(
+                            ethers.formatUnits(
+                                parsedLog.args.value,
+                                18
+                            )
+                        )
+                    );
+
+                    break;
+
+                } catch (error) {
+                    continue;
+                }
+            }
+
+            if (!verifiedTransfer) {
+                return res.status(400).json({
+                    success: false,
+                    message: "No valid BEP20 USDT transfer to the AVERYX deposit address was found."
+                });
+            }
+        }
+
+        /* ------------------------------------------
+           TRC20 / TRON VERIFICATION
+        ------------------------------------------ */
+
+        if (selectedNetwork === "TRC20") {
+
+            if (!TRC20_USDT_CONTRACT || !TRC20_DEPOSIT_ADDRESS) {
+                throw new Error("TRC20 deposit configuration is missing.");
+            }
+
+            const tronWeb = getTronWeb();
+            const tronTxHash = cleanTxHash.replace(/^0x/i, "");
+
+            const transaction = await tronWeb.trx.getTransaction(
+                tronTxHash
+            );
+
+            if (!transaction || !transaction.txID) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Transaction was not found yet. Please wait and try again."
+                });
+            }
+
+            const transactionInfo =
+                await tronWeb.trx.getTransactionInfo(
+                    tronTxHash
+                );
+
+            if (!transactionInfo || !transactionInfo.id) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Transaction was not confirmed yet. Please wait and try again."
+                });
+            }
+
+            if (
+                transactionInfo.receipt &&
+                transactionInfo.receipt.result &&
+                transactionInfo.receipt.result !== "SUCCESS"
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Blockchain transaction failed."
+                });
+            }
+
+            const trc20ContractHex =
+                tronWeb.address.toHex(TRC20_USDT_CONTRACT)
+                    .replace(/^41/i, "")
+                    .toLowerCase();
+
+            const depositAddressHex =
+                tronWeb.address.toHex(TRC20_DEPOSIT_ADDRESS)
+                    .toLowerCase();
+
+            const transferTopic = ethers.id(
+                "Transfer(address,address,uint256)"
+            ).toLowerCase();
+
+            const logs = transactionInfo.log || [];
+
+            for (const log of logs) {
+
+                const logAddress = String(log.address || "")
+                    .replace(/^41/i, "")
+                    .toLowerCase();
+
+                if (logAddress !== trc20ContractHex) {
+                    continue;
+                }
+
+                const topics = log.topics || [];
+
                 if (
-                    toAddress.toLowerCase() !==
-                    depositAddress.toLowerCase()
+                    topics.length < 3 ||
+                    String(topics[0]).toLowerCase() !== transferTopic
                 ) {
                     continue;
                 }
 
-                verifiedTransfer = {
-                    fromAddress,
-                    toAddress,
-                    value: parsedLog.args.value
-                };
+                try {
+                    const fromHex = `41${String(topics[1]).slice(-40)}`;
+                    const toHex = `41${String(topics[2]).slice(-40)}`;
 
-                break;
+                    if (
+                        toHex.toLowerCase() !==
+                        depositAddressHex
+                    ) {
+                        continue;
+                    }
 
-            } catch (error) {
-                continue;
+                    const fromAddress =
+                        tronWeb.address.fromHex(fromHex);
+
+                    const toAddress =
+                        tronWeb.address.fromHex(toHex);
+
+                    const rawValue = BigInt(
+                        `0x${String(log.data || "").replace(/^0x/i, "")}`
+                    );
+
+                    /* TRON USDT uses 6 decimals. */
+                    verifiedAmount = roundUSDT(
+                        Number(rawValue) / 1_000_000
+                    );
+
+                    verifiedTransfer = {
+                        fromAddress,
+                        toAddress
+                    };
+
+                    break;
+
+                } catch (error) {
+                    continue;
+                }
+            }
+
+            if (!verifiedTransfer) {
+                return res.status(400).json({
+                    success: false,
+                    message: "No valid TRC20 USDT transfer to the AVERYX deposit address was found."
+                });
             }
         }
-
-        if (!verifiedTransfer) {
-            return res.status(400).json({
-                success: false,
-                message: "No valid BEP20 USDT transfer to the AVERYX deposit address was found."
-            });
-        }
-
-        /* BSC USDT contract uses 18 decimals. */
-        const verifiedAmount =
-            roundUSDT(
-                Number(
-                    ethers.formatUnits(
-                        verifiedTransfer.value,
-                        18
-                    )
-                )
-            );
 
         if (
             !Number.isFinite(verifiedAmount) ||
@@ -915,18 +1053,23 @@ async function createDeposit(
             });
         }
 
+        const canonicalTxHash = selectedNetwork === "BEP20"
+            ? (cleanTxHash.startsWith("0x")
+                ? cleanTxHash.toLowerCase()
+                : `0x${cleanTxHash.toLowerCase()}`)
+            : tronTxHashForStorage(cleanTxHash);
+
         await client.query("BEGIN");
 
-        const existingTransaction =
-            await client.query(
-                `
-                SELECT id
-                FROM transactions
-                WHERE tx_hash = $1
-                LIMIT 1
-                `,
-                [cleanTxHash]
-            );
+        const existingTransaction = await client.query(
+            `
+            SELECT id
+            FROM transactions
+            WHERE LOWER(tx_hash) = $1
+            LIMIT 1
+            `,
+            [canonicalTxHash]
+        );
 
         if (existingTransaction.rows.length > 0) {
             await client.query("ROLLBACK");
@@ -937,20 +1080,19 @@ async function createDeposit(
             });
         }
 
-        const walletResult =
-            await client.query(
-                `
-                SELECT
-                    id,
-                    balance_usdt,
-                    withdrawable_usdt,
-                    last_reward_reset_at
-                FROM wallets
-                WHERE user_id = $1
-                FOR UPDATE
-                `,
-                [userId]
-            );
+        const walletResult = await client.query(
+            `
+            SELECT
+                id,
+                balance_usdt,
+                withdrawable_usdt,
+                last_reward_reset_at
+            FROM wallets
+            WHERE user_id = $1
+            FOR UPDATE
+            `,
+            [userId]
+        );
 
         if (walletResult.rows.length === 0) {
             await client.query("ROLLBACK");
@@ -961,165 +1103,132 @@ async function createDeposit(
             });
         }
 
-        const wallet =
-            walletResult.rows[0];
+        const wallet = walletResult.rows[0];
+        const oldBalance = Number(wallet.balance_usdt) || 0;
+        const newBalance = roundUSDT(oldBalance + verifiedAmount);
 
-        const oldBalance =
-            Number(wallet.balance_usdt) || 0;
+        const currentReset = getLatestResetBoundary(new Date());
 
-        const newBalance =
-            roundUSDT(
-                oldBalance + verifiedAmount
-            );
+        let lastRewardReset = wallet.last_reward_reset_at
+            ? new Date(wallet.last_reward_reset_at)
+            : currentReset;
 
-        const currentReset =
-            getLatestResetBoundary(new Date());
-
-        let lastRewardReset =
-            wallet.last_reward_reset_at
-                ? new Date(wallet.last_reward_reset_at)
-                : currentReset;
-
-        if (
-            lastRewardReset.getTime() <
-            currentReset.getTime()
-        ) {
+        if (lastRewardReset.getTime() < currentReset.getTime()) {
             lastRewardReset = currentReset;
         }
 
-        const transactionResult =
-            await client.query(
-                `
-                INSERT INTO transactions (
-                    user_id,
-                    type,
-                    amount_usdt,
-                    status,
-                    reference,
-                    tx_hash,
-                    network,
-                    from_address,
-                    to_address
-                )
-                VALUES (
-                    $1,
-                    'deposit',
-                    $2,
-                    'completed',
-                    $3,
-                    $4,
-                    'BEP20',
-                    $5,
-                    $6
-                )
-                RETURNING *
-                `,
-                [
-                    userId,
-                    verifiedAmount,
-                    `BEP20-USDT-${cleanTxHash}`,
-                    cleanTxHash,
-                    verifiedTransfer.fromAddress,
-                    verifiedTransfer.toAddress
-                ]
-            );
+        const storedTxHash = canonicalTxHash;
 
-        const updatedWalletResult =
-            await client.query(
-                `
-                UPDATE wallets
-                SET
-                    balance_usdt = $1,
-                    last_reward_reset_at = $2,
-                    updated_at = NOW()
-                WHERE id = $3
-                RETURNING
-                    balance_usdt,
-                    withdrawable_usdt,
-                    updated_at
-                `,
-                [
-                    newBalance,
-                    lastRewardReset,
-                    wallet.id
-                ]
-            );
+        const transactionResult = await client.query(
+            `
+            INSERT INTO transactions (
+                user_id,
+                type,
+                amount_usdt,
+                status,
+                reference,
+                tx_hash,
+                network,
+                from_address,
+                to_address
+            )
+            VALUES (
+                $1,
+                'deposit',
+                $2,
+                'completed',
+                $3,
+                $4,
+                $5,
+                $6,
+                $7
+            )
+            RETURNING *
+            `,
+            [
+                userId,
+                verifiedAmount,
+                `${selectedNetwork}-USDT-${storedTxHash}`,
+                storedTxHash,
+                selectedNetwork,
+                verifiedTransfer.fromAddress,
+                verifiedTransfer.toAddress
+            ]
+        );
+
+        const updatedWalletResult = await client.query(
+            `
+            UPDATE wallets
+            SET
+                balance_usdt = $1,
+                last_reward_reset_at = $2,
+                updated_at = NOW()
+            WHERE id = $3
+            RETURNING
+                balance_usdt,
+                withdrawable_usdt,
+                updated_at
+            `,
+            [newBalance, lastRewardReset, wallet.id]
+        );
 
         /* ------------------------------------------
            REFERRAL REWARD
         ------------------------------------------ */
 
-        const referralResult =
-            await client.query(
-                `
-                SELECT referred_by
-                FROM users
-                WHERE id = $1
-                LIMIT 1
-                `,
-                [userId]
-            );
+        const referralResult = await client.query(
+            `
+            SELECT referred_by
+            FROM users
+            WHERE id = $1
+            LIMIT 1
+            `,
+            [userId]
+        );
 
         if (
             referralResult.rows.length > 0 &&
             referralResult.rows[0].referred_by
         ) {
-
-            const referrerId =
-                referralResult.rows[0].referred_by;
-
-            const referralReward =
-                roundUSDT(
-                    verifiedAmount *
-                    REFERRAL_PERCENTAGE
-                );
+            const referrerId = referralResult.rows[0].referred_by;
+            const referralReward = roundUSDT(
+                verifiedAmount * REFERRAL_PERCENTAGE
+            );
 
             if (referralReward > 0) {
-
                 const referralReference =
                     `REFERRAL-REWARD-${transactionResult.rows[0].id}`;
 
-                const existingReward =
-                    await client.query(
-                        `
-                        SELECT id
-                        FROM transactions
-                        WHERE user_id = $1
-                        AND type = 'referral'
-                        AND reference = $2
-                        LIMIT 1
-                        `,
-                        [
-                            referrerId,
-                            referralReference
-                        ]
-                    );
+                const existingReward = await client.query(
+                    `
+                    SELECT id
+                    FROM transactions
+                    WHERE user_id = $1
+                    AND type = 'referral'
+                    AND reference = $2
+                    LIMIT 1
+                    `,
+                    [referrerId, referralReference]
+                );
 
                 if (existingReward.rows.length === 0) {
+                    const referrerWalletResult = await client.query(
+                        `
+                        SELECT id, withdrawable_usdt
+                        FROM wallets
+                        WHERE user_id = $1
+                        FOR UPDATE
+                        `,
+                        [referrerId]
+                    );
 
-                    const referrerWalletResult =
-                        await client.query(
-                            `
-                            SELECT id, withdrawable_usdt
-                            FROM wallets
-                            WHERE user_id = $1
-                            FOR UPDATE
-                            `,
-                            [referrerId]
+                    if (referrerWalletResult.rows.length > 0) {
+                        const referrerWallet = referrerWalletResult.rows[0];
+
+                        const newReferrerWithdrawable = roundUSDT(
+                            (Number(referrerWallet.withdrawable_usdt) || 0) +
+                            referralReward
                         );
-
-                    if (
-                        referrerWalletResult.rows.length > 0
-                    ) {
-
-                        const referrerWallet =
-                            referrerWalletResult.rows[0];
-
-                        const newReferrerWithdrawable =
-                            roundUSDT(
-                                (Number(referrerWallet.withdrawable_usdt) || 0) +
-                                referralReward
-                            );
 
                         await client.query(
                             `
@@ -1129,10 +1238,7 @@ async function createDeposit(
                                 updated_at = NOW()
                             WHERE id = $2
                             `,
-                            [
-                                newReferrerWithdrawable,
-                                referrerWallet.id
-                            ]
+                            [newReferrerWithdrawable, referrerWallet.id]
                         );
 
                         await client.query(
@@ -1165,11 +1271,8 @@ async function createDeposit(
 
         await client.query("COMMIT");
 
-        const depositTransaction =
-            transactionResult.rows[0];
-
-        const finalWallet =
-            updatedWalletResult.rows[0];
+        const depositTransaction = transactionResult.rows[0];
+        const finalWallet = updatedWalletResult.rows[0];
 
         return res.status(201).json({
             success: true,
@@ -1207,10 +1310,7 @@ async function createDeposit(
             });
         }
 
-        console.error(
-            "Create deposit error:",
-            error
-        );
+        console.error("Create deposit error:", error);
 
         return res.status(500).json({
             success: false,
@@ -1220,7 +1320,10 @@ async function createDeposit(
     } finally {
         client.release();
     }
+}
 
+function tronTxHashForStorage(txHash) {
+    return txHash.replace(/^0x/i, "").toLowerCase();
 }
 
 
