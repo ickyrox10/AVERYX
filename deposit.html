@@ -1314,6 +1314,38 @@
 
             </button>
 
+<button
+                type="button"
+                class="network-option"
+                data-network="ERC20"
+            >
+
+                <div class="network-option-top">
+
+                    <span class="network-option-name">
+
+                        ERC20
+
+                    </span>
+
+
+                    <span class="network-option-check">
+
+                        ✓
+
+                    </span>
+
+                </div>
+
+
+                <div class="network-option-sub">
+
+                    TRON Network
+
+                </div>
+
+            </button>
+
         </div>
 
 
@@ -1700,7 +1732,25 @@
             networkLabel: "Network: TRC20 (TRON)",
             warning: "Send only USDT using the TRC20 (TRON) network to this address. Sending another asset or using another network may result in permanent loss.",
             hashPlaceholder: "TRON transaction hash"
-        }
+        },
+
+    ERC20: {
+
+        address: "",
+
+        label:
+            "ERC20 / Ethereum",
+
+        networkLabel:
+            "Network: ERC20 (Ethereum)",
+
+        warning:
+            "Send only USDT using the ERC20 (Ethereum) network to this address. Ethereum network fees may apply. Sending another asset or using another network may result in permanent loss.",
+
+        hashPlaceholder:
+            "0x..."
+
+    }
     };
 
     async function loadDepositNetworks() {
@@ -2211,7 +2261,7 @@
                     if (!DEPOSIT_NETWORKS[network]) {
                         showMessage(
                             amountMessage,
-                            `${network} deposits are currently unavailable.`,
+                            `${network} deposits are currently unavailable or not configured.`,
                             "error"
                         );
 

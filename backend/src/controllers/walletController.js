@@ -11,6 +11,10 @@ const TRON_API_URL = process.env.TRON_API_URL;
 const TRC20_USDT_CONTRACT = process.env.TRC20_USDT_CONTRACT;
 const TRC20_DEPOSIT_ADDRESS = process.env.TRC20_DEPOSIT_ADDRESS;
 
+const ETH_RPC_URL = process.env.ETH_RPC_URL;
+const ERC20_USDT_CONTRACT = process.env.ERC20_USDT_CONTRACT;
+const ERC20_DEPOSIT_ADDRESS = process.env.ERC20_DEPOSIT_ADDRESS;
+
 const usdtInterface = new ethers.Interface([
     "event Transfer(address indexed from, address indexed to, uint256 value)"
 ]);
@@ -31,6 +35,14 @@ function getTronWeb() {
     return new TronWeb({
         fullHost: TRON_API_URL
     });
+}
+
+function getEthProvider() {
+    if (!ETH_RPC_URL) {
+        throw new Error("ETH_RPC_URL is not configured.");
+    }
+
+    return new ethers.JsonRpcProvider(ETH_RPC_URL);
 }
 
 
@@ -785,7 +797,8 @@ async function createDeposit(
 
         if (
             selectedNetwork !== "BEP20" &&
-            selectedNetwork !== "TRC20"
+            selectedNetwork !== "TRC20" &&
+            selectedNetwork !== "ERC20"
         ) {
             return res.status(400).json({
                 success: false,
@@ -912,6 +925,110 @@ async function createDeposit(
                 return res.status(400).json({
                     success: false,
                     message: "No valid BEP20 USDT transfer to the AVERYX deposit address was found."
+                });
+            }
+        }
+
+        /* ------------------------------------------
+           ERC20 / ETHEREUM VERIFICATION
+        ------------------------------------------ */
+
+        if (selectedNetwork === "ERC20") {
+
+            if (!ERC20_USDT_CONTRACT || !ERC20_DEPOSIT_ADDRESS) {
+                throw new Error("ERC20 deposit configuration is missing.");
+            }
+
+            const ethTxHash = cleanTxHash.startsWith("0x")
+                ? cleanTxHash
+                : `0x${cleanTxHash}`;
+
+            const usdtContractAddress =
+                ethers.getAddress(ERC20_USDT_CONTRACT);
+
+            const depositAddress =
+                ethers.getAddress(ERC20_DEPOSIT_ADDRESS);
+
+            const provider = getEthProvider();
+
+            const receipt = await provider.getTransactionReceipt(
+                ethTxHash
+            );
+
+            if (!receipt) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Transaction was not found yet. Please wait and try again."
+                });
+            }
+
+            if (receipt.status !== 1) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Blockchain transaction failed."
+                });
+            }
+
+            for (const log of receipt.logs) {
+
+                if (
+                    log.address.toLowerCase() !==
+                    usdtContractAddress.toLowerCase()
+                ) {
+                    continue;
+                }
+
+                try {
+                    const parsedLog = usdtInterface.parseLog({
+                        topics: log.topics,
+                        data: log.data
+                    });
+
+                    if (!parsedLog || parsedLog.name !== "Transfer") {
+                        continue;
+                    }
+
+                    const fromAddress = ethers.getAddress(
+                        parsedLog.args.from
+                    );
+
+                    const toAddress = ethers.getAddress(
+                        parsedLog.args.to
+                    );
+
+                    if (
+                        toAddress.toLowerCase() !==
+                        depositAddress.toLowerCase()
+                    ) {
+                        continue;
+                    }
+
+                    /* Ethereum USDT uses 6 decimals. */
+                    verifiedAmount = roundUSDT(
+                        Number(
+                            ethers.formatUnits(
+                                parsedLog.args.value,
+                                6
+                            )
+                        )
+                    );
+
+                    verifiedTransfer = {
+                        fromAddress,
+                        toAddress
+                    };
+
+                    break;
+
+                } catch (error) {
+                    continue;
+                }
+            }
+
+            if (!verifiedTransfer) {
+                return res.status(400).json({
+                    success: false,
+                    message: "No valid ERC20 USDT transfer to the AVERYX deposit address was found."
                 });
             }
         }
@@ -1099,11 +1216,13 @@ async function createDeposit(
             });
         }
 
-        const canonicalTxHash = selectedNetwork === "BEP20"
-            ? (cleanTxHash.startsWith("0x")
-                ? cleanTxHash.toLowerCase()
-                : `0x${cleanTxHash.toLowerCase()}`)
-            : tronTxHashForStorage(cleanTxHash);
+        const canonicalTxHash =
+            selectedNetwork === "BEP20" ||
+            selectedNetwork === "ERC20"
+                ? (cleanTxHash.startsWith("0x")
+                    ? cleanTxHash.toLowerCase()
+                    : `0x${cleanTxHash.toLowerCase()}`)
+                : tronTxHashForStorage(cleanTxHash);
 
         await client.query("BEGIN");
 

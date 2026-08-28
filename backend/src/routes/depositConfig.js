@@ -37,6 +37,7 @@ router.get(
 
                 hashPlaceholder:
                     "0x..."
+
             },
 
 
@@ -56,6 +57,27 @@ router.get(
 
                 hashPlaceholder:
                     "TRON transaction hash"
+
+            },
+
+
+            ERC20: {
+
+                address:
+                    process.env.ERC20_DEPOSIT_ADDRESS || "",
+
+                label:
+                    "ERC20 / Ethereum",
+
+                networkLabel:
+                    "Network: ERC20 (Ethereum)",
+
+                warning:
+                    "Send only USDT using the ERC20 (Ethereum) network to this address. Ethereum network fees may apply. Sending another asset or using another network may result in permanent loss.",
+
+                hashPlaceholder:
+                    "0x..."
+
             }
 
         };
