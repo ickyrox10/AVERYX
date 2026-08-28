@@ -1340,7 +1340,39 @@
 
                 <div class="network-option-sub">
 
-                    TRON Network
+                    Ethereum Network
+
+                </div>
+
+            </button>
+
+            <button
+                type="button"
+                class="network-option"
+                data-network="POLYGON"
+            >
+
+                <div class="network-option-top">
+
+                    <span class="network-option-name">
+
+                        Polygon PoS
+
+                    </span>
+
+
+                    <span class="network-option-check">
+
+                        ✓
+
+                    </span>
+
+                </div>
+
+
+                <div class="network-option-sub">
+
+                    Polygon Network
 
                 </div>
 
@@ -2482,7 +2514,9 @@
             const selectedNetwork = getSelectedNetwork();
 
             if (
-                (selectedNetwork === "BEP20"
+                ((selectedNetwork === "BEP20"
+                    || selectedNetwork === "ERC20"
+                    || selectedNetwork === "POLYGON")
                     && (!/^0x[a-fA-F0-9]{64}$/.test(txHash)))
                 ||
                 (selectedNetwork === "TRC20"
