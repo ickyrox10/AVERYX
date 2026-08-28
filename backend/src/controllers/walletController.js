@@ -929,28 +929,55 @@ async function createDeposit(
             const tronWeb = getTronWeb();
             const tronTxHash = cleanTxHash.replace(/^0x/i, "");
 
-            const transaction = await tronWeb.trx.getTransaction(
-                tronTxHash
-            );
+            console.log("[TRC20] Starting deposit verification:", {
+                txHash: tronTxHash,
+                usdtContractConfigured: Boolean(TRC20_USDT_CONTRACT),
+                depositAddressConfigured: Boolean(TRC20_DEPOSIT_ADDRESS)
+            });
 
-            if (!transaction || !transaction.txID) {
+            let transaction;
+            let transactionInfo;
+
+            try {
+                transaction = await tronWeb.trx.getTransaction(tronTxHash);
+                transactionInfo = await tronWeb.trx.getTransactionInfo(tronTxHash);
+            } catch (tronLookupError) {
+                console.error("[TRC20] Transaction lookup error:", tronLookupError);
+
                 return res.status(400).json({
                     success: false,
                     message: "Transaction was not found yet. Please wait and try again."
                 });
             }
 
-            const transactionInfo =
-                await tronWeb.trx.getTransactionInfo(
-                    tronTxHash
-                );
+            if (!transaction || !transaction.txID) {
+                console.log("[TRC20] Transaction not found:", tronTxHash);
+
+                return res.status(400).json({
+                    success: false,
+                    message: "Transaction was not found yet. Please wait and try again."
+                });
+            }
+
+            console.log("[TRC20] Transaction found:", {
+                txID: transaction.txID
+            });
 
             if (!transactionInfo || !transactionInfo.id) {
+                console.log("[TRC20] Transaction not confirmed yet:", tronTxHash);
+
                 return res.status(400).json({
                     success: false,
                     message: "Transaction was not confirmed yet. Please wait and try again."
                 });
             }
+
+            console.log("[TRC20] Transaction info confirmed:", {
+                id: transactionInfo.id,
+                logCount: Array.isArray(transactionInfo.log)
+                    ? transactionInfo.log.length
+                    : 0
+            });
 
             if (
                 transactionInfo.receipt &&
@@ -977,6 +1004,12 @@ async function createDeposit(
             ).toLowerCase();
 
             const logs = transactionInfo.log || [];
+
+            console.log("[TRC20] Verification targets:", {
+                usdtContract: trc20ContractHex,
+                depositAddress: depositAddressHex,
+                logCount: logs.length
+            });
 
             for (const log of logs) {
 
@@ -1005,6 +1038,13 @@ async function createDeposit(
                         toHex.toLowerCase() !==
                         depositAddressHex
                     ) {
+                        console.log(
+                            "[TRC20] USDT transfer found, but recipient does not match deposit address:",
+                            {
+                                recipientHex: toHex.toLowerCase()
+                            }
+                        );
+
                         continue;
                     }
 
@@ -1027,6 +1067,12 @@ async function createDeposit(
                         fromAddress,
                         toAddress
                     };
+
+                    console.log("[TRC20] Valid AVERYX USDT transfer found:", {
+                        fromAddress,
+                        toAddress,
+                        amountUSDT: verifiedAmount
+                    });
 
                     break;
 
