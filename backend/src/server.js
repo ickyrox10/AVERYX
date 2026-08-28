@@ -21,6 +21,10 @@ const walletRoutes =
     require("./routes/wallet");
 
 
+const depositConfigRoutes =
+    require("./routes/depositConfig");
+
+
 /* ==================================================
    REFERRAL ROUTES
 ================================================== */
@@ -67,6 +71,15 @@ app.use(
 app.use(
     "/api/wallet",
     walletRoutes
+);
+
+
+/*
+   Public deposit addresses / network display config
+*/
+app.use(
+    "/api/deposit",
+    depositConfigRoutes
 );
 
 

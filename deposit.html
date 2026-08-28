@@ -1205,10 +1205,9 @@
         </h1>
 
 
-        <p>
+        <p id="depositAnnouncement">
 
-            Deposit USDT securely using
-            BEP20 (BNB Smart Chain).
+            Deposit USDT securely using the selected network.
 
         </p>
 
@@ -1687,11 +1686,39 @@
     : "");
 
 
-    const BEP20_DEPOSIT_ADDRESS =
-        "0x168e21a93B18b8136CD3b06AFa98cDFBdB788Ec3";
+    let DEPOSIT_NETWORKS = {
+        BEP20: {
+            address: "",
+            label: "BEP20 / BNB Smart Chain",
+            networkLabel: "Network: BEP20 (BNB Smart Chain)",
+            warning: "Send only USDT using the BEP20 (BNB Smart Chain) network to this address. Sending another asset or using another network may result in permanent loss.",
+            hashPlaceholder: "0x..."
+        },
+        TRC20: {
+            address: "",
+            label: "TRC20 / TRON",
+            networkLabel: "Network: TRC20 (TRON)",
+            warning: "Send only USDT using the TRC20 (TRON) network to this address. Sending another asset or using another network may result in permanent loss.",
+            hashPlaceholder: "TRON transaction hash"
+        }
+    };
 
-    const TRC20_DEPOSIT_ADDRESS =
-        "TEWrqEDkPJ4cm3LKKoxZdQotpAMkiBhNNq";
+    async function loadDepositNetworks() {
+        const response = await fetch(
+            `${API_BASE_URL}/api/deposit/networks`
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success || !data.networks) {
+            throw new Error(
+                data.message ||
+                "Unable to load deposit network configuration."
+            );
+        }
+
+        DEPOSIT_NETWORKS = data.networks;
+    }
 
     const depositNetworkSelect =
         document.getElementById("depositNetwork");
@@ -1703,21 +1730,36 @@
     const qrNetwork = document.getElementById("qrNetwork");
     const networkLabel = document.getElementById("networkLabel");
     const networkWarning = document.getElementById("networkWarning");
+    const depositAnnouncement = document.getElementById("depositAnnouncement");
+    const depositAddress = document.getElementById("depositAddress");
+    const qrImage = document.getElementById("qrImage");
 
     function getSelectedNetwork() {
         return depositNetworkSelect.value;
     }
 
+    function getSelectedNetworkConfig() {
+        return DEPOSIT_NETWORKS[
+            getSelectedNetwork()
+        ] || null;
+    }
+
     function getSelectedDepositAddress() {
-        return getSelectedNetwork() === "TRC20"
-            ? TRC20_DEPOSIT_ADDRESS
-            : BEP20_DEPOSIT_ADDRESS;
+        const config = getSelectedNetworkConfig();
+
+        return config && config.address
+            ? config.address
+            : "";
     }
 
     function updateNetworkDisplay() {
         const network = getSelectedNetwork();
-        const isTrc20 = network === "TRC20";
+        const config = getSelectedNetworkConfig();
         const address = getSelectedDepositAddress();
+
+        if (!config || !address) {
+            return;
+        }
 
         if (depositAddress) {
             depositAddress.textContent = address;
@@ -1728,36 +1770,37 @@
         }
 
         if (summaryNetwork) {
-            summaryNetwork.textContent = isTrc20
-                ? "TRC20 / TRON"
-                : "BEP20 / BNB Smart Chain";
+            summaryNetwork.textContent =
+                config.label || network;
         }
 
         if (networkLabel) {
-            networkLabel.textContent = isTrc20
-                ? "Network: TRC20 (TRON)"
-                : "Network: BEP20 (BNB Smart Chain)";
+            networkLabel.textContent =
+                config.networkLabel ||
+                `Network: ${network}`;
         }
 
         if (networkWarning) {
-            networkWarning.textContent = isTrc20
-                ? "Send only USDT using the TRC20 (TRON) network to this address. Sending another asset or using another network may result in permanent loss."
-                : "Send only USDT using the BEP20 (BNB Smart Chain) network to this address. Sending another asset or using another network may result in permanent loss.";
+            networkWarning.textContent =
+                config.warning ||
+                `Send only USDT using the ${network} network to this address.`;
+        }
+
+        if (depositAnnouncement) {
+            depositAnnouncement.textContent =
+                `Deposit USDT securely using ${config.label || network}.`;
         }
 
         if (transactionHashInput) {
-            transactionHashInput.placeholder = isTrc20
-                ? "TRON transaction hash"
-                : "0x...";
+            transactionHashInput.placeholder =
+                config.hashPlaceholder ||
+                "Transaction hash";
         }
 
         if (qrImage) {
-            qrImage.alt = isTrc20
-                ? "AVERYX TRC20 USDT Deposit QR Code"
-                : "AVERYX BEP20 USDT Deposit QR Code";
+            qrImage.alt =
+                `AVERYX ${network} USDT Deposit QR Code`;
 
-            // Cache-busting parameter guarantees the visible QR refreshes
-            // immediately when the network/address changes.
             qrImage.src =
                 "https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=" +
                 encodeURIComponent(address) +
@@ -1837,25 +1880,9 @@
         );
 
 
-    const qrImage =
-        document.getElementById(
-            "qrImage"
-        );
-
-
     let selectedDepositAmount =
         null;
 
-
-    /* =========================================
-       QR CODE
-    ========================================= */
-
-    qrImage.src =
-        "https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=" +
-        encodeURIComponent(
-            getSelectedDepositAddress()
-        );
 
 
     /* =========================================
@@ -2181,6 +2208,16 @@
                     const network =
                         button.dataset.network;
 
+                    if (!DEPOSIT_NETWORKS[network]) {
+                        showMessage(
+                            amountMessage,
+                            `${network} deposits are currently unavailable.`,
+                            "error"
+                        );
+
+                        return;
+                    }
+
                     depositNetworkSelect.value =
                         network;
 
@@ -2212,7 +2249,45 @@
     );
 
 
-    updateNetworkDisplay();
+    async function initializeDepositNetworks() {
+        try {
+            await loadDepositNetworks();
+
+            if (!getSelectedNetworkConfig()) {
+                const firstAvailableNetwork =
+                    Object.keys(DEPOSIT_NETWORKS)[0];
+
+                if (!firstAvailableNetwork) {
+                    throw new Error(
+                        "No deposit network is currently configured."
+                    );
+                }
+
+                depositNetworkSelect.value =
+                    firstAvailableNetwork;
+            }
+
+            updateNetworkDisplay();
+
+        } catch (error) {
+            console.error(
+                "Deposit network configuration error:",
+                error
+            );
+
+            if (networkWarning) {
+                networkWarning.textContent =
+                    "Unable to load the current deposit address. Please refresh the page and try again.";
+            }
+
+            if (depositAddress) {
+                depositAddress.textContent =
+                    "Unavailable";
+            }
+        }
+    }
+
+    initializeDepositNetworks();
 
 
     /* =========================================
