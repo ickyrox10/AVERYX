@@ -78,6 +78,26 @@ router.get(
                 hashPlaceholder:
                     "0x..."
 
+            },
+
+
+            POLYGON: {
+
+                address:
+                    process.env.POLYGON_DEPOSIT_ADDRESS || "",
+
+                label:
+                    "Polygon PoS",
+
+                networkLabel:
+                    "Network: Polygon PoS",
+
+                warning:
+                    "Send only USDT using the Polygon PoS network to this address. Sending another asset or using another network may result in permanent loss.",
+
+                hashPlaceholder:
+                    "0x..."
+
             }
 
         };

@@ -15,6 +15,10 @@ const ETH_RPC_URL = process.env.ETH_RPC_URL;
 const ERC20_USDT_CONTRACT = process.env.ERC20_USDT_CONTRACT;
 const ERC20_DEPOSIT_ADDRESS = process.env.ERC20_DEPOSIT_ADDRESS;
 
+const POLYGON_RPC_URL = process.env.POLYGON_RPC_URL;
+const POLYGON_USDT_CONTRACT = process.env.POLYGON_USDT_CONTRACT;
+const POLYGON_DEPOSIT_ADDRESS = process.env.POLYGON_DEPOSIT_ADDRESS;
+
 const usdtInterface = new ethers.Interface([
     "event Transfer(address indexed from, address indexed to, uint256 value)"
 ]);
@@ -43,6 +47,14 @@ function getEthProvider() {
     }
 
     return new ethers.JsonRpcProvider(ETH_RPC_URL);
+}
+
+function getPolygonProvider() {
+    if (!POLYGON_RPC_URL) {
+        throw new Error("POLYGON_RPC_URL is not configured.");
+    }
+
+    return new ethers.JsonRpcProvider(POLYGON_RPC_URL);
 }
 
 
@@ -798,7 +810,8 @@ async function createDeposit(
         if (
             selectedNetwork !== "BEP20" &&
             selectedNetwork !== "TRC20" &&
-            selectedNetwork !== "ERC20"
+            selectedNetwork !== "ERC20" &&
+            selectedNetwork !== "POLYGON"
         ) {
             return res.status(400).json({
                 success: false,
@@ -1029,6 +1042,112 @@ async function createDeposit(
                 return res.status(400).json({
                     success: false,
                     message: "No valid ERC20 USDT transfer to the AVERYX deposit address was found."
+                });
+            }
+        }
+
+
+
+        /* ------------------------------------------
+           POLYGON POS VERIFICATION
+        ------------------------------------------ */
+
+        if (selectedNetwork === "POLYGON") {
+
+            if (!POLYGON_USDT_CONTRACT || !POLYGON_DEPOSIT_ADDRESS) {
+                throw new Error("Polygon PoS deposit configuration is missing.");
+            }
+
+            const polygonTxHash = cleanTxHash.startsWith("0x")
+                ? cleanTxHash
+                : `0x${cleanTxHash}`;
+
+            const usdtContractAddress =
+                ethers.getAddress(POLYGON_USDT_CONTRACT);
+
+            const depositAddress =
+                ethers.getAddress(POLYGON_DEPOSIT_ADDRESS);
+
+            const provider = getPolygonProvider();
+
+            const receipt = await provider.getTransactionReceipt(
+                polygonTxHash
+            );
+
+            if (!receipt) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Transaction was not found yet. Please wait and try again."
+                });
+            }
+
+            if (receipt.status !== 1) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Blockchain transaction failed."
+                });
+            }
+
+            for (const log of receipt.logs) {
+
+                if (
+                    log.address.toLowerCase() !==
+                    usdtContractAddress.toLowerCase()
+                ) {
+                    continue;
+                }
+
+                try {
+                    const parsedLog = usdtInterface.parseLog({
+                        topics: log.topics,
+                        data: log.data
+                    });
+
+                    if (!parsedLog || parsedLog.name !== "Transfer") {
+                        continue;
+                    }
+
+                    const fromAddress = ethers.getAddress(
+                        parsedLog.args.from
+                    );
+
+                    const toAddress = ethers.getAddress(
+                        parsedLog.args.to
+                    );
+
+                    if (
+                        toAddress.toLowerCase() !==
+                        depositAddress.toLowerCase()
+                    ) {
+                        continue;
+                    }
+
+                    /* Polygon PoS USDT uses 6 decimals. */
+                    verifiedAmount = roundUSDT(
+                        Number(
+                            ethers.formatUnits(
+                                parsedLog.args.value,
+                                6
+                            )
+                        )
+                    );
+
+                    verifiedTransfer = {
+                        fromAddress,
+                        toAddress
+                    };
+
+                    break;
+
+                } catch (error) {
+                    continue;
+                }
+            }
+
+            if (!verifiedTransfer) {
+                return res.status(400).json({
+                    success: false,
+                    message: "No valid Polygon PoS USDT transfer to the AVERYX deposit address was found."
                 });
             }
         }

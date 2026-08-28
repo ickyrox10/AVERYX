@@ -1719,6 +1719,7 @@
 
 
     let DEPOSIT_NETWORKS = {
+
         BEP20: {
             address: "",
             label: "BEP20 / BNB Smart Chain",
@@ -1726,6 +1727,7 @@
             warning: "Send only USDT using the BEP20 (BNB Smart Chain) network to this address. Sending another asset or using another network may result in permanent loss.",
             hashPlaceholder: "0x..."
         },
+
         TRC20: {
             address: "",
             label: "TRC20 / TRON",
@@ -1734,33 +1736,38 @@
             hashPlaceholder: "TRON transaction hash"
         },
 
-    ERC20: {
+        ERC20: {
+            address: "",
+            label: "ERC20 / Ethereum",
+            networkLabel: "Network: ERC20 (Ethereum)",
+            warning: "Send only USDT using the ERC20 (Ethereum) network to this address. Ethereum network fees may apply. Sending another asset or using another network may result in permanent loss.",
+            hashPlaceholder: "0x..."
+        },
 
-        address: "",
+        POLYGON: {
+            address: "",
+            label: "Polygon PoS",
+            networkLabel: "Network: Polygon PoS",
+            warning: "Send only USDT using the Polygon PoS network to this address. Sending another asset or using another network may result in permanent loss.",
+            hashPlaceholder: "0x..."
+        }
 
-        label:
-            "ERC20 / Ethereum",
-
-        networkLabel:
-            "Network: ERC20 (Ethereum)",
-
-        warning:
-            "Send only USDT using the ERC20 (Ethereum) network to this address. Ethereum network fees may apply. Sending another asset or using another network may result in permanent loss.",
-
-        hashPlaceholder:
-            "0x..."
-
-    }
     };
 
+
     async function loadDepositNetworks() {
+
         const response = await fetch(
             `${API_BASE_URL}/api/deposit/networks`
         );
 
         const data = await response.json();
 
-        if (!response.ok || !data.success || !data.networks) {
+        if (
+            !response.ok ||
+            !data.success ||
+            !data.networks
+        ) {
             throw new Error(
                 data.message ||
                 "Unable to load deposit network configuration."
@@ -1769,6 +1776,7 @@
 
         DEPOSIT_NETWORKS = data.networks;
     }
+
 
     const depositNetworkSelect =
         document.getElementById("depositNetwork");
