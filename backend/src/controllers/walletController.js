@@ -1868,18 +1868,14 @@ async function createWithdrawal(
                     type,
                     amount_usdt,
                     status,
-                    reference,
-                    network,
-                    to_address
+                    reference
                 )
                 VALUES (
                     $1,
                     'withdrawal',
                     $2,
                     'pending',
-                    $3,
-                    $4,
-                    $5
+                    $3
                 )
                 RETURNING
                     id,
@@ -1887,17 +1883,16 @@ async function createWithdrawal(
                     amount_usdt,
                     status,
                     reference,
-                    network,
-                    to_address,
                     tx_hash,
+                    network,
+                    from_address,
+                    to_address,
                     created_at
                 `,
                 [
                     userId,
                     withdrawalAmount,
-                    reference,
-                    selectedNetwork,
-                    walletAddress
+                    reference
                 ]
             );
 
@@ -2095,6 +2090,18 @@ async function getTransactions(
 
                     reference:
                         transaction.reference,
+
+                    txHash:
+                        transaction.tx_hash,
+
+                    network:
+                        transaction.network,
+
+                    fromAddress:
+                        transaction.from_address,
+
+                    toAddress:
+                        transaction.to_address,
 
                     createdAt:
                         transaction.created_at

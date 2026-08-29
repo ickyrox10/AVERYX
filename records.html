@@ -231,12 +231,12 @@ button{
 }
 
 .record{
-    min-height:77px;
+    min-height:92px;
     display:flex;
     align-items:center;
     justify-content:space-between;
     gap:15px;
-    padding:13px 16px;
+    padding:14px 16px;
     border-bottom:1px solid var(--border-soft);
 }
 
@@ -244,11 +244,20 @@ button{
     border-bottom:0;
 }
 
+.record.clickable{
+    cursor:pointer;
+}
+
+.record.clickable:hover{
+    background:rgba(255,255,255,.012);
+}
+
 .record-left{
     display:flex;
-    align-items:center;
+    align-items:flex-start;
     gap:12px;
     min-width:0;
+    flex:1;
 }
 
 .record-icon{
@@ -262,10 +271,12 @@ button{
     background:#18181d;
     color:#9999a2;
     font-size:15px;
+    margin-top:1px;
 }
 
 .record-info{
     min-width:0;
+    padding-top:1px;
 }
 
 .record-name{
@@ -275,21 +286,27 @@ button{
     text-overflow:ellipsis;
 }
 
+.record-subline{
+    margin-top:6px;
+    color:#9b9ba4;
+    font-size:8px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
 .record-date{
-    margin-top:5px;
+    margin-top:6px;
     color:var(--soft);
     font-size:8px;
 }
 
-.record-referral{
-    margin-top:4px;
-    color:#8f8f98;
-    font-size:7px;
-}
-
 .record-right{
+    min-width:92px;
     flex-shrink:0;
     text-align:right;
+    align-self:flex-start;
+    padding-top:2px;
 }
 
 .record-amount{
@@ -298,7 +315,7 @@ button{
 
 .record-status{
     display:inline-block;
-    margin-top:5px;
+    margin-top:7px;
     font-size:7px;
     text-transform:uppercase;
 }
@@ -315,6 +332,82 @@ button{
     color:var(--red);
 }
 
+/* =========================
+   TRANSACTION DETAILS
+========================= */
+.record-modal{
+    position:fixed;
+    inset:0;
+    z-index:9999;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    background:rgba(0,0,0,.66);
+}
+
+.record-modal.show{
+    display:flex;
+}
+
+.record-modal-card{
+    width:min(100%,470px);
+    max-height:88vh;
+    overflow:auto;
+    padding:22px;
+    border:1px solid var(--border);
+    border-radius:18px;
+    background:#121218;
+    box-shadow:0 20px 70px rgba(0,0,0,.45);
+}
+
+.record-modal-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:15px;
+    margin-bottom:18px;
+}
+
+.record-modal-title{
+    font-family:Georgia,serif;
+    font-size:18px;
+}
+
+.record-modal-close{
+    width:32px;
+    height:32px;
+    border:1px solid var(--border);
+    border-radius:9px;
+    background:transparent;
+    color:var(--soft);
+    cursor:pointer;
+    font-size:16px;
+}
+
+.record-detail-row{
+    padding:12px 0;
+    border-top:1px solid var(--border-soft);
+}
+
+.record-detail-label{
+    color:var(--soft);
+    font-size:8px;
+    text-transform:uppercase;
+    letter-spacing:.7px;
+}
+
+.record-detail-value{
+    margin-top:6px;
+    color:#e6e6ea;
+    font-size:10px;
+    line-height:1.55;
+    word-break:break-all;
+}
+
+.record-detail-value.status-completed{ color:var(--green); }
+.record-detail-value.status-pending{ color:#d5a54a; }
+.record-detail-value.status-failed{ color:var(--red); }
 
 /* =========================
    EMPTY
@@ -871,6 +964,38 @@ button{
 
 
 
+
+<div
+    class="record-modal"
+    id="recordDetailsModal"
+    aria-hidden="true"
+>
+    <div
+        class="record-modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="recordDetailsTitle"
+    >
+        <div class="record-modal-head">
+            <div
+                class="record-modal-title"
+                id="recordDetailsTitle"
+            >
+                Transaction Details
+            </div>
+
+            <button
+                type="button"
+                class="record-modal-close"
+                id="recordDetailsClose"
+                aria-label="Close"
+            >×</button>
+        </div>
+
+        <div id="recordDetailsBody"></div>
+    </div>
+</div>
+
 <script>
 
 /* ==================================================
@@ -1320,7 +1445,31 @@ function normalizeRecord(record){
         createdAt:
             record.createdAt ||
             record.created_at ||
-            null
+            null,
+
+        network:
+            record.network ||
+            "",
+
+        fromAddress:
+            record.fromAddress ||
+            record.from_address ||
+            "",
+
+        toAddress:
+            record.toAddress ||
+            record.to_address ||
+            "",
+
+        txHash:
+            record.txHash ||
+            record.tx_hash ||
+            "",
+
+        referralUserUid:
+            record.referralUserUid ||
+            record.referral_user_uid ||
+            ""
 
     };
 
@@ -1339,65 +1488,47 @@ function getRecordType(record){
     if(
         type.includes("deposit")
     ){
-
         return "deposit";
-
     }
 
 
     if(
-
         type.includes("withdraw")
-
         ||
-
         type.includes("withdrawal")
-
     ){
-
         return "withdraw";
-
     }
 
 
     if(
-
-        type.includes("subscription")
-
-        ||
-
-        type.includes("tier")
-
-        ||
-
-        type.includes("reward")
-
-    ){
-
-        return "subscription";
-
-    }
-
-
-    if(
-
         type.includes("referral")
-
         ||
-
         type.includes("refer")
-
     ){
-
         return "referral";
+    }
 
+
+    if(
+        type.includes("reward")
+    ){
+        return "subscription";
+    }
+
+
+    if(
+        type.includes("subscription")
+        ||
+        type.includes("tier")
+    ){
+        return "subscription";
     }
 
 
     return "other";
 
 }
-
 
 
 function getIcon(type){
@@ -1597,70 +1728,225 @@ function updateSummary(){
    RENDER RECORDS
 ================================================== */
 
+function getNetworkLabel(record){
+
+    const direct =
+        String(
+            record.network || ""
+        ).trim();
+
+    if(direct){
+        return direct;
+    }
+
+
+    const source =
+        String(
+            record.reference || ""
+        ).toUpperCase();
+
+
+    const networks = [
+        "BEP20",
+        "TRC20",
+        "ERC20",
+        "POLYGON"
+    ];
+
+
+    return networks.find(
+        network => source.includes(network)
+    ) || "";
+
+}
+
+
+function getDisplayName(record, type){
+
+    if(type === "deposit") return "Deposit";
+    if(type === "withdraw") return "Withdrawal";
+    if(type === "referral") return "Referral Reward";
+
+    const raw =
+        String(record.type || "").toLowerCase();
+
+
+    if(raw.includes("reward")){
+        return "Daily Reward";
+    }
+
+
+    return record.type || "Activity";
+
+}
+
+
+function getReferralUid(record){
+
+    const direct =
+        String(record.referralUserUid || "").trim();
+
+    if(direct){
+        return direct;
+    }
+
+
+    /*
+       Never display an internal reference such as
+       REFERRAL-REWARD-9 as if it were a user ID.
+       The backend will provide the real public UID
+       when that data is added to the API.
+    */
+    return "";
+
+}
+
+
+function openRecordDetails(record){
+
+    const type = getRecordType(record);
+
+    if(
+        type !== "deposit"
+        &&
+        type !== "withdraw"
+    ){
+        return;
+    }
+
+
+    const modal =
+        document.getElementById("recordDetailsModal");
+
+    const title =
+        document.getElementById("recordDetailsTitle");
+
+    const body =
+        document.getElementById("recordDetailsBody");
+
+    const network =
+        getNetworkLabel(record) || "—";
+
+    const address =
+        type === "deposit"
+            ? (record.toAddress || record.fromAddress || "—")
+            : (record.toAddress || "—");
+
+    const txHash =
+        record.txHash || "—";
+
+    const status =
+        record.status || "Completed";
+
+    const addressLabel =
+        type === "deposit"
+            ? "Receiving Address"
+            : "Recipient Address";
+
+
+    title.textContent =
+        type === "deposit"
+            ? "Deposit Details"
+            : "Withdrawal Details";
+
+
+    body.innerHTML = `
+
+        <div class="record-detail-row">
+            <div class="record-detail-label">Amount</div>
+            <div class="record-detail-value">
+                ${Number(record.amountUSDT || 0).toFixed(2)} USDT
+            </div>
+        </div>
+
+        <div class="record-detail-row">
+            <div class="record-detail-label">Network</div>
+            <div class="record-detail-value">
+                ${escapeHTML(network)}
+            </div>
+        </div>
+
+        <div class="record-detail-row">
+            <div class="record-detail-label">${addressLabel}</div>
+            <div class="record-detail-value">
+                ${escapeHTML(address)}
+            </div>
+        </div>
+
+        <div class="record-detail-row">
+            <div class="record-detail-label">Transaction Hash</div>
+            <div class="record-detail-value">
+                ${escapeHTML(txHash)}
+            </div>
+        </div>
+
+        <div class="record-detail-row">
+            <div class="record-detail-label">Status</div>
+            <div class="record-detail-value status-${getStatusClass(status)}">
+                ${escapeHTML(status)}
+            </div>
+        </div>
+
+    `;
+
+
+    modal.classList.add("show");
+
+}
+
+
+function closeRecordDetails(){
+
+    document
+        .getElementById("recordDetailsModal")
+        .classList.remove("show");
+
+}
+
+
 function renderRecords(
     filter = activeFilter
 ){
 
-    activeFilter =
-        filter;
+    activeFilter = filter;
 
 
     const container =
-        document.getElementById(
-            "records"
-        );
+        document.getElementById("records");
 
 
-    let filtered =
-        records;
+    let filtered = records;
 
 
-    if(
-        filter !== "all"
-    ){
+    if(filter !== "all"){
 
         filtered =
             records.filter(
-
                 record =>
-
-                    getRecordType(
-                        record
-                    ) === filter
-
+                    getRecordType(record) === filter
             );
 
     }
 
 
-    if(
-        filtered.length === 0
-    ){
+    if(filtered.length === 0){
 
         container.innerHTML = `
 
             <div class="empty">
 
-                <div class="empty-icon">
-                    ≡
-                </div>
+                <div class="empty-icon">≡</div>
 
                 <div class="empty-title">
                     No Records Yet
                 </div>
 
                 <div class="empty-text">
-
                     Your ${
                         filter === "all"
                             ? "activity"
-                            : filter +
-                              " activity"
-                    }
-
-                    will appear here
-                    when records are available.
-
+                            : filter + " activity"
+                    } will appear here when records are available.
                 </div>
 
             </div>
@@ -1672,58 +1958,44 @@ function renderRecords(
     }
 
 
-    container.innerHTML =
-        "";
+    container.innerHTML = "";
 
 
     filtered.forEach(record => {
 
-        const type =
-            getRecordType(
-                record
-            );
+        const type = getRecordType(record);
+        const icon = getIcon(type);
+        const name = getDisplayName(record, type);
+        const amount = Number(record.amountUSDT) || 0;
+        const status = record.status || "Completed";
+        const date = formatDate(record.createdAt);
+
+        let subline = "";
+
+        if(
+            type === "deposit"
+            ||
+            type === "withdraw"
+        ){
+            subline = getNetworkLabel(record);
+        }
+        else if(type === "referral"){
+            const referralUid = getReferralUid(record);
+            subline = referralUid
+                ? `Referral: ${referralUid}`
+                : "";
+        }
 
 
-        const icon =
-            getIcon(type);
-
-
-        const name =
-            record.type ||
-            "Activity";
-
-
-        const amount =
-            Number(
-                record.amountUSDT
-            ) || 0;
-
-
-        const status =
-            record.status ||
-            "Completed";
-
-
-        const date =
-            formatDate(
-                record.createdAt
-            );
-
-
-        const reference =
-            record.reference ||
-            "";
-
-
-        const row =
-            document.createElement(
-                "div"
-            );
-
+        const row = document.createElement("div");
 
         row.className =
-            "record";
-
+            "record" + (
+                type === "deposit"
+                || type === "withdraw"
+                    ? " clickable"
+                    : ""
+            );
 
         row.innerHTML = `
 
@@ -1733,42 +2005,29 @@ function renderRecords(
                     ${icon}
                 </div>
 
-
                 <div class="record-info">
 
                     <div class="record-name">
                         ${escapeHTML(name)}
                     </div>
 
+                    ${
+                        subline
+                            ? `
+                                <div class="record-subline">
+                                    ${escapeHTML(subline)}
+                                </div>
+                              `
+                            : ""
+                    }
 
                     <div class="record-date">
                         ${escapeHTML(date)}
                     </div>
 
-
-                    ${
-                        reference
-
-                            ? `
-
-                                <div
-                                    class="record-referral"
-                                >
-                                    ${escapeHTML(
-                                        reference
-                                    )}
-                                </div>
-
-                              `
-
-                            : ""
-
-                    }
-
                 </div>
 
             </div>
-
 
             <div class="record-right">
 
@@ -1776,12 +2035,8 @@ function renderRecords(
                     ${amount.toFixed(2)} USDT
                 </div>
 
-
                 <div
-                    class="
-                        record-status
-                        ${getStatusClass(status)}
-                    "
+                    class="record-status ${getStatusClass(status)}"
                 >
                     ${escapeHTML(status)}
                 </div>
@@ -1791,14 +2046,23 @@ function renderRecords(
         `;
 
 
-        container.appendChild(
-            row
-        );
+        if(
+            type === "deposit"
+            ||
+            type === "withdraw"
+        ){
+            row.addEventListener(
+                "click",
+                () => openRecordDetails(record)
+            );
+        }
+
+
+        container.appendChild(row);
 
     });
 
 }
-
 
 
 /* ==================================================
@@ -1962,6 +2226,47 @@ document
 
     });
 
+
+
+/* ==================================================
+   RECORD DETAILS EVENTS
+================================================== */
+
+document
+    .getElementById("recordDetailsClose")
+    .addEventListener(
+        "click",
+        closeRecordDetails
+    );
+
+
+document
+    .getElementById("recordDetailsModal")
+    .addEventListener(
+        "click",
+        event => {
+
+            if(
+                event.target ===
+                document.getElementById("recordDetailsModal")
+            ){
+                closeRecordDetails();
+            }
+
+        }
+    );
+
+
+document.addEventListener(
+    "keydown",
+    event => {
+
+        if(event.key === "Escape"){
+            closeRecordDetails();
+        }
+
+    }
+);
 
 
 /* ==================================================
