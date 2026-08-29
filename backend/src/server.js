@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+
 require("dotenv").config();
 
 
@@ -11,6 +12,11 @@ const {
 const {
     settleAllDueRewards
 } = require("./controllers/walletController");
+
+
+const {
+    runWithdrawalWorker
+} = require("./withdrawalWorker");
 
 
 const authRoutes =
@@ -37,12 +43,14 @@ const referralRoutes =
     require("./routes/referral");
 
 
+
 const app =
     express();
 
 
 const PORT =
     process.env.PORT || 3000;
+
 
 
 /* ==================================================
@@ -60,6 +68,7 @@ app.use(
 app.use(
     express.json()
 );
+
 
 
 /* ==================================================
@@ -81,9 +90,7 @@ app.use(
 /*
    Public deposit addresses / network display config
 */
-/*
-   Public deposit addresses / network display config
-*/
+
 app.use(
     "/api/deposit",
     depositConfigRoutes
@@ -93,6 +100,7 @@ app.use(
 /*
    Public withdrawal network configuration
 */
+
 app.use(
     "/api/withdraw",
     withdrawConfigRoutes
@@ -102,20 +110,12 @@ app.use(
 /*
    Referral statistics / referral data
 */
-app.use(
-    "/api/referrals",
-    referralRoutes
-);
-
-
-/*
-   Referral statistics / referral data
-*/
 
 app.use(
     "/api/referrals",
     referralRoutes
 );
+
 
 
 /* ==================================================
@@ -139,6 +139,7 @@ app.get(
 );
 
 
+
 /* ==================================================
    HEALTH CHECK
 ================================================== */
@@ -160,6 +161,7 @@ app.get(
 );
 
 
+
 /* ==================================================
    404 HANDLER
 ================================================== */
@@ -178,6 +180,7 @@ app.use(
 
     }
 );
+
 
 
 /* ==================================================
@@ -206,6 +209,7 @@ app.use(
 );
 
 
+
 /* ==================================================
    DAILY REWARD WORKER
 
@@ -227,6 +231,7 @@ app.use(
    Emperor = 49.5 USDT/day
 
    The user receives:
+
    49.5 USDT
 
    NOT:
@@ -247,6 +252,7 @@ function startDailyRewardWorker() {
                 console.log(
                     "AVERYX daily reward check completed."
                 );
+
 
             } catch (error) {
 
@@ -283,6 +289,68 @@ function startDailyRewardWorker() {
 }
 
 
+
+/* ==================================================
+   WITHDRAWAL WORKER
+
+   This worker is currently safe by default.
+
+   It does NOT send cryptocurrency.
+
+   The actual behavior is controlled inside
+   withdrawalWorker.js using:
+
+   WITHDRAWAL_WORKER_ENABLED
+
+   WITHDRAWAL_WORKER_DRY_RUN
+================================================== */
+
+function startWithdrawalWorker() {
+
+    const run =
+        async () => {
+
+            try {
+
+                await runWithdrawalWorker();
+
+
+            } catch (error) {
+
+                console.error(
+                    "AVERYX withdrawal worker error:",
+                    error
+                );
+
+            }
+
+        };
+
+
+    /*
+       Check immediately when the server starts.
+    */
+
+    run();
+
+
+    /*
+       Then check once every minute.
+
+       By default the worker is disabled, so this
+       interval cannot process any withdrawal until
+       we explicitly enable it later.
+    */
+
+    setInterval(
+        run,
+        60 * 1000
+    );
+
+}
+
+
+
 /* ==================================================
    START SERVER
 ================================================== */
@@ -303,10 +371,26 @@ async function startServer() {
                 );
 
 
+                /*
+                   Start the existing daily
+                   reward processing system.
+                */
+
                 startDailyRewardWorker();
+
+
+                /*
+                   Start the withdrawal worker.
+
+                   It is currently disabled by default
+                   and cannot send cryptocurrency.
+                */
+
+                startWithdrawalWorker();
 
             }
         );
+
 
     } catch (error) {
 
@@ -325,6 +409,7 @@ async function startServer() {
     }
 
 }
+
 
 
 startServer();
