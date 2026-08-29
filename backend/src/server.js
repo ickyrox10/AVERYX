@@ -25,6 +25,10 @@ const depositConfigRoutes =
     require("./routes/depositConfig");
 
 
+const withdrawConfigRoutes =
+    require("./routes/withdrawConfig");
+
+
 /* ==================================================
    REFERRAL ROUTES
 ================================================== */
@@ -77,9 +81,30 @@ app.use(
 /*
    Public deposit addresses / network display config
 */
+/*
+   Public deposit addresses / network display config
+*/
 app.use(
     "/api/deposit",
     depositConfigRoutes
+);
+
+
+/*
+   Public withdrawal network configuration
+*/
+app.use(
+    "/api/withdraw",
+    withdrawConfigRoutes
+);
+
+
+/*
+   Referral statistics / referral data
+*/
+app.use(
+    "/api/referrals",
+    referralRoutes
 );
 
 
