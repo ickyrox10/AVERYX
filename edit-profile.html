@@ -1130,24 +1130,33 @@ const TIERS = [
    LOAD PROFILE
 ================================================== */
 
+function getProfileStorageKey() {
+    const user = readStoredObject("averyx_user") || {};
+    const rawId = user.publicUid ?? user.public_uid ?? user.id ?? user.userId ?? "guest";
+    return `averyx_profile_${String(rawId).trim() || "guest"}`;
+}
+
+function readProfileStorage() {
+    const raw = localStorage.getItem(getProfileStorageKey());
+    if (!raw) return null;
+    try { return JSON.parse(raw); } catch (error) { return null; }
+}
+
+function writeProfileStorage(value) {
+    localStorage.setItem(getProfileStorageKey(), JSON.stringify(value));
+}
+
 function getProfile() {
 
     try {
 
-        const saved =
-            localStorage.getItem(
-                "averyx_profile"
-            );
+        const storedProfile = readProfileStorage();
+        const saved = storedProfile ? JSON.stringify(storedProfile) : null;
 
 
         if (!saved) {
 
-            localStorage.setItem(
-                "averyx_profile",
-                JSON.stringify(
-                    DEFAULT_PROFILE
-                )
-            );
+            writeProfileStorage(DEFAULT_PROFILE);
 
 
             return {
@@ -1346,10 +1355,7 @@ for (const source of storedAccountSources) {
 const canonicalUID = formatAccountId(accountId);
 profile.uniqueId = canonicalUID;
 
-localStorage.setItem(
-    "averyx_profile",
-    JSON.stringify(profile)
-);
+writeProfileStorage(profile);
 
 document.getElementById(
     "topProfileName"
@@ -1443,10 +1449,7 @@ if (
 }
 
 
-localStorage.setItem(
-    "averyx_profile",
-    JSON.stringify(profile)
-);
+writeProfileStorage(profile);
 
 
 /* ==================================================
@@ -1837,10 +1840,7 @@ async function syncLiveUnlockedTiers() {
                 selectedTierLevel;
         }
 
-        localStorage.setItem(
-            "averyx_profile",
-            JSON.stringify(profile)
-        );
+        writeProfileStorage(profile);
 
         document.getElementById(
             "topProfileName"
@@ -2053,10 +2053,7 @@ document.getElementById(
                Keep the selected logo locally because
                it is a visual preference.
             */
-            localStorage.setItem(
-                "averyx_profile",
-                JSON.stringify(profile)
-            );
+            writeProfileStorage(profile);
 
             document.getElementById(
                 "topProfileName"

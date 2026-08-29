@@ -1364,13 +1364,38 @@
         return response.json();
     }
 
+    function getProfileStorageKey() {
+        const user = getStoredObject("averyx_user") || {};
+        const rawId = user.publicUid ?? user.public_uid ?? user.id ?? user.userId ?? "guest";
+        return `averyx_profile_${String(rawId).trim() || "guest"}`;
+    }
+
+    function readStoredProfile() {
+        const key = getProfileStorageKey();
+        const raw = localStorage.getItem(key);
+        if (raw) return JSON.parse(raw);
+
+        // Legacy migration only when the old cache clearly belongs to this user.
+        const legacyRaw = localStorage.getItem("averyx_profile");
+        if (!legacyRaw) return {};
+        const legacy = JSON.parse(legacyRaw);
+        const currentUser = getStoredObject("averyx_user") || {};
+        const currentId = normalizePublicId(currentUser.publicUid ?? currentUser.public_uid ?? currentUser.id);
+        const legacyId = normalizePublicId(legacy?.uniqueId);
+        if (currentId !== "—" && legacyId === currentId) {
+            localStorage.setItem(key, JSON.stringify(legacy));
+            return legacy;
+        }
+        return {};
+    }
+
+    function writeStoredProfile(profile) {
+        localStorage.setItem(getProfileStorageKey(), JSON.stringify(profile));
+    }
+
     function readProfile() {
         try {
-            const raw = localStorage.getItem("averyx_profile");
-            const saved =
-                raw
-                    ? JSON.parse(raw)
-                    : {};
+            const saved = readStoredProfile();
 
             const storedUser =
                 getStoredObject("averyx_user") || {};
@@ -1450,7 +1475,7 @@
     }
 
     function writeProfile(profile) {
-        localStorage.setItem("averyx_profile", JSON.stringify(profile));
+        writeStoredProfile(profile);
     }
 
     function normalizePublicId(value) {
@@ -1786,7 +1811,10 @@
             "averyx_wallet"
         ];
 
-        if (watchedKeys.includes(event.key)) {
+        if (
+            watchedKeys.includes(event.key) ||
+            event.key === getProfileStorageKey()
+        ) {
             renderProfile();
         }
     });
