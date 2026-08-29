@@ -918,6 +918,20 @@
 
 
                 /* -----------------------------
+                   CLEAR PREVIOUS ACCOUNT STATE
+
+                   Profile-related browser data belongs
+                   to the previous session and must not
+                   be reused by the next account.
+                ----------------------------- */
+
+                localStorage.removeItem("averyx_profile");
+                localStorage.removeItem("averyx_subscription");
+                localStorage.removeItem("averyx_subscription_data");
+                localStorage.removeItem("averyx_wallet");
+
+
+                /* -----------------------------
                    SAVE AUTHENTICATION
                 ----------------------------- */
 

@@ -1810,9 +1810,17 @@
         logoutButton.addEventListener(
             "click",
             () => {
+                /* Clear authentication and account-specific
+                   cached state so the next account starts
+                   with its own profile data. */
                 localStorage.removeItem("averyx_token");
                 localStorage.removeItem("token");
                 localStorage.removeItem("authToken");
+                localStorage.removeItem("averyx_user");
+                localStorage.removeItem("averyx_profile");
+                localStorage.removeItem("averyx_subscription");
+                localStorage.removeItem("averyx_subscription_data");
+                localStorage.removeItem("averyx_wallet");
 
                 // Replace the current protected page in browser history.
                 window.location.replace("login.html");
