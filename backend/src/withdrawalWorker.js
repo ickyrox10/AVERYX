@@ -4,6 +4,9 @@ const {
     getNetworkConfig,
     getProvider
 } = require("./services/gasQuoteService");
+const {
+    ensureGasForWithdrawal
+} = require("./services/gasFundingService");
 
 /* ==================================================
    LIVE WITHDRAWAL WORKER
@@ -546,9 +549,40 @@ async function sendEvmUsdtWithdrawal(withdrawal) {
         gasLimit * maxGasPrice;
 
     if (nativeBalance < requiredNative) {
-        throw new Error(
-            `${network} withdrawal wallet has insufficient native token for gas.`
+        console.log(
+            `[Withdrawal Worker] ${network} native gas is insufficient. Starting automatic gas funding.`
         );
+
+        const gasFundingResult =
+            await ensureGasForWithdrawal({
+                network,
+                withdrawalWalletAddress: senderAddress,
+                requiredGasWei: requiredNative
+            });
+
+        console.log(
+            `[Withdrawal Worker] ${network} gas funding result:`,
+            {
+                fundingRequired: gasFundingResult.fundingRequired,
+                funded: gasFundingResult.funded,
+                amountFunded: gasFundingResult.amountFunded,
+                fundingTxHash: gasFundingResult.fundingTxHash
+            }
+        );
+
+        /*
+           The funding transaction is confirmed inside
+           ensureGasForWithdrawal(). Re-check the balance
+           immediately before broadcasting the USDT transfer.
+        */
+        const nativeBalanceAfterFunding =
+            await provider.getBalance(senderAddress);
+
+        if (nativeBalanceAfterFunding < requiredNative) {
+            throw new Error(
+                `${network} withdrawal wallet still has insufficient native token for gas after automatic funding.`
+            );
+        }
     }
 
     let tx;
