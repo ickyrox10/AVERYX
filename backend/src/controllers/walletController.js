@@ -1671,19 +1671,21 @@ async function createWithdrawal(
             Number(amount);
 
 
-        const allowedNetworks = [
+        const withdrawalNetworks = {
 
-            "BEP20",
+            BEP20:
+                process.env.BEP20_WITHDRAW_ENABLED === "true",
 
-            "TRC20",
+            TRC20:
+                process.env.TRC20_WITHDRAW_ENABLED === "true",
 
-            "TON",
+            ERC20:
+                process.env.ERC20_WITHDRAW_ENABLED === "true",
 
-            "ERC20",
+            POLYGON:
+                process.env.POLYGON_WITHDRAW_ENABLED === "true"
 
-            "POLYGON"
-
-        ];
+        };
 
 
         const selectedNetwork =
@@ -1720,9 +1722,9 @@ async function createWithdrawal(
 
 
         if (
-            !allowedNetworks.includes(
+            withdrawalNetworks[
                 selectedNetwork
-            )
+            ] !== true
         ) {
 
             return res.status(400).json({
