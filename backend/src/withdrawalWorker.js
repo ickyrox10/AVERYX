@@ -17,6 +17,11 @@ const { pool } = require("./db");
 
    WITHDRAWAL_WORKER_ENABLED=false
    WITHDRAWAL_WORKER_DRY_RUN=true
+
+   Optional controlled test mode:
+
+   WITHDRAWAL_WORKER_TEST_MODE=false
+   WITHDRAWAL_WORKER_TEST_ID=
 */
 
 
@@ -30,6 +35,18 @@ const DRY_RUN =
     String(
         process.env.WITHDRAWAL_WORKER_DRY_RUN ?? "true"
     ).toLowerCase() !== "false";
+
+
+const TEST_MODE =
+    String(
+        process.env.WITHDRAWAL_WORKER_TEST_MODE ?? "false"
+    ).toLowerCase() === "true";
+
+
+const TEST_WITHDRAWAL_ID =
+    String(
+        process.env.WITHDRAWAL_WORKER_TEST_ID ?? ""
+    ).trim();
 
 
 
@@ -83,9 +100,14 @@ async function getPendingWithdrawals() {
 
    SKIP LOCKED prevents multiple workers from
    claiming the same withdrawal simultaneously.
+
+   If targetWithdrawalId is provided, ONLY that
+   specific withdrawal can be claimed.
 ================================================== */
 
-async function claimNextPendingWithdrawal() {
+async function claimNextPendingWithdrawal(
+    targetWithdrawalId = null
+) {
 
     const client =
         await pool.connect();
@@ -114,6 +136,11 @@ async function claimNextPendingWithdrawal() {
                         AND LOWER(status) = 'pending'
 
                         AND tx_hash IS NULL
+
+                        AND (
+                            $1::bigint IS NULL
+                            OR id = $1::bigint
+                        )
 
                     ORDER BY
                         created_at ASC
@@ -147,7 +174,10 @@ async function claimNextPendingWithdrawal() {
                     from_address,
                     to_address,
                     created_at
-                `
+                `,
+                [
+                    targetWithdrawalId
+                ]
             );
 
 
@@ -196,8 +226,6 @@ async function claimNextPendingWithdrawal() {
 
 /* ==================================================
    FAIL WITHDRAWAL SAFELY
-
-   IMPORTANT:
 
    Funds are restored ONLY when the withdrawal has
    NOT been broadcast to the blockchain.
@@ -386,8 +414,6 @@ async function failWithdrawalBeforeBroadcast(
         /*
            Restore the reserved amount.
 
-           IMPORTANT:
-
            We restore ONLY withdrawable_usdt.
 
            balance_usdt is not modified here because
@@ -418,12 +444,10 @@ async function failWithdrawalBeforeBroadcast(
         /*
            Mark the withdrawal as FAILED.
 
-           The reason is stored in reference only if
-           your current transaction schema uses that
-           field for internal references.
+           This only succeeds when:
 
-           We preserve the original reference rather
-           than overwriting it.
+           - tx_hash is still NULL
+           - status is still PROCESSING
         */
 
         await client.query(
@@ -628,18 +652,80 @@ async function runWithdrawalWorker() {
         /*
            LIVE PROCESSING MODE
 
-           Currently this should NOT be enabled until
-           a real blockchain sender is connected.
+           TEST MODE SAFETY
 
-           If processWithdrawal fails before broadcast,
-           reserved funds are restored safely.
+           When TEST_MODE is enabled, the worker can
+           ONLY process the exact withdrawal ID in:
+
+           WITHDRAWAL_WORKER_TEST_ID
+
+           If the ID is missing or invalid, nothing
+           will be processed.
+        */
+
+        let targetWithdrawalId =
+            null;
+
+
+        if (TEST_MODE) {
+
+            if (
+                !/^\d+$/.test(
+                    TEST_WITHDRAWAL_ID
+                )
+            ) {
+
+                console.error(
+                    "[Withdrawal Worker] TEST MODE is enabled, but WITHDRAWAL_WORKER_TEST_ID is missing or invalid."
+                );
+
+
+                return;
+
+            }
+
+
+            targetWithdrawalId =
+                TEST_WITHDRAWAL_ID;
+
+
+            console.log(
+                "[Withdrawal Worker] TEST MODE active. Only withdrawal ID " +
+                targetWithdrawalId +
+                " can be processed."
+            );
+
+        }
+
+
+        /*
+           Claim the next withdrawal.
+
+           In normal mode:
+           → oldest pending withdrawal
+
+           In test mode:
+           → ONLY the selected withdrawal ID
         */
 
         const withdrawal =
-            await claimNextPendingWithdrawal();
+            await claimNextPendingWithdrawal(
+                targetWithdrawalId
+            );
 
 
         if (!withdrawal) {
+
+            if (TEST_MODE) {
+
+                console.log(
+                    "[Withdrawal Worker] Test withdrawal ID " +
+                    targetWithdrawalId +
+                    " was not found as a pending withdrawal."
+                );
+
+            }
+
 
             return;
 
@@ -732,8 +818,6 @@ async function runWithdrawalWorker() {
 
 
             /*
-               We are inside the processing error path.
-
                The recovery helper checks tx_hash again
                inside a database lock before restoring
                any funds.
