@@ -3,6 +3,11 @@ const { pool } = require("../db");
 const { ethers } = require("ethers");
 const { TronWeb } = require("tronweb");
 
+const {
+    createGasQuote,
+    createPublicQuote
+} = require("../services/gasQuoteService");
+
 const BSC_RPC_URL = process.env.BSC_RPC_URL;
 const BSC_USDT_CONTRACT = process.env.BSC_USDT_CONTRACT;
 const BEP20_DEPOSIT_ADDRESS = process.env.BEP20_DEPOSIT_ADDRESS;
@@ -261,6 +266,109 @@ function validateWithdrawalAddress(
     return {
         valid: false,
         message: "Unsupported withdrawal network."
+    };
+
+}
+
+
+/* ==================================================
+   WITHDRAWAL GAS QUOTE HELPERS
+================================================== */
+
+function getWithdrawalHotWalletAddress(network) {
+
+    const selectedNetwork =
+        String(network || "")
+        .trim()
+        .toUpperCase();
+
+
+    const addressVariables = {
+
+        BEP20:
+            process.env.BEP20_HOT_WALLET_ADDRESS,
+
+        ERC20:
+            process.env.ERC20_HOT_WALLET_ADDRESS,
+
+        POLYGON:
+            process.env.POLYGON_HOT_WALLET_ADDRESS
+
+    };
+
+
+    return addressVariables[
+        selectedNetwork
+    ] || null;
+
+}
+
+
+async function createWithdrawalQuote({
+    network,
+    toAddress,
+    requestedAmount
+}) {
+
+    const selectedNetwork =
+        String(network || "")
+        .trim()
+        .toUpperCase();
+
+
+    /*
+       TRC20 is intentionally left on the existing
+       withdrawal flow until its dedicated quote engine
+       is implemented.
+    */
+
+    if (
+        selectedNetwork === "TRC20"
+    ) {
+
+        return {
+            publicQuote: {
+                network: selectedNetwork,
+                requestedAmount: roundUSDT(requestedAmount),
+                recipientAmount: roundUSDT(requestedAmount)
+            },
+            internal: null
+        };
+
+    }
+
+
+    const fromAddress =
+        getWithdrawalHotWalletAddress(
+            selectedNetwork
+        );
+
+
+    if (
+        !fromAddress
+    ) {
+
+        throw new Error(
+            `${selectedNetwork} hot wallet address is not configured.`
+        );
+
+    }
+
+
+    const quote =
+        await createGasQuote({
+            network: selectedNetwork,
+            fromAddress,
+            toAddress,
+            requestedAmount
+        });
+
+
+    return {
+        publicQuote:
+            createPublicQuote(quote),
+        internal:
+            quote.internal
     };
 
 }
@@ -1915,6 +2023,33 @@ async function createWithdrawal(
             addressValidation.address;
 
 
+        /*
+           Create the withdrawal quote before reserving
+           the user's balance.
+
+           The quote exposes only the recipient amount
+           publicly. Gas cost and platform margin remain
+           internal accounting values.
+        */
+
+        const withdrawalQuote =
+            await createWithdrawalQuote({
+                network: selectedNetwork,
+                toAddress: walletAddress,
+                requestedAmount: withdrawalAmount
+            });
+
+
+        const recipientAmount =
+            roundUSDT(
+                withdrawalQuote.publicQuote.recipientAmount
+            );
+
+
+        const internalQuote =
+            withdrawalQuote.internal;
+
+
         await client.query(
             "BEGIN"
         );
@@ -2021,6 +2156,9 @@ async function createWithdrawal(
                     user_id,
                     type,
                     amount_usdt,
+                    recipient_amount_usdt,
+                    gas_cost_usdt,
+                    margin_usdt,
                     status,
                     reference,
                     network,
@@ -2030,15 +2168,21 @@ async function createWithdrawal(
                     $1,
                     'withdrawal',
                     $2,
-                    'pending',
                     $3,
                     $4,
-                    $5
+                    $5,
+                    'pending',
+                    $6,
+                    $7,
+                    $8
                 )
                 RETURNING
                     id,
                     type,
                     amount_usdt,
+                    recipient_amount_usdt,
+                    gas_cost_usdt,
+                    margin_usdt,
                     status,
                     reference,
                     tx_hash,
@@ -2050,6 +2194,13 @@ async function createWithdrawal(
                 [
                     userId,
                     withdrawalAmount,
+                    recipientAmount,
+                    internalQuote
+                        ? internalQuote.actualGasCostUsdt
+                        : null,
+                    internalQuote
+                        ? internalQuote.platformMarginUsdt
+                        : null,
                     reference,
                     selectedNetwork,
                     walletAddress
@@ -2108,6 +2259,11 @@ async function createWithdrawal(
                 amountUSDT:
                     Number(
                         transaction.amount_usdt
+                    ),
+
+                recipientAmountUSDT:
+                    Number(
+                        transaction.recipient_amount_usdt
                     ),
 
                 status:
