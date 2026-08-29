@@ -141,6 +141,131 @@ function roundUSDT(value) {
 }
 
 
+
+
+/* ==================================================
+   WITHDRAWAL ADDRESS VALIDATION
+================================================== */
+
+function validateWithdrawalAddress(
+    network,
+    address
+) {
+
+    const selectedNetwork =
+        String(network || "")
+        .trim()
+        .toUpperCase();
+
+
+    const walletAddress =
+        String(address || "")
+        .trim();
+
+
+    if (
+        !walletAddress
+    ) {
+
+        return {
+            valid: false,
+            message: "Please enter a wallet address."
+        };
+
+    }
+
+
+    /*
+       BEP20, ERC20 and Polygon all use
+       EVM address format.
+    */
+
+    if (
+        selectedNetwork === "BEP20" ||
+        selectedNetwork === "ERC20" ||
+        selectedNetwork === "POLYGON"
+    ) {
+
+        if (
+            !ethers.isAddress(
+                walletAddress
+            )
+        ) {
+
+            return {
+                valid: false,
+                message: `Invalid ${selectedNetwork} wallet address.`
+            };
+
+        }
+
+
+        const normalizedAddress =
+            ethers.getAddress(
+                walletAddress
+            );
+
+
+        if (
+            normalizedAddress.toLowerCase() ===
+            ethers.ZeroAddress.toLowerCase()
+        ) {
+
+            return {
+                valid: false,
+                message: "The zero address cannot receive a withdrawal."
+            };
+
+        }
+
+
+        return {
+            valid: true,
+            address: normalizedAddress
+        };
+
+    }
+
+
+    /*
+       TRC20 withdrawals require a valid
+       TRON Base58 address.
+    */
+
+    if (
+        selectedNetwork === "TRC20"
+    ) {
+
+        if (
+            !TronWeb.isAddress(
+                walletAddress
+            )
+        ) {
+
+            return {
+                valid: false,
+                message: "Invalid TRC20 wallet address."
+            };
+
+        }
+
+
+        return {
+            valid: true,
+            address: walletAddress
+        };
+
+    }
+
+
+    return {
+        valid: false,
+        message: "Unsupported withdrawal network."
+    };
+
+}
+
+
 function getCurrentTier(depositedUSDT) {
 
     const amount =
@@ -1757,8 +1882,37 @@ async function createWithdrawal(
         }
 
 
+        const addressValidation =
+            validateWithdrawalAddress(
+                selectedNetwork,
+                address
+            );
+
+
+        if (
+            !addressValidation.valid
+        ) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    addressValidation.message
+
+            });
+
+        }
+
+
+        /*
+           Use the validated and normalized address.
+           This happens BEFORE any database transaction
+           or balance reservation.
+        */
+
         const walletAddress =
-            address.trim();
+            addressValidation.address;
 
 
         await client.query(
