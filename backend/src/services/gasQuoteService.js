@@ -15,12 +15,19 @@ const PLATFORM_MARGIN_PERCENT = 35;
    prices move continuously.
 */
 
-const PRICE_CACHE_TTL_MS = 30 * 1000;
+const PRICE_CACHE_TTL_MS = 2 * 60 * 1000;
 
-const MAX_PRICE_AGE_MS = 10 * 60 * 1000;
+const MAX_PRICE_AGE_MS = 15 * 60 * 1000;
 
 
 const priceCache = new Map();
+
+
+/*
+   Prevent multiple simultaneous withdrawal requests
+   from fetching the same native-token price at once.
+*/
+const priceFetchInFlight = new Map();
 
 
 const ERC20_ABI = [
@@ -58,7 +65,10 @@ function getNetworkConfig(network) {
                 "BNB",
 
             coinGeckoId:
-                "binancecoin"
+                "binancecoin",
+
+            kucoinSymbol:
+                "BNB-USDT"
 
         },
 
@@ -78,7 +88,10 @@ function getNetworkConfig(network) {
                 "ETH",
 
             coinGeckoId:
-                "ethereum"
+                "ethereum",
+
+            kucoinSymbol:
+                "ETH-USDT"
 
         },
 
@@ -98,7 +111,10 @@ function getNetworkConfig(network) {
                 "POL",
 
             coinGeckoId:
-                "polygon-ecosystem-token"
+                "polygon-ecosystem-token",
+
+            kucoinSymbol:
+                "POL-USDT"
 
         }
 
@@ -232,98 +248,143 @@ async function fetchKuCoinNativeTokenPriceUsdt(
     }
 
 
-    const url =
-        "https://api.kucoin.com/api/v1/market/orderbook/level1?symbol=" +
-        encodeURIComponent(
-            symbol
-        );
+    /*
+       Try the standard public endpoint first.
+
+       A second official regional endpoint is attempted
+       only if the first endpoint is unreachable.
+    */
+
+    const baseUrls = [
+        "https://api.kucoin.com",
+        "https://api.kucoin.eu"
+    ];
 
 
-    const response =
-        await fetch(
-            url,
-            {
+    let lastError = null;
 
-                headers: {
-                    accept:
-                        "application/json"
-                },
 
-                signal:
-                    AbortSignal.timeout(
-                        10000
-                    )
+    for (
+        const baseUrl of baseUrls
+    ) {
+
+        try {
+
+            const url =
+                baseUrl +
+                "/api/v1/market/orderbook/level1?symbol=" +
+                encodeURIComponent(
+                    symbol
+                );
+
+
+            const response =
+                await fetch(
+                    url,
+                    {
+
+                        headers: {
+                            accept:
+                                "application/json"
+                        },
+
+                        signal:
+                            AbortSignal.timeout(
+                                10000
+                            )
+
+                    }
+                );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    baseUrl +
+                    " HTTP " +
+                    response.status
+                );
 
             }
-        );
 
 
-    if (!response.ok) {
+            const data =
+                await response.json();
 
-        throw new Error(
-            "KuCoin price API returned HTTP " +
-            response.status
-        );
+
+            if (
+                String(data?.code) !==
+                "200000"
+            ) {
+
+                throw new Error(
+                    baseUrl +
+                    " returned an unsuccessful response."
+                );
+
+            }
+
+
+            const price =
+                Number(
+                    data?.data?.price
+                );
+
+
+            if (
+                !Number.isFinite(
+                    price
+                ) ||
+                price <= 0
+            ) {
+
+                throw new Error(
+                    baseUrl +
+                    " returned an invalid price."
+                );
+
+            }
+
+
+            return {
+
+                priceUsdt:
+                    price,
+
+                source:
+                    "KuCoin",
+
+                fetchedAt:
+                    Date.now(),
+
+                cached:
+                    false,
+
+                stale:
+                    false
+
+            };
+
+
+        } catch (error) {
+
+            lastError =
+                error;
+
+        }
 
     }
 
 
-    const data =
-        await response.json();
-
-
-    if (
-        String(data?.code) !== "200000"
-    ) {
-
-        throw new Error(
-            "KuCoin returned an unsuccessful response."
-        );
-
-    }
-
-
-    const price =
-        Number(
-            data?.data?.price
-        );
-
-
-    if (
-        !Number.isFinite(
-            price
-        ) ||
-        price <= 0
-    ) {
-
-        throw new Error(
-            "KuCoin returned an invalid price."
-        );
-
-    }
-
-
-    return {
-
-        priceUsdt:
-            price,
-
-        source:
-            "KuCoin",
-
-        fetchedAt:
-            Date.now(),
-
-        cached:
-            false,
-
-        stale:
-            false
-
-    };
+    throw new Error(
+        "KuCoin price request failed: " +
+        (
+            lastError?.message ||
+            "Unknown error"
+        )
+    );
 
 }
-
 
 
 /* ==================================================
@@ -340,19 +401,26 @@ async function fetchLiveNativeTokenPriceUsdt(
         );
 
 
-    const coinId =
+    const cacheKey =
         config.coinGeckoId;
 
 
     const cached =
         priceCache.get(
-            coinId
+            cacheKey
         );
 
 
     const now =
         Date.now();
 
+
+    /*
+       Fresh cache.
+
+       One external quote can safely serve multiple
+       withdrawal requests for a short period.
+    */
 
     if (
         cached &&
@@ -368,218 +436,282 @@ async function fetchLiveNativeTokenPriceUsdt(
                 true,
 
             stale:
-                false
+                false,
+
+            fallbackReason:
+                null
 
         };
 
     }
 
 
-    const canUseStaleCache =
-        cached &&
-        now - cached.fetchedAt <
-        MAX_PRICE_AGE_MS;
+    /*
+       If another request is already fetching this
+       exact token price, wait for that request instead
+       of creating another external API call.
+    */
+
+    const existingRequest =
+        priceFetchInFlight.get(
+            cacheKey
+        );
 
 
-    const returnStaleCache =
-        (reason) => {
+    if (existingRequest) {
 
-            if (!canUseStaleCache) {
+        return await existingRequest;
 
-                return null;
+    }
+
+
+    const fetchPromise =
+        (async () => {
+
+            const latestCached =
+                priceCache.get(
+                    cacheKey
+                );
+
+
+            const fetchStartedAt =
+                Date.now();
+
+
+            const canUseStaleCache =
+                latestCached &&
+                fetchStartedAt -
+                latestCached.fetchedAt <
+                MAX_PRICE_AGE_MS;
+
+
+            const returnStaleCache =
+                (reason) => {
+
+                    if (!canUseStaleCache) {
+
+                        return null;
+
+                    }
+
+
+                    return {
+
+                        ...latestCached,
+
+                        cached:
+                            true,
+
+                        stale:
+                            true,
+
+                        fallbackReason:
+                            reason
+
+                    };
+
+                };
+
+
+            /*
+               SOURCE 1: KuCoin.
+
+               We use KuCoin first because the deployed
+               Render environment is already receiving
+               CoinGecko HTTP 429 responses.
+            */
+
+            let kucoinError = null;
+
+
+            try {
+
+                const result =
+                    await fetchKuCoinNativeTokenPriceUsdt(
+                        config
+                    );
+
+
+                priceCache.set(
+                    cacheKey,
+                    result
+                );
+
+
+                return result;
+
+
+            } catch (error) {
+
+                kucoinError =
+                    error;
 
             }
 
 
-            return {
+            /*
+               SOURCE 2: CoinGecko.
+            */
 
-                ...cached,
-
-                cached:
-                    true,
-
-                stale:
-                    true,
-
-                fallbackReason:
-                    reason
-
-            };
-
-        };
+            let coinGeckoError = null;
 
 
-    /*
-       SOURCE 1: CoinGecko
-    */
+            try {
 
-    let coinGeckoError = null;
-
-
-    try {
-
-        const url =
-            "https://api.coingecko.com/api/v3/simple/price" +
-            "?ids=" +
-            encodeURIComponent(
-                coinId
-            ) +
-            "&vs_currencies=usd" +
-            "&include_last_updated_at=true";
+                const url =
+                    "https://api.coingecko.com/api/v3/simple/price" +
+                    "?ids=" +
+                    encodeURIComponent(
+                        config.coinGeckoId
+                    ) +
+                    "&vs_currencies=usd";
 
 
-        const response =
-            await fetch(
-                url,
-                {
+                const response =
+                    await fetch(
+                        url,
+                        {
 
-                    headers: {
-                        accept:
-                            "application/json"
-                    },
+                            headers: {
+                                accept:
+                                    "application/json"
+                            },
 
-                    signal:
-                        AbortSignal.timeout(
-                            10000
-                        )
+                            signal:
+                                AbortSignal.timeout(
+                                    10000
+                                )
+
+                        }
+                    );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        "CoinGecko HTTP " +
+                        response.status
+                    );
 
                 }
-            );
 
 
-        if (!response.ok) {
+                const data =
+                    await response.json();
+
+
+                const price =
+                    Number(
+                        data?.[
+                            config.coinGeckoId
+                        ]?.usd
+                    );
+
+
+                if (
+                    !Number.isFinite(
+                        price
+                    ) ||
+                    price <= 0
+                ) {
+
+                    throw new Error(
+                        "CoinGecko returned an invalid price."
+                    );
+
+                }
+
+
+                const result = {
+
+                    priceUsdt:
+                        price,
+
+                    source:
+                        "CoinGecko",
+
+                    fetchedAt:
+                        Date.now(),
+
+                    cached:
+                        false,
+
+                    stale:
+                        false
+
+                };
+
+
+                priceCache.set(
+                    cacheKey,
+                    result
+                );
+
+
+                return {
+
+                    ...result,
+
+                    fallbackReason:
+                        "kucoin-failed: " +
+                        kucoinError.message
+
+                };
+
+
+            } catch (error) {
+
+                coinGeckoError =
+                    error;
+
+            }
+
+
+            /*
+               FINAL FALLBACK:
+
+               Never invent a price. Use only a recently
+               fetched real market price.
+            */
+
+            const staleResult =
+                returnStaleCache(
+                    "kucoin-and-coingecko-failed"
+                );
+
+
+            if (staleResult) {
+
+                return staleResult;
+
+            }
+
 
             throw new Error(
-                "CoinGecko HTTP " +
-                response.status
+                "Unable to fetch native token price. " +
+                "KuCoin: " +
+                kucoinError.message +
+                " | CoinGecko: " +
+                coinGeckoError.message
             );
 
-        }
+        })();
 
 
-        const data =
-            await response.json();
+    priceFetchInFlight.set(
+        cacheKey,
+        fetchPromise
+    );
 
-
-        const price =
-            Number(
-                data?.[
-                    coinId
-                ]?.usd
-            );
-
-
-        if (
-            !Number.isFinite(
-                price
-            ) ||
-            price <= 0
-        ) {
-
-            throw new Error(
-                "CoinGecko returned an invalid price."
-            );
-
-        }
-
-
-        const result = {
-
-            priceUsdt:
-                price,
-
-            fetchedAt:
-                now,
-
-            source:
-                "CoinGecko",
-
-            cached:
-                false,
-
-            stale:
-                false
-
-        };
-
-
-        priceCache.set(
-            coinId,
-            result
-        );
-
-
-        return result;
-
-
-    } catch (error) {
-
-        coinGeckoError =
-            error;
-
-    }
-
-
-    /*
-       SOURCE 2: KuCoin
-
-       Replaces Binance because some Render regions
-       receive HTTP 451 from Binance.
-    */
 
     try {
 
-        const kucoinResult =
-            await fetchKuCoinNativeTokenPriceUsdt(
-                config
-            );
+        return await fetchPromise;
 
+    } finally {
 
-        priceCache.set(
-            coinId,
-            kucoinResult
-        );
-
-
-        return {
-
-            ...kucoinResult,
-
-            fallbackReason:
-                "coingecko-failed: " +
-                coinGeckoError.message
-
-        };
-
-
-    } catch (kucoinError) {
-
-        /*
-           FINAL FALLBACK:
-
-           A recently fetched real price may still be
-           used for a limited period.
-        */
-
-        const staleResult =
-            returnStaleCache(
-                "coingecko-and-kucoin-failed"
-            );
-
-
-        if (staleResult) {
-
-            return staleResult;
-
-        }
-
-
-        throw new Error(
-            "Unable to fetch native token price. " +
-            "CoinGecko: " +
-            coinGeckoError.message +
-            " | KuCoin: " +
-            kucoinError.message
+        priceFetchInFlight.delete(
+            cacheKey
         );
 
     }
