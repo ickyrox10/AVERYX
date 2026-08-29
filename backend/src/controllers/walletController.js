@@ -275,35 +275,6 @@ function validateWithdrawalAddress(
    WITHDRAWAL GAS QUOTE HELPERS
 ================================================== */
 
-function getWithdrawalHotWalletAddress(network) {
-
-    const selectedNetwork =
-        String(network || "")
-        .trim()
-        .toUpperCase();
-
-
-    const addressVariables = {
-
-        BEP20:
-            process.env.BEP20_HOT_WALLET_ADDRESS,
-
-        ERC20:
-            process.env.ERC20_HOT_WALLET_ADDRESS,
-
-        POLYGON:
-            process.env.POLYGON_HOT_WALLET_ADDRESS
-
-    };
-
-
-    return addressVariables[
-        selectedNetwork
-    ] || null;
-
-}
-
-
 async function createWithdrawalQuote({
     network,
     toAddress,
@@ -338,27 +309,19 @@ async function createWithdrawalQuote({
     }
 
 
-    const fromAddress =
-        getWithdrawalHotWalletAddress(
-            selectedNetwork
-        );
+    /*
+       The network-specific withdrawal wallet is resolved
+       inside gasQuoteService from the dedicated
+       *_WITHDRAW_ADDRESS environment variable.
 
-
-    if (
-        !fromAddress
-    ) {
-
-        throw new Error(
-            `${selectedNetwork} hot wallet address is not configured.`
-        );
-
-    }
-
+       Do not use a separate HOT_WALLET_ADDRESS here,
+       otherwise the quote and the actual sender could
+       accidentally use different wallets.
+    */
 
     const quote =
         await createGasQuote({
             network: selectedNetwork,
-            fromAddress,
             toAddress,
             requestedAmount
         });

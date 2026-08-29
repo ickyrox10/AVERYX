@@ -3,37 +3,24 @@ const { ethers } = require("ethers");
 
 /* ==================================================
    GAS QUOTE SERVICE
-
-   PURPOSE:
-
-   Estimate the gas cost of a USDT withdrawal and
-   calculate the final amount the recipient receives.
-
-   INTERNAL FORMULA:
-
-   actualGasCostUsdt = G
-
-   platformMarginUsdt = G × 40%
-
-   totalFeeUsdt = G × 1.40
-
-   recipientAmount =
-       requestedAmount - totalFeeUsdt
-
-
-   IMPORTANT:
-
-   The platform margin is INTERNAL.
-
-   The frontend should only receive:
-
-   - requestedAmount
-   - recipientAmount
-   - network
 ================================================== */
 
+const PLATFORM_MARGIN_PERCENT = 35;
 
-const PLATFORM_MARGIN_PERCENT = 0.40;
+
+/*
+   Price cache.
+
+   We intentionally keep this short because crypto
+   prices move continuously.
+*/
+
+const PRICE_CACHE_TTL_MS = 30 * 1000;
+
+const MAX_PRICE_AGE_MS = 10 * 60 * 1000;
+
+
+const priceCache = new Map();
 
 
 const ERC20_ABI = [
@@ -44,11 +31,6 @@ const ERC20_ABI = [
 
 /* ==================================================
    NETWORK CONFIGURATION
-
-   Contract addresses will be supplied through
-   environment variables.
-
-   We do NOT add private keys here.
 ================================================== */
 
 function getNetworkConfig(network) {
@@ -62,38 +44,62 @@ function getNetworkConfig(network) {
     const configs = {
 
         BEP20: {
+
             rpcUrl:
-                process.env.BEP20_RPC_URL,
+                process.env.BSC_RPC_URL,
 
             usdtContract:
-                process.env.BEP20_USDT_CONTRACT,
+                process.env.BSC_USDT_CONTRACT,
+
+            withdrawAddress:
+                process.env.BEP20_WITHDRAW_ADDRESS,
 
             nativeSymbol:
-                "BNB"
+                "BNB",
+
+            coinGeckoId:
+                "binancecoin"
+
         },
 
 
         ERC20: {
+
             rpcUrl:
-                process.env.ERC20_RPC_URL,
+                process.env.ETH_RPC_URL,
 
             usdtContract:
                 process.env.ERC20_USDT_CONTRACT,
 
+            withdrawAddress:
+                process.env.ERC20_WITHDRAW_ADDRESS,
+
             nativeSymbol:
-                "ETH"
+                "ETH",
+
+            coinGeckoId:
+                "ethereum"
+
         },
 
 
         POLYGON: {
+
             rpcUrl:
                 process.env.POLYGON_RPC_URL,
 
             usdtContract:
                 process.env.POLYGON_USDT_CONTRACT,
 
+            withdrawAddress:
+                process.env.POLYGON_WITHDRAW_ADDRESS,
+
             nativeSymbol:
-                "POL"
+                "POL",
+
+            coinGeckoId:
+                "polygon-ecosystem-token"
+
         }
 
     };
@@ -133,10 +139,51 @@ function getNetworkConfig(network) {
     }
 
 
+    if (!config.withdrawAddress) {
+
+        throw new Error(
+            normalizedNetwork +
+            " withdrawal wallet address is not configured."
+        );
+
+    }
+
+
+    if (
+        !ethers.isAddress(
+            config.withdrawAddress
+        )
+    ) {
+
+        throw new Error(
+            normalizedNetwork +
+            " withdrawal wallet address is invalid."
+        );
+
+    }
+
+
+    if (
+        !ethers.isAddress(
+            config.usdtContract
+        )
+    ) {
+
+        throw new Error(
+            normalizedNetwork +
+            " USDT contract address is invalid."
+        );
+
+    }
+
+
     return {
+
         ...config,
+
         network:
             normalizedNetwork
+
     };
 
 }
@@ -162,82 +209,288 @@ function getProvider(network) {
 
 
 /* ==================================================
-   GET NATIVE TOKEN PRICE
-
-   IMPORTANT:
-
-   This first version intentionally does NOT fetch
-   market prices automatically yet.
-
-   We will connect a reliable price source next.
-
-   For now it expects an environment variable:
-
-   BEP20_BNB_USDT_PRICE
-   ERC20_ETH_USDT_PRICE
-   POLYGON_POL_USDT_PRICE
+   FETCH LIVE NATIVE TOKEN PRICE
 ================================================== */
 
-function getNativeTokenPriceUsdt(
+async function fetchLiveNativeTokenPriceUsdt(
     network
 ) {
 
-    const normalizedNetwork =
-        String(network || "")
-            .trim()
-            .toUpperCase();
-
-
-    const priceVariables = {
-
-        BEP20:
-            process.env.BEP20_BNB_USDT_PRICE,
-
-        ERC20:
-            process.env.ERC20_ETH_USDT_PRICE,
-
-        POLYGON:
-            process.env.POLYGON_POL_USDT_PRICE
-
-    };
-
-
-    const price =
-        Number(
-            priceVariables[
-                normalizedNetwork
-            ]
+    const config =
+        getNetworkConfig(
+            network
         );
 
 
+    const coinId =
+        config.coinGeckoId;
+
+
+    const cached =
+        priceCache.get(
+            coinId
+        );
+
+
+    const now =
+        Date.now();
+
+
+    /*
+       Use short-lived cached data.
+    */
+
     if (
-        !Number.isFinite(price) ||
-        price <= 0
+        cached &&
+        now - cached.fetchedAt <
+        PRICE_CACHE_TTL_MS
     ) {
 
+        return {
+
+            ...cached,
+
+            cached:
+                true
+
+        };
+
+    }
+
+
+    const baseUrl =
+        "https://api.coingecko.com/api/v3/simple/price";
+
+
+    const url =
+        `${baseUrl}?ids=${encodeURIComponent(
+            coinId
+        )}&vs_currencies=usd&include_last_updated_at=true`;
+
+
+    let response;
+
+
+    try {
+
+        response =
+            await fetch(
+                url,
+                {
+
+                    headers: {
+                        accept:
+                            "application/json"
+                    },
+
+                    signal:
+                        AbortSignal.timeout(
+                            10000
+                        )
+
+                }
+            );
+
+    } catch (error) {
+
         throw new Error(
-            "Valid USDT price is not configured for " +
-            normalizedNetwork
+            "Unable to fetch live native token price: " +
+            error.message
         );
 
     }
 
 
-    return price;
+    if (!response.ok) {
+
+        throw new Error(
+            "Live price API returned HTTP " +
+            response.status
+        );
+
+    }
+
+
+    let data;
+
+
+    try {
+
+        data =
+            await response.json();
+
+    } catch (_) {
+
+        throw new Error(
+            "Live price API returned invalid JSON."
+        );
+
+    }
+
+
+    const price =
+        Number(
+            data?.[
+                coinId
+            ]?.usd
+        );
+
+
+    const providerUpdatedAtSeconds =
+        Number(
+            data?.[
+                coinId
+            ]?.last_updated_at
+        );
+
+
+    if (
+        !Number.isFinite(
+            price
+        ) ||
+        price <= 0
+    ) {
+
+        throw new Error(
+            "Live price API returned an invalid price for " +
+            config.nativeSymbol
+        );
+
+    }
+
+
+    /*
+       Reject clearly stale provider data.
+    */
+
+    if (
+        Number.isFinite(
+            providerUpdatedAtSeconds
+        ) &&
+        providerUpdatedAtSeconds > 0
+    ) {
+
+        const providerUpdatedAtMs =
+            providerUpdatedAtSeconds *
+            1000;
+
+
+        const priceAge =
+            now -
+            providerUpdatedAtMs;
+
+
+        if (
+            priceAge >
+            MAX_PRICE_AGE_MS
+        ) {
+
+            throw new Error(
+                "Live price is too old for withdrawal quoting."
+            );
+
+        }
+
+    }
+
+
+    const result = {
+
+        priceUsdt:
+            price,
+
+        fetchedAt:
+            now,
+
+        source:
+            "CoinGecko",
+
+        cached:
+            false
+
+    };
+
+
+    priceCache.set(
+        coinId,
+        result
+    );
+
+
+    return result;
 
 }
 
 
 
 /* ==================================================
-   ESTIMATE ERC20 USDT TRANSFER GAS
+   GET NATIVE TOKEN PRICE
+================================================== */
+
+async function getNativeTokenPriceUsdt(
+    network
+) {
+
+    const result =
+        await fetchLiveNativeTokenPriceUsdt(
+            network
+        );
+
+
+    return result.priceUsdt;
+
+}
+
+
+
+/* ==================================================
+   GET USDT DECIMALS
+================================================== */
+
+async function getUsdtDecimals(
+    provider,
+    usdtContract
+) {
+
+    const contract =
+        new ethers.Contract(
+            usdtContract,
+            [
+                "function decimals() view returns (uint8)"
+            ],
+            provider
+        );
+
+
+    return await contract.decimals();
+
+}
+
+
+
+/* ==================================================
+   ESTIMATE USDT TRANSFER GAS
+
+   First attempts a real RPC estimate.
+
+   If the estimate fails because the hot wallet does
+   not currently hold enough USDT, a conservative
+   fallback is used for QUOTING ONLY.
+
+   The actual withdrawal sender must estimate again
+   immediately before broadcasting.
 ================================================== */
 
 async function estimateUsdtTransferGas(
+
     network,
+
     fromAddress,
+
     toAddress,
+
     amountUsdt
+
 ) {
 
     const config =
@@ -252,9 +505,14 @@ async function estimateUsdtTransferGas(
         );
 
 
+    const senderAddress =
+        fromAddress ||
+        config.withdrawAddress;
+
+
     if (
         !ethers.isAddress(
-            fromAddress
+            senderAddress
         )
     ) {
 
@@ -285,7 +543,9 @@ async function estimateUsdtTransferGas(
 
 
     if (
-        !Number.isFinite(amount) ||
+        !Number.isFinite(
+            amount
+        ) ||
         amount <= 0
     ) {
 
@@ -296,17 +556,17 @@ async function estimateUsdtTransferGas(
     }
 
 
-    /*
-       USDT normally uses 6 decimals.
+    const decimals =
+        await getUsdtDecimals(
+            provider,
+            config.usdtContract
+        );
 
-       We will later verify the actual decimals
-       directly from each contract.
-    */
 
     const amountUnits =
         ethers.parseUnits(
             amount.toString(),
-            6
+            Number(decimals)
         );
 
 
@@ -328,17 +588,79 @@ async function estimateUsdtTransferGas(
         );
 
 
-    const gasLimit =
-        await provider.estimateGas({
-            from:
-                fromAddress,
+    let gasLimit;
 
-            to:
-                config.usdtContract,
 
-            data:
-                transferData
-        });
+    let estimateSource =
+        "rpc-estimate";
+
+
+    try {
+
+        gasLimit =
+            await provider.estimateGas({
+
+                from:
+                    senderAddress,
+
+                to:
+                    config.usdtContract,
+
+                data:
+                    transferData
+
+            });
+
+    } catch (error) {
+
+        /*
+           Conservative fallback.
+
+           This allows a quote to be generated when the
+           withdrawal wallet has insufficient USDT for
+           the simulated requested transfer.
+        */
+
+        const fallbackGasLimits = {
+
+            BEP20:
+                100000n,
+
+            ERC20:
+                100000n,
+
+            POLYGON:
+                100000n
+
+        };
+
+
+        const fallback =
+            fallbackGasLimits[
+                config.network
+            ];
+
+
+        if (!fallback) {
+
+            throw new Error(
+                "Unable to estimate gas for " +
+                config.network +
+                ": " +
+                error.message
+            );
+
+        }
+
+
+        gasLimit =
+            fallback;
+
+
+        estimateSource =
+            "conservative-fallback";
+
+    }
 
 
     const feeData =
@@ -348,10 +670,6 @@ async function estimateUsdtTransferGas(
     let gasPrice =
         feeData.gasPrice;
 
-
-    /*
-       Some EVM networks may use EIP-1559 fields.
-    */
 
     if (!gasPrice) {
 
@@ -394,7 +712,14 @@ async function estimateUsdtTransferGas(
         gasCostNative,
 
         nativeSymbol:
-            config.nativeSymbol
+            config.nativeSymbol,
+
+        senderAddress,
+
+        tokenDecimals:
+            Number(decimals),
+
+        estimateSource
 
     };
 
@@ -404,6 +729,19 @@ async function estimateUsdtTransferGas(
 
 /* ==================================================
    CREATE WITHDRAWAL QUOTE
+
+   Formula:
+
+   Actual gas cost in USDT = G
+
+   Internal margin =
+       G × 3500%
+
+   Total fee =
+       G × 36
+
+   Recipient amount =
+       requested amount - total fee
 ================================================== */
 
 async function createGasQuote({
@@ -418,6 +756,12 @@ async function createGasQuote({
 
 }) {
 
+    const config =
+        getNetworkConfig(
+            network
+        );
+
+
     const amount =
         Number(
             requestedAmount
@@ -425,7 +769,9 @@ async function createGasQuote({
 
 
     if (
-        !Number.isFinite(amount) ||
+        !Number.isFinite(
+            amount
+        ) ||
         amount <= 0
     ) {
 
@@ -436,38 +782,34 @@ async function createGasQuote({
     }
 
 
-    /*
-       STEP 1
+    const senderAddress =
+        fromAddress ||
+        config.withdrawAddress;
 
-       Estimate actual blockchain gas.
-    */
 
     const gasEstimate =
         await estimateUsdtTransferGas(
+
             network,
-            fromAddress,
+
+            senderAddress,
+
             toAddress,
+
             amount
+
         );
 
 
-    /*
-       STEP 2
-
-       Get native token → USDT conversion price.
-    */
-
-    const nativeTokenPriceUsdt =
-        getNativeTokenPriceUsdt(
+    const priceResult =
+        await fetchLiveNativeTokenPriceUsdt(
             network
         );
 
 
-    /*
-       STEP 3
+    const nativeTokenPriceUsdt =
+        priceResult.priceUsdt;
 
-       Calculate actual gas cost in USDT.
-    */
 
     const actualGasCostUsdt =
         gasEstimate.gasCostNative *
@@ -475,11 +817,9 @@ async function createGasQuote({
 
 
     /*
-       STEP 4
+       AVERYX internal margin.
 
-       Calculate AVERYX internal margin.
-
-       40% of actual gas cost.
+       3500% of the actual gas cost.
     */
 
     const platformMarginUsdt =
@@ -488,21 +828,18 @@ async function createGasQuote({
 
 
     /*
-       STEP 5
+       Total fee =
 
-       Total fee deducted from the requested amount.
+       Actual gas +
+       3500% margin
+
+       = Actual gas × 36
     */
 
     const totalFeeUsdt =
         actualGasCostUsdt +
         platformMarginUsdt;
 
-
-    /*
-       STEP 6
-
-       Amount recipient receives.
-    */
 
     const recipientAmount =
         amount -
@@ -521,18 +858,23 @@ async function createGasQuote({
 
 
     /*
-       Round monetary values.
+       Round down to 6 decimal places.
 
-       We retain more precision internally during
-       calculation, then round returned USDT values.
+       This avoids promising more USDT than the
+       calculated quote.
     */
 
-    const roundUsdt =
+    const roundDownUsdt =
         (value) => {
 
-            return Number(
-                value.toFixed(6)
-            );
+            return Math.floor(
+                (
+                    Number(value) +
+                    Number.EPSILON
+                ) *
+                1_000_000
+            ) /
+            1_000_000;
 
         };
 
@@ -544,39 +886,37 @@ async function createGasQuote({
         */
 
         network:
-            String(network)
-                .toUpperCase(),
+            config.network,
 
         requestedAmount:
-            roundUsdt(amount),
+            roundDownUsdt(
+                amount
+            ),
 
         recipientAmount:
-            roundUsdt(
+            roundDownUsdt(
                 recipientAmount
             ),
 
 
         /*
            INTERNAL DATA
-
-           Do not expose these fields directly
-           to the public frontend.
         */
 
         internal: {
 
             actualGasCostUsdt:
-                roundUsdt(
+                roundDownUsdt(
                     actualGasCostUsdt
                 ),
 
             platformMarginUsdt:
-                roundUsdt(
+                roundDownUsdt(
                     platformMarginUsdt
                 ),
 
             totalFeeUsdt:
-                roundUsdt(
+                roundDownUsdt(
                     totalFeeUsdt
                 ),
 
@@ -592,7 +932,27 @@ async function createGasQuote({
             nativeSymbol:
                 gasEstimate.nativeSymbol,
 
-            nativeTokenPriceUsdt
+            estimateSource:
+                gasEstimate.estimateSource,
+
+            nativeTokenPriceUsdt,
+
+            priceSource:
+                priceResult.source,
+
+            priceFetchedAt:
+                new Date(
+                    priceResult.fetchedAt
+                ).toISOString(),
+
+            priceCached:
+                priceResult.cached,
+
+            senderAddress:
+                gasEstimate.senderAddress,
+
+            tokenDecimals:
+                gasEstimate.tokenDecimals
 
         }
 
@@ -605,13 +965,7 @@ async function createGasQuote({
 /* ==================================================
    CREATE PUBLIC QUOTE
 
-   This is what the frontend should receive.
-
-   It intentionally hides:
-
-   - actual gas cost
-   - platform margin
-   - total internal fee
+   Internal gas and margin remain hidden.
 ================================================== */
 
 function createPublicQuote(
@@ -649,7 +1003,11 @@ module.exports = {
 
     getNativeTokenPriceUsdt,
 
+    fetchLiveNativeTokenPriceUsdt,
+
     getNetworkConfig,
+
+    getProvider,
 
     PLATFORM_MARGIN_PERCENT
 
