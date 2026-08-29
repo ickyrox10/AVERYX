@@ -1868,14 +1868,18 @@ async function createWithdrawal(
                     type,
                     amount_usdt,
                     status,
-                    reference
+                    reference,
+                    network,
+                    to_address
                 )
                 VALUES (
                     $1,
                     'withdrawal',
                     $2,
                     'pending',
-                    $3
+                    $3,
+                    $4,
+                    $5
                 )
                 RETURNING
                     id,
@@ -1892,7 +1896,9 @@ async function createWithdrawal(
                 [
                     userId,
                     withdrawalAmount,
-                    reference
+                    reference,
+                    selectedNetwork,
+                    walletAddress
                 ]
             );
 
@@ -2054,15 +2060,33 @@ async function getTransactions(
             await pool.query(
                 `
                 SELECT
-                    id,
-                    type,
-                    amount_usdt,
-                    status,
-                    reference,
-                    created_at
-                FROM transactions
-                WHERE user_id = $1
-                ORDER BY created_at DESC
+                    t.id,
+                    t.type,
+                    t.amount_usdt,
+                    t.status,
+                    t.reference,
+                    t.tx_hash,
+                    t.network,
+                    t.from_address,
+                    t.to_address,
+                    t.created_at,
+                    CASE
+                        WHEN t.type = 'referral'
+                        THEN referred_user.public_uid
+                        ELSE NULL
+                    END AS referral_public_uid
+                FROM transactions t
+                LEFT JOIN transactions source_transaction
+                    ON t.type = 'referral'
+                    AND t.reference = (
+                        'REFERRAL-REWARD-' ||
+                        source_transaction.id::text
+                    )
+                LEFT JOIN users referred_user
+                    ON source_transaction.user_id =
+                    referred_user.id
+                WHERE t.user_id = $1
+                ORDER BY t.created_at DESC
                 `,
                 [
                     userId
@@ -2102,6 +2126,9 @@ async function getTransactions(
 
                     toAddress:
                         transaction.to_address,
+
+                    referralPublicUID:
+                        transaction.referral_public_uid,
 
                     createdAt:
                         transaction.created_at
