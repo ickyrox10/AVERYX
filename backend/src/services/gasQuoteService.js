@@ -58,10 +58,7 @@ function getNetworkConfig(network) {
                 "BNB",
 
             coinGeckoId:
-                "binancecoin",
-
-            binanceSymbol:
-                "BNBUSDT"
+                "binancecoin"
 
         },
 
@@ -81,10 +78,7 @@ function getNetworkConfig(network) {
                 "ETH",
 
             coinGeckoId:
-                "ethereum",
-
-            binanceSymbol:
-                "ETHUSDT"
+                "ethereum"
 
         },
 
@@ -104,10 +98,7 @@ function getNetworkConfig(network) {
                 "POL",
 
             coinGeckoId:
-                "polygon-ecosystem-token",
-
-            binanceSymbol:
-                "POLUSDT"
+                "polygon-ecosystem-token"
 
         }
 
@@ -218,23 +209,23 @@ function getProvider(network) {
 
 
 /* ==================================================
-   FETCH BINANCE FALLBACK PRICE
+   FETCH KUCOIN FALLBACK PRICE
 
-   Used when CoinGecko is rate-limited or unavailable.
+   Used when the primary price source is unavailable.
 ================================================== */
 
-async function fetchBinanceNativeTokenPriceUsdt(
+async function fetchKuCoinNativeTokenPriceUsdt(
     config
 ) {
 
     const symbol =
-        config.binanceSymbol;
+        config.kucoinSymbol;
 
 
     if (!symbol) {
 
         throw new Error(
-            "Binance symbol is not configured for " +
+            "KuCoin symbol is not configured for " +
             config.network
         );
 
@@ -242,49 +233,35 @@ async function fetchBinanceNativeTokenPriceUsdt(
 
 
     const url =
-        "https://api.binance.com/api/v3/ticker/price?symbol=" +
+        "https://api.kucoin.com/api/v1/market/orderbook/level1?symbol=" +
         encodeURIComponent(
             symbol
         );
 
 
-    let response;
+    const response =
+        await fetch(
+            url,
+            {
 
+                headers: {
+                    accept:
+                        "application/json"
+                },
 
-    try {
+                signal:
+                    AbortSignal.timeout(
+                        10000
+                    )
 
-        response =
-            await fetch(
-                url,
-                {
-
-                    headers: {
-                        accept:
-                            "application/json"
-                    },
-
-                    signal:
-                        AbortSignal.timeout(
-                            10000
-                        )
-
-                }
-            );
-
-    } catch (error) {
-
-        throw new Error(
-            "Binance price request failed: " +
-            error.message
+            }
         );
-
-    }
 
 
     if (!response.ok) {
 
         throw new Error(
-            "Binance price API returned HTTP " +
+            "KuCoin price API returned HTTP " +
             response.status
         );
 
@@ -295,9 +272,20 @@ async function fetchBinanceNativeTokenPriceUsdt(
         await response.json();
 
 
+    if (
+        String(data?.code) !== "200000"
+    ) {
+
+        throw new Error(
+            "KuCoin returned an unsuccessful response."
+        );
+
+    }
+
+
     const price =
         Number(
-            data?.price
+            data?.data?.price
         );
 
 
@@ -309,7 +297,7 @@ async function fetchBinanceNativeTokenPriceUsdt(
     ) {
 
         throw new Error(
-            "Binance returned an invalid price."
+            "KuCoin returned an invalid price."
         );
 
     }
@@ -321,7 +309,7 @@ async function fetchBinanceNativeTokenPriceUsdt(
             price,
 
         source:
-            "Binance",
+            "KuCoin",
 
         fetchedAt:
             Date.now(),
@@ -365,12 +353,6 @@ async function fetchLiveNativeTokenPriceUsdt(
     const now =
         Date.now();
 
-
-    /*
-       Fresh cache.
-
-       Prevents repeated external API calls.
-    */
 
     if (
         cached &&
@@ -428,20 +410,23 @@ async function fetchLiveNativeTokenPriceUsdt(
 
 
     /*
-       PRIMARY SOURCE: CoinGecko
+       SOURCE 1: CoinGecko
     */
 
-    const baseUrl =
-        "https://api.coingecko.com/api/v3/simple/price";
-
-
-    const url =
-        `${baseUrl}?ids=${encodeURIComponent(
-            coinId
-        )}&vs_currencies=usd&include_last_updated_at=true`;
+    let coinGeckoError = null;
 
 
     try {
+
+        const url =
+            "https://api.coingecko.com/api/v3/simple/price" +
+            "?ids=" +
+            encodeURIComponent(
+                coinId
+            ) +
+            "&vs_currencies=usd" +
+            "&include_last_updated_at=true";
+
 
         const response =
             await fetch(
@@ -484,14 +469,6 @@ async function fetchLiveNativeTokenPriceUsdt(
             );
 
 
-        const providerUpdatedAtSeconds =
-            Number(
-                data?.[
-                    coinId
-                ]?.last_updated_at
-            );
-
-
         if (
             !Number.isFinite(
                 price
@@ -502,33 +479,6 @@ async function fetchLiveNativeTokenPriceUsdt(
             throw new Error(
                 "CoinGecko returned an invalid price."
             );
-
-        }
-
-
-        if (
-            Number.isFinite(
-                providerUpdatedAtSeconds
-            ) &&
-            providerUpdatedAtSeconds > 0
-        ) {
-
-            const providerUpdatedAtMs =
-                providerUpdatedAtSeconds *
-                1000;
-
-
-            if (
-                now -
-                providerUpdatedAtMs >
-                MAX_PRICE_AGE_MS
-            ) {
-
-                throw new Error(
-                    "CoinGecko returned a stale price."
-                );
-
-            }
 
         }
 
@@ -562,73 +512,75 @@ async function fetchLiveNativeTokenPriceUsdt(
         return result;
 
 
-    } catch (coinGeckoError) {
+    } catch (error) {
+
+        coinGeckoError =
+            error;
+
+    }
+
+
+    /*
+       SOURCE 2: KuCoin
+
+       Replaces Binance because some Render regions
+       receive HTTP 451 from Binance.
+    */
+
+    try {
+
+        const kucoinResult =
+            await fetchKuCoinNativeTokenPriceUsdt(
+                config
+            );
+
+
+        priceCache.set(
+            coinId,
+            kucoinResult
+        );
+
+
+        return {
+
+            ...kucoinResult,
+
+            fallbackReason:
+                "coingecko-failed: " +
+                coinGeckoError.message
+
+        };
+
+
+    } catch (kucoinError) {
 
         /*
-           SECONDARY SOURCE: Binance.
+           FINAL FALLBACK:
 
-           This is especially important after a Render
-           restart, when no in-memory CoinGecko cache
-           exists yet.
+           A recently fetched real price may still be
+           used for a limited period.
         */
 
-        try {
-
-            const binanceResult =
-                await fetchBinanceNativeTokenPriceUsdt(
-                    config
-                );
-
-
-            priceCache.set(
-                coinId,
-                binanceResult
+        const staleResult =
+            returnStaleCache(
+                "coingecko-and-kucoin-failed"
             );
 
 
-            return {
+        if (staleResult) {
 
-                ...binanceResult,
-
-                fallbackReason:
-                    "coingecko-failed: " +
-                    coinGeckoError.message
-
-            };
-
-
-        } catch (binanceError) {
-
-            /*
-               FINAL FALLBACK:
-
-               Use the last successfully fetched real
-               price only when it remains within the
-               configured safe age window.
-            */
-
-            const staleResult =
-                returnStaleCache(
-                    "coingecko-failed-and-binance-failed"
-                );
-
-
-            if (staleResult) {
-
-                return staleResult;
-
-            }
-
-
-            throw new Error(
-                "Unable to fetch native token price. " +
-                "CoinGecko: " +
-                coinGeckoError.message +
-                " | Binance: " +
-                binanceError.message
-            );
+            return staleResult;
 
         }
+
+
+        throw new Error(
+            "Unable to fetch native token price. " +
+            "CoinGecko: " +
+            coinGeckoError.message +
+            " | KuCoin: " +
+            kucoinError.message
+        );
 
     }
 
@@ -1226,7 +1178,7 @@ module.exports = {
 
     fetchLiveNativeTokenPriceUsdt,
 
-    fetchBinanceNativeTokenPriceUsdt,
+    fetchKuCoinNativeTokenPriceUsdt,
 
     getNetworkConfig,
 
