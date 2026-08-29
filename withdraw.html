@@ -354,6 +354,192 @@
 
         }
 
+
+        /* ==================================================
+           WITHDRAWAL WIZARD
+        ================================================== */
+
+        /* Progressive flow: previous sections remain visible. */
+        .step {
+            display: none;
+            margin-top: 22px;
+            padding-top: 22px;
+            border-top: 1px solid rgba(255,255,255,.08);
+        }
+
+        #stepNetwork {
+            display: block;
+            margin-top: 0;
+            padding-top: 0;
+            border-top: 0;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        .network-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin: 10px 0 18px;
+        }
+
+        .network-card {
+            width: 100%;
+            min-height: 92px;
+            margin: 0;
+            padding: 14px;
+            text-align: left;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: #0b0b0f;
+            color: var(--text);
+            cursor: pointer;
+            transition: border-color .2s ease, background .2s ease, transform .2s ease;
+        }
+
+        .network-card:hover {
+            transform: translateY(-1px);
+        }
+
+        .network-card.selected {
+            border-color: var(--red);
+            background: rgba(229, 34, 73, .08);
+        }
+
+        .network-card-name {
+            display: block;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .network-card-sub {
+            display: block;
+            margin-top: 7px;
+            color: var(--muted);
+            font-size: 10px;
+            line-height: 1.4;
+        }
+
+        .step-heading {
+            margin: 0 0 8px;
+            font-family: Georgia, serif;
+            font-size: 30px;
+        }
+
+        .step-text {
+            margin: 0 0 22px;
+            color: #92909a;
+            line-height: 1.6;
+        }
+
+        .selected-network {
+            margin: 0 0 20px;
+            padding: 13px 15px;
+            border: 1px solid rgba(215, 25, 71, .35);
+            border-radius: 12px;
+            background: rgba(215, 25, 71, .07);
+            color: #f4f2f4;
+            font-size: 13px;
+        }
+
+        .warning-box {
+            margin-top: 18px;
+            padding: 15px;
+            border: 1px solid rgba(220, 25, 70, .25);
+            border-radius: 12px;
+            background: rgba(220, 25, 70, .06);
+            color: #b7b2ba;
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+        .confirmation-box {
+            margin-top: 8px;
+            padding: 25px;
+            border: 1px solid rgba(215, 25, 71, .55);
+            border-radius: 18px;
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(215, 25, 71, .18),
+                    rgba(18, 18, 24, .96)
+                );
+        }
+
+        .confirmation-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 18px;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(255,255,255,.08);
+            font-size: 14px;
+        }
+
+        .confirmation-row:last-child {
+            border-bottom: 0;
+        }
+
+        .confirmation-label {
+            color: #98949e;
+        }
+
+        .confirmation-value {
+            text-align: right;
+            word-break: break-all;
+        }
+
+        .receive-highlight {
+            margin: 18px 0;
+            padding: 20px;
+            border-radius: 14px;
+            background: rgba(45, 130, 255, .14);
+            border: 1px solid rgba(45, 130, 255, .45);
+        }
+
+        .receive-label {
+            color: #aebfd9;
+            font-size: 11px;
+            letter-spacing: 1.8px;
+        }
+
+        .receive-amount {
+            margin-top: 8px;
+            font-family: Georgia, serif;
+            font-size: 38px;
+            color: #f4f8ff;
+        }
+
+        .secondary-button {
+            margin-top: 12px;
+            background: #24242b;
+        }
+
+        .secondary-button:hover {
+            background: #303039;
+        }
+
+        @media (max-width: 600px) {
+            .network-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .withdraw-card,
+            .balance-card {
+                padding: 24px;
+            }
+
+            .confirmation-row {
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .confirmation-value {
+                text-align: left;
+            }
+        }
+
     </style>
 
 </head>
@@ -375,9 +561,9 @@
 
         <a
             class="back"
-            href="dashboard.html"
+            href="wallet.html"
         >
-            ← Dashboard
+            ← Wallet
         </a>
 
     </div>
@@ -392,7 +578,7 @@
     </h1>
 
     <div class="subtitle">
-        Withdraw your earned rewards.
+        Withdraw Your Earned Rewards.
     </div>
 
 
@@ -426,172 +612,302 @@
 
     <div class="withdraw-card">
 
-        <div class="label">
-            Withdrawal Amount
-        </div>
-
-
-        <div class="field">
-
-            <label
-                for="amount"
-                class="label"
-            >
-                Amount
-            </label>
-
-            <input
-                id="amount"
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="0.00"
-            >
-
-        </div>
-
-
-        <div class="field">
+        <div
+            id="stepNetwork"
+            class="step active"
+        >
 
             <div class="label">
-                Address Type
+                ADDRESS TYPE
+            </div>
+
+            <h2 class="step-heading">
+                Choose Network
+            </h2>
+
+            <p class="step-text">
+                Select the network that matches the wallet
+                address where you want to receive USDT.
+            </p>
+
+            <div class="network-grid">
+
+                <button
+                    type="button"
+                    class="network-card"
+                    data-network="BEP20"
+                    data-label="BEP20 / BNB Smart Chain"
+                >
+                    <span class="network-card-name">
+                        BEP20
+                    </span>
+
+                    <span class="network-card-sub">
+                        BNB Smart Chain
+                    </span>
+                </button>
+
+
+                <button
+                    type="button"
+                    class="network-card"
+                    data-network="TRC20"
+                    data-label="TRC20 / TRON"
+                >
+                    <span class="network-card-name">
+                        TRC20
+                    </span>
+
+                    <span class="network-card-sub">
+                        TRON Network
+                    </span>
+                </button>
+
+
+                <button
+                    type="button"
+                    class="network-card"
+                    data-network="ERC20"
+                    data-label="ERC20 / Ethereum"
+                >
+                    <span class="network-card-name">
+                        ERC20
+                    </span>
+
+                    <span class="network-card-sub">
+                        Ethereum Network
+                    </span>
+                </button>
+
+
+                <button
+                    type="button"
+                    class="network-card"
+                    data-network="POLYGON"
+                    data-label="Polygon PoS"
+                >
+                    <span class="network-card-name">
+                        Polygon PoS
+                    </span>
+
+                    <span class="network-card-sub">
+                        Polygon Network
+                    </span>
+                </button>
+
+            </div>
+
+            <button
+                id="networkProceedButton"
+                type="button"
+            >
+                Proceed
+            </button>
+
+        </div>
+
+
+        <div
+            id="stepAmount"
+            class="step"
+        >
+
+            <div class="label">
+                WITHDRAWAL AMOUNT
+            </div>
+
+            <h2 class="step-heading">
+                Enter Amount
+            </h2>
+
+            <div
+                id="amountSelectedNetwork"
+                class="selected-network"
+            ></div>
+
+            <div class="field">
+
+                <label
+                    for="amount"
+                    class="label"
+                >
+                    AMOUNT
+                </label>
+
+                <input
+                    id="amount"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="0.00"
+                >
+
+            </div>
+
+            <button
+                id="amountProceedButton"
+                type="button"
+            >
+                Proceed
+            </button>
+
+
+        </div>
+
+
+        <div
+            id="stepAddress"
+            class="step"
+        >
+
+            <div class="label">
+                RECIPIENT ADDRESS
+            </div>
+
+            <h2
+                id="addressHeading"
+                class="step-heading"
+            >
+                Paste/Enter Your Wallet Address
+            </h2>
+
+            <div
+                id="addressSelectedNetwork"
+                class="selected-network"
+            ></div>
+
+            <p
+                id="addressNetworkInstruction"
+                class="step-text"
+            ></p>
+
+            <div class="field">
+
+                <label
+                    for="address"
+                    class="label"
+                >
+                    WALLET ADDRESS
+                </label>
+
+                <input
+                    id="address"
+                    type="text"
+                    autocomplete="off"
+                    placeholder="Paste/Enter Wallet Address"
+                >
+
             </div>
 
             <div
-                id="networkOptions"
-                style="
-                    display:grid;
-                    grid-template-columns:repeat(5, 1fr);
-                    gap:10px;
-                    margin-top:9px;
-                "
+                id="addressWarning"
+                class="warning-box"
+            ></div>
+
+            <button
+                id="addressProceedButton"
+                type="button"
             >
+                Proceed
+            </button>
 
-                <button
-                    type="button"
-                    class="network-option"
-                    data-network="BEP20"
-                    style="
-                        margin:0;
-                        padding:14px 8px;
-                        border:1px solid #303039;
-                        border-radius:12px;
-                        background:#08080b;
-                        color:#98949e;
-                        font-size:13px;
-                        font-weight:600;
-                    "
-                >
-                    BEP20
-                </button>
 
-                <button
-                    type="button"
-                    class="network-option"
-                    data-network="TRC20"
-                    style="
-                        margin:0;
-                        padding:14px 8px;
-                        border:1px solid #303039;
-                        border-radius:12px;
-                        background:#08080b;
-                        color:#98949e;
-                        font-size:13px;
-                        font-weight:600;
-                    "
-                >
-                    TRC20
-                </button>
+        </div>
 
-                <button
-                    type="button"
-                    class="network-option"
-                    data-network="TON"
-                    style="
-                        margin:0;
-                        padding:14px 8px;
-                        border:1px solid #303039;
-                        border-radius:12px;
-                        background:#08080b;
-                        color:#98949e;
-                        font-size:13px;
-                        font-weight:600;
-                    "
-                >
-                    TON
-                </button>
 
-                <button
-                    type="button"
-                    class="network-option"
-                    data-network="ERC20"
-                    style="
-                        margin:0;
-                        padding:14px 8px;
-                        border:1px solid #303039;
-                        border-radius:12px;
-                        background:#08080b;
-                        color:#98949e;
-                        font-size:13px;
-                        font-weight:600;
-                    "
-                >
-                    ERC20
-                </button>
+        <div
+            id="stepConfirm"
+            class="step"
+        >
 
-                <button
-                    type="button"
-                    class="network-option"
-                    data-network="POLYGON"
-                    style="
-                        margin:0;
-                        padding:14px 8px;
-                        border:1px solid #303039;
-                        border-radius:12px;
-                        background:#08080b;
-                        color:#98949e;
-                        font-size:13px;
-                        font-weight:600;
-                    "
-                >
-                    Polygon
-                </button>
+            <div class="label">
+                REVIEW WITHDRAWAL
+            </div>
+
+            <h2 class="step-heading">
+                Confirm Details
+            </h2>
+
+            <p class="step-text">
+                Please review your withdrawal details carefully
+                before confirming.
+            </p>
+
+            <div class="confirmation-box">
+
+                <div class="confirmation-row">
+
+                    <span class="confirmation-label">
+                        Requested Amount
+                    </span>
+
+                    <strong
+                        id="confirmRequestedAmount"
+                        class="confirmation-value"
+                    ></strong>
+
+                </div>
+
+
+                <div class="receive-highlight">
+
+                    <div class="receive-label">
+                        YOU WILL RECEIVE
+                    </div>
+
+                    <div
+                        id="confirmReceiveAmount"
+                        class="receive-amount"
+                    ></div>
+
+                </div>
+
+
+                <div class="confirmation-row">
+
+                    <span class="confirmation-label">
+                        Network
+                    </span>
+
+                    <strong
+                        id="confirmNetwork"
+                        class="confirmation-value"
+                    ></strong>
+
+                </div>
+
+
+                <div class="confirmation-row">
+
+                    <span class="confirmation-label">
+                        Recipient
+                    </span>
+
+                    <strong
+                        id="confirmAddress"
+                        class="confirmation-value"
+                    ></strong>
+
+                </div>
 
             </div>
 
-            <input
-                type="hidden"
-                id="network"
-                value=""
+            <button
+                id="withdrawButton"
+                type="button"
             >
+                Confirm Withdrawal
+            </button>
+
 
         </div>
 
 
-        <div class="field">
-
-            <label
-                for="address"
-                class="label"
-            >
-                Wallet Address
-            </label>
-
-            <input
-                id="address"
-                type="text"
-                placeholder="Enter demo wallet address"
-            >
-
-        </div>
-
-
-        <button
-            id="withdrawButton"
-            type="button"
+        <input
+            type="hidden"
+            id="network"
+            value=""
         >
-            Withdraw USDT
-        </button>
 
 
         <div
@@ -608,9 +924,9 @@
 
             <br><br>
 
-            This is currently a demo withdrawal
-            system and does not broadcast a real
-            blockchain transaction.
+            The final amount is temporarily shown as
+            the same as the requested amount until the
+            withdrawal fee system is implemented.
 
         </div>
 
@@ -766,28 +1082,237 @@ async function loadWallet() {
 }
 
 
+const networkInput =
+    document.getElementById(
+        "network"
+    );
+
+
+const amountInput =
+    document.getElementById(
+        "amount"
+    );
+
+
+const addressInput =
+    document.getElementById(
+        "address"
+    );
+
+
+const networkDetails = {
+
+    BEP20: {
+
+        label:
+            "BEP20 / BNB Smart Chain",
+
+        instruction:
+            "Paste/Enter a Wallet Address That Supports USDT on BEP20 / BNB Smart Chain.",
+
+        warning:
+            "Make sure this address supports BEP20 USDT.         AVERYX cannot recover funds sent to an incorrect address or through an unsupported network."
+
+    },
+
+
+    TRC20: {
+
+        label:
+            "TRC20 / TRON",
+
+        instruction:
+            "Paste/Enter a wallet address that supports USDT on the TRC20 / TRON network.",
+
+        warning:
+            "Make sure this address supports TRC20 USDT. AVERYX cannot recover funds sent to an incorrect address or through an unsupported network."
+
+    },
+
+
+    ERC20: {
+
+        label:
+            "ERC20 / Ethereum",
+
+        instruction:
+            "Paste/Enter a wallet address that supports USDT on the ERC20 / Ethereum network.",
+
+        warning:
+            "Make sure this address supports ERC20 USDT. AVERYX cannot recover funds sent to an incorrect address or through an unsupported network."
+
+    },
+
+
+    POLYGON: {
+
+        label:
+            "Polygon PoS",
+
+        instruction:
+            "Paste/Enter a wallet address that supports USDT on the Polygon PoS network.",
+
+        warning:
+            "Make sure this address supports USDT on Polygon PoS. AVERYX cannot recover funds sent to an incorrect address or through an unsupported network."
+
+    }
+
+};
+
+
+function showStep(
+    stepId
+) {
+
+    const step =
+        document.getElementById(
+            stepId
+        );
+
+
+    if (!step) {
+
+        return;
+
+    }
+
+
+    /*
+       Progressive flow:
+       earlier sections stay visible and only the
+       next section is revealed below them.
+    */
+
+    step.classList.add(
+        "active"
+    );
+
+
+    setTimeout(
+        () => {
+
+            step.scrollIntoView(
+                {
+                    behavior: "smooth",
+                    block: "start"
+                }
+            );
+
+        },
+        50
+    );
+
+}
+
+
+function updateSelectedNetworkUI() {
+
+    const network =
+        networkInput.value;
+
+
+    const details =
+        networkDetails[network];
+
+
+    if (!details) {
+
+        return;
+
+    }
+
+
+    document.getElementById(
+        "amountSelectedNetwork"
+    ).textContent =
+        `Selected network: ${details.label}`;
+
+
+    document.getElementById(
+        "addressSelectedNetwork"
+    ).textContent =
+        `Selected network: ${details.label}`;
+
+
+    document.getElementById(
+        "addressHeading"
+    ).textContent =
+        `Paste/Enter Your ${network} Wallet Address`;
+
+
+    document.getElementById(
+        "addressNetworkInstruction"
+    ).textContent =
+        details.instruction;
+
+
+    document.getElementById(
+        "addressWarning"
+    ).textContent =
+        details.warning;
+
+}
+
+
+function showConfirmation() {
+
+    const network =
+        networkInput.value;
+
+
+    const amount =
+        Number(
+            amountInput.value
+        );
+
+
+    const address =
+        addressInput.value.trim();
+
+
+    const details =
+        networkDetails[network];
+
+
+    document.getElementById(
+        "confirmRequestedAmount"
+    ).textContent =
+        `${amount.toFixed(2)} USDT`;
+
+
+    /*
+       Temporary behavior.
+
+       Until the fee engine exists,
+       the user sees the requested amount
+       as the amount they will receive.
+    */
+
+    document.getElementById(
+        "confirmReceiveAmount"
+    ).textContent =
+        `${amount.toFixed(2)} USDT`;
+
+
+    document.getElementById(
+        "confirmNetwork"
+    ).textContent =
+        details.label;
+
+
+    document.getElementById(
+        "confirmAddress"
+    ).textContent =
+        address;
+
+}
+
+
 async function withdraw() {
 
     const button =
         document.getElementById(
             "withdrawButton"
-        );
-
-
-    const amountInput =
-        document.getElementById(
-            "amount"
-        );
-
-
-    const addressInput =
-        document.getElementById(
-            "address"
-        );
-
-    const networkInput =
-        document.getElementById(
-            "network"
         );
 
 
@@ -805,47 +1330,9 @@ async function withdraw() {
         addressInput.value.trim();
 
 
-    if (
-        !Number.isFinite(amount) ||
-        amount <= 0
-    ) {
-
-        showMessage(
-            "Enter a valid withdrawal amount.",
-            "error"
-        );
-
-        return;
-
-    }
-
-
-    if (!network) {
-
-        showMessage(
-            "Choose an address type.",
-            "error"
-        );
-
-        return;
-
-    }
-
-
-    if (!address) {
-
-        showMessage(
-            "Enter a wallet address.",
-            "error"
-        );
-
-        return;
-
-    }
-
-
     button.disabled =
         true;
+
 
     button.textContent =
         "Processing...";
@@ -881,18 +1368,15 @@ async function withdraw() {
         );
 
 
-        amountInput.value =
-            "";
+        setTimeout(
+            () => {
 
+                window.location.href =
+                    "wallet.html";
 
-        addressInput.value =
-            "";
-
-        networkInput.value =
-            "";
-
-
-        await loadWallet();
+            },
+            800
+        );
 
 
     } catch (error) {
@@ -903,13 +1387,12 @@ async function withdraw() {
         );
 
 
-    } finally {
-
         button.disabled =
             false;
 
+
         button.textContent =
-            "Withdraw USDT";
+            "Confirm Withdrawal";
 
     }
 
@@ -917,7 +1400,7 @@ async function withdraw() {
 
 
 document.querySelectorAll(
-    ".network-option"
+    ".network-card"
 ).forEach(
     option => {
 
@@ -926,34 +1409,24 @@ document.querySelectorAll(
             () => {
 
                 document.querySelectorAll(
-                    ".network-option"
+                    ".network-card"
                 ).forEach(
                     item => {
 
-                        item.style.borderColor =
-                            "#303039";
-
-                        item.style.background =
-                            "#08080b";
-
-                        item.style.color =
-                            "#98949e";
+                        item.classList.remove(
+                            "selected"
+                        );
 
                     }
                 );
 
-                option.style.borderColor =
-                    "#d71947";
 
-                option.style.background =
-                    "rgba(215,25,71,.12)";
+                option.classList.add(
+                    "selected"
+                );
 
-                option.style.color =
-                    "#ffffff";
 
-                document.getElementById(
-                    "network"
-                ).value =
+                networkInput.value =
                     option.dataset.network;
 
             }
@@ -964,12 +1437,120 @@ document.querySelectorAll(
 
 
 document.getElementById(
+    "networkProceedButton"
+).addEventListener(
+    "click",
+    () => {
+
+        if (!networkInput.value) {
+
+            showMessage(
+                "Choose an Address Type.",
+                "error"
+            );
+
+
+            return;
+
+        }
+
+
+        updateSelectedNetworkUI();
+
+
+        showStep(
+            "stepAmount"
+        );
+
+    }
+);
+
+
+document.getElementById(
+    "amountProceedButton"
+).addEventListener(
+    "click",
+    () => {
+
+        const amount =
+            Number(
+                amountInput.value
+            );
+
+
+        if (
+            !Number.isFinite(amount) ||
+            amount <= 0
+        ) {
+
+            showMessage(
+                "Enter a valid withdrawal amount.",
+                "error"
+            );
+
+
+            return;
+
+        }
+
+
+        showStep(
+            "stepAddress"
+        );
+
+    }
+);
+
+
+document.getElementById(
+    "addressProceedButton"
+).addEventListener(
+    "click",
+    () => {
+
+        const address =
+            addressInput.value.trim();
+
+
+        if (!address) {
+
+            showMessage(
+                "Paste/Enter a Wallet Address.",
+                "error"
+            );
+
+
+            return;
+
+        }
+
+
+        showConfirmation();
+
+
+        showStep(
+            "stepConfirm"
+        );
+
+    }
+);
+
+
+
+
+
+
+
+
+
+
+
+document.getElementById(
     "withdrawButton"
 ).addEventListener(
     "click",
     withdraw
 );
-
 
 loadWallet();
 
