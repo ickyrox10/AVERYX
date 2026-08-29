@@ -1390,7 +1390,16 @@
     }
 
     function writeStoredProfile(profile) {
-        localStorage.setItem(getProfileStorageKey(), JSON.stringify(profile));
+        const data = JSON.stringify(profile);
+
+        // Primary storage: account-specific profile state.
+        localStorage.setItem(getProfileStorageKey(), data);
+
+        // Compatibility storage: existing AVERYX pages still read this
+        // shared key for the header/profile avatar. Keep it synchronized
+        // with the currently authenticated account. The account identity
+        // inside the object prevents cross-account legacy migration.
+        localStorage.setItem("averyx_profile", data);
     }
 
     function readProfile() {
