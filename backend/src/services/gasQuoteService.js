@@ -237,7 +237,10 @@ async function fetchLiveNativeTokenPriceUsdt(
 
 
     /*
-       Use short-lived cached data.
+       Fresh cache.
+
+       This prevents every withdrawal request from
+       calling the external price API.
     */
 
     if (
@@ -251,11 +254,57 @@ async function fetchLiveNativeTokenPriceUsdt(
             ...cached,
 
             cached:
-                true
+                true,
+
+            stale:
+                false
 
         };
 
     }
+
+
+    /*
+       Keep the last successfully fetched real price
+       for a limited emergency fallback window.
+
+       This is used only when CoinGecko temporarily
+       rate-limits or fails. We never invent or
+       hardcode a token price.
+    */
+
+    const canUseStaleCache =
+        cached &&
+        now - cached.fetchedAt <
+        MAX_PRICE_AGE_MS;
+
+
+    const returnStaleCache =
+        (reason) => {
+
+            if (!canUseStaleCache) {
+
+                return null;
+
+            }
+
+
+            return {
+
+                ...cached,
+
+                cached:
+                    true,
+
+                stale:
+                    true,
+
+                fallbackReason:
+                    reason
+
+            };
+
+        };
 
 
     const baseUrl =
@@ -293,6 +342,19 @@ async function fetchLiveNativeTokenPriceUsdt(
 
     } catch (error) {
 
+        const staleResult =
+            returnStaleCache(
+                "price-api-request-failed"
+            );
+
+
+        if (staleResult) {
+
+            return staleResult;
+
+        }
+
+
         throw new Error(
             "Unable to fetch live native token price: " +
             error.message
@@ -302,6 +364,27 @@ async function fetchLiveNativeTokenPriceUsdt(
 
 
     if (!response.ok) {
+
+        /*
+           CoinGecko rate limits can return HTTP 429.
+
+           Use the last known real price when it is
+           still inside the maximum safe age window.
+        */
+
+        const staleResult =
+            returnStaleCache(
+                "price-api-http-" +
+                response.status
+            );
+
+
+        if (staleResult) {
+
+            return staleResult;
+
+        }
+
 
         throw new Error(
             "Live price API returned HTTP " +
@@ -320,6 +403,19 @@ async function fetchLiveNativeTokenPriceUsdt(
             await response.json();
 
     } catch (_) {
+
+        const staleResult =
+            returnStaleCache(
+                "price-api-invalid-json"
+            );
+
+
+        if (staleResult) {
+
+            return staleResult;
+
+        }
+
 
         throw new Error(
             "Live price API returned invalid JSON."
@@ -350,6 +446,19 @@ async function fetchLiveNativeTokenPriceUsdt(
         ) ||
         price <= 0
     ) {
+
+        const staleResult =
+            returnStaleCache(
+                "price-api-invalid-price"
+            );
+
+
+        if (staleResult) {
+
+            return staleResult;
+
+        }
+
 
         throw new Error(
             "Live price API returned an invalid price for " +
@@ -385,6 +494,19 @@ async function fetchLiveNativeTokenPriceUsdt(
             MAX_PRICE_AGE_MS
         ) {
 
+            const staleResult =
+                returnStaleCache(
+                    "price-api-live-price-too-old"
+                );
+
+
+            if (staleResult) {
+
+                return staleResult;
+
+            }
+
+
             throw new Error(
                 "Live price is too old for withdrawal quoting."
             );
@@ -406,6 +528,9 @@ async function fetchLiveNativeTokenPriceUsdt(
             "CoinGecko",
 
         cached:
+            false,
+
+        stale:
             false
 
     };
@@ -947,6 +1072,15 @@ async function createGasQuote({
 
             priceCached:
                 priceResult.cached,
+
+            priceStale:
+                Boolean(
+                    priceResult.stale
+                ),
+
+            priceFallbackReason:
+                priceResult.fallbackReason ||
+                null,
 
             senderAddress:
                 gasEstimate.senderAddress,
