@@ -8,6 +8,8 @@ const {
 
     createWithdrawal,
 
+    getWithdrawalQuote,
+
     getTransactions
 
 } = require("../controllers/walletController");
@@ -50,6 +52,21 @@ router.post(
     authenticateToken,
 
     createDeposit
+
+);
+
+
+/* ==================================================
+   GET WITHDRAWAL QUOTE
+================================================== */
+
+router.post(
+
+    "/withdraw/quote",
+
+    authenticateToken,
+
+    getWithdrawalQuote
 
 );
 

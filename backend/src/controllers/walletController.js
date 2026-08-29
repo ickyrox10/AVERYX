@@ -1807,6 +1807,202 @@ function tronTxHashForStorage(txHash) {
 }
 
 
+
+/* ==================================================
+   GET WITHDRAWAL QUOTE
+================================================== */
+
+async function getWithdrawalQuote(
+    req,
+    res
+) {
+
+    try {
+
+        const {
+            amount,
+            network,
+            address
+        } = req.body;
+
+
+        const numericAmount =
+            Number(amount);
+
+
+        if (
+            !Number.isFinite(
+                numericAmount
+            ) ||
+            numericAmount <= 0
+        ) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "Please enter a valid withdrawal amount."
+
+            });
+
+        }
+
+
+        const requestedAmount =
+            roundUSDT(
+                numericAmount
+            );
+
+
+        const withdrawalNetworks = {
+
+            BEP20:
+                process.env.BEP20_WITHDRAW_ENABLED === "true",
+
+            TRC20:
+                process.env.TRC20_WITHDRAW_ENABLED === "true",
+
+            ERC20:
+                process.env.ERC20_WITHDRAW_ENABLED === "true",
+
+            POLYGON:
+                process.env.POLYGON_WITHDRAW_ENABLED === "true"
+
+        };
+
+
+        const selectedNetwork =
+            String(
+                network || ""
+            )
+            .trim()
+            .toUpperCase();
+
+
+        if (
+            withdrawalNetworks[
+                selectedNetwork
+            ] !== true
+        ) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "Please select a valid address type."
+
+            });
+
+        }
+
+
+        if (
+            !address ||
+            typeof address !== "string" ||
+            !address.trim()
+        ) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "Please enter a wallet address."
+
+            });
+
+        }
+
+
+        const addressValidation =
+            validateWithdrawalAddress(
+                selectedNetwork,
+                address
+            );
+
+
+        if (
+            !addressValidation.valid
+        ) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    addressValidation.message
+
+            });
+
+        }
+
+
+        const withdrawalQuote =
+            await createWithdrawalQuote({
+
+                network:
+                    selectedNetwork,
+
+                toAddress:
+                    addressValidation.address,
+
+                requestedAmount
+
+            });
+
+
+        const publicQuote =
+            withdrawalQuote.publicQuote;
+
+
+        return res.status(200).json({
+
+            success: true,
+
+            quote: {
+
+                network:
+                    publicQuote.network,
+
+                requestedAmount:
+                    roundUSDT(
+                        publicQuote.requestedAmount
+                    ),
+
+                recipientAmount:
+                    roundUSDT(
+                        publicQuote.recipientAmount
+                    )
+
+            }
+
+        });
+
+
+    } catch (error) {
+
+        console.error(
+            "Get withdrawal quote error:",
+            error
+        );
+
+
+        return res.status(500).json({
+
+            success: false,
+
+            message:
+                "Unable to calculate withdrawal amount."
+
+        });
+
+    }
+
+}
+
+
 /* ==================================================
    CREATE WITHDRAWAL
 ================================================== */
@@ -2668,6 +2864,8 @@ module.exports = {
     createDeposit,
 
     createWithdrawal,
+
+    getWithdrawalQuote,
 
     getTransactions,
 

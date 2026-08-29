@@ -924,9 +924,8 @@
 
             <br><br>
 
-            The final amount is temporarily shown as
-            the same as the requested amount until the
-            withdrawal fee system is implemented.
+            The final amount you will receive is calculated
+            from the selected network before confirmation.
 
         </div>
 
@@ -1254,7 +1253,7 @@ function updateSelectedNetworkUI() {
 }
 
 
-function showConfirmation() {
+async function showConfirmation() {
 
     const network =
         networkInput.value;
@@ -1274,24 +1273,104 @@ function showConfirmation() {
         networkDetails[network];
 
 
+    if (
+        !network ||
+        !details
+    ) {
+
+        throw new Error(
+            "Please select a valid network."
+        );
+
+    }
+
+
+    if (
+        !Number.isFinite(
+            amount
+        ) ||
+        amount <= 0
+    ) {
+
+        throw new Error(
+            "Please enter a valid withdrawal amount."
+        );
+
+    }
+
+
+    if (!address) {
+
+        throw new Error(
+            "Please enter a wallet address."
+        );
+
+    }
+
+
     document.getElementById(
         "confirmRequestedAmount"
     ).textContent =
         `${amount.toFixed(2)} USDT`;
 
 
-    /*
-       Temporary behavior.
+    document.getElementById(
+        "confirmReceiveAmount"
+    ).textContent =
+        "Calculating...";
 
-       Until the fee engine exists,
-       the user sees the requested amount
-       as the amount they will receive.
-    */
+
+    const quoteResult =
+        await apiRequest(
+            "/api/wallet/withdraw/quote",
+            {
+
+                method:
+                    "POST",
+
+                body:
+                    JSON.stringify({
+
+                        amount,
+
+                        network,
+
+                        address
+
+                    })
+
+            }
+        );
+
+
+    const quote =
+        quoteResult?.quote;
+
+
+    const recipientAmount =
+        Number(
+            quote?.recipientAmount
+        );
+
+
+    if (
+        !Number.isFinite(
+            recipientAmount
+        ) ||
+        recipientAmount < 0
+    ) {
+
+        throw new Error(
+            "Unable to calculate the final withdrawal amount."
+        );
+
+    }
+
 
     document.getElementById(
         "confirmReceiveAmount"
     ).textContent =
-        `${amount.toFixed(2)} USDT`;
+        `${recipientAmount.toFixed(6)} USDT`;
 
 
     document.getElementById(
@@ -1306,7 +1385,6 @@ function showConfirmation() {
         address;
 
 }
-
 
 async function withdraw() {
 
@@ -1506,7 +1584,13 @@ document.getElementById(
     "addressProceedButton"
 ).addEventListener(
     "click",
-    () => {
+    async () => {
+
+        const button =
+            document.getElementById(
+                "addressProceedButton"
+            );
+
 
         const address =
             addressInput.value.trim();
@@ -1525,12 +1609,42 @@ document.getElementById(
         }
 
 
-        showConfirmation();
+        button.disabled =
+            true;
 
 
-        showStep(
-            "stepConfirm"
-        );
+        button.textContent =
+            "Calculating...";
+
+
+        try {
+
+            await showConfirmation();
+
+
+            showStep(
+                "stepConfirm"
+            );
+
+
+        } catch (error) {
+
+            showMessage(
+                error.message ||
+                "Unable to calculate withdrawal amount.",
+                "error"
+            );
+
+        } finally {
+
+            button.disabled =
+                false;
+
+
+            button.textContent =
+                "Continue";
+
+        }
 
     }
 );
