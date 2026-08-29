@@ -58,7 +58,10 @@ function getNetworkConfig(network) {
                 "BNB",
 
             coinGeckoId:
-                "binancecoin"
+                "binancecoin",
+
+            binanceSymbol:
+                "BNBUSDT"
 
         },
 
@@ -78,7 +81,10 @@ function getNetworkConfig(network) {
                 "ETH",
 
             coinGeckoId:
-                "ethereum"
+                "ethereum",
+
+            binanceSymbol:
+                "ETHUSDT"
 
         },
 
@@ -98,7 +104,10 @@ function getNetworkConfig(network) {
                 "POL",
 
             coinGeckoId:
-                "polygon-ecosystem-token"
+                "polygon-ecosystem-token",
+
+            binanceSymbol:
+                "POLUSDT"
 
         }
 
@@ -209,6 +218,127 @@ function getProvider(network) {
 
 
 /* ==================================================
+   FETCH BINANCE FALLBACK PRICE
+
+   Used when CoinGecko is rate-limited or unavailable.
+================================================== */
+
+async function fetchBinanceNativeTokenPriceUsdt(
+    config
+) {
+
+    const symbol =
+        config.binanceSymbol;
+
+
+    if (!symbol) {
+
+        throw new Error(
+            "Binance symbol is not configured for " +
+            config.network
+        );
+
+    }
+
+
+    const url =
+        "https://api.binance.com/api/v3/ticker/price?symbol=" +
+        encodeURIComponent(
+            symbol
+        );
+
+
+    let response;
+
+
+    try {
+
+        response =
+            await fetch(
+                url,
+                {
+
+                    headers: {
+                        accept:
+                            "application/json"
+                    },
+
+                    signal:
+                        AbortSignal.timeout(
+                            10000
+                        )
+
+                }
+            );
+
+    } catch (error) {
+
+        throw new Error(
+            "Binance price request failed: " +
+            error.message
+        );
+
+    }
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            "Binance price API returned HTTP " +
+            response.status
+        );
+
+    }
+
+
+    const data =
+        await response.json();
+
+
+    const price =
+        Number(
+            data?.price
+        );
+
+
+    if (
+        !Number.isFinite(
+            price
+        ) ||
+        price <= 0
+    ) {
+
+        throw new Error(
+            "Binance returned an invalid price."
+        );
+
+    }
+
+
+    return {
+
+        priceUsdt:
+            price,
+
+        source:
+            "Binance",
+
+        fetchedAt:
+            Date.now(),
+
+        cached:
+            false,
+
+        stale:
+            false
+
+    };
+
+}
+
+
+
+/* ==================================================
    FETCH LIVE NATIVE TOKEN PRICE
 ================================================== */
 
@@ -239,8 +369,7 @@ async function fetchLiveNativeTokenPriceUsdt(
     /*
        Fresh cache.
 
-       This prevents every withdrawal request from
-       calling the external price API.
+       Prevents repeated external API calls.
     */
 
     if (
@@ -263,15 +392,6 @@ async function fetchLiveNativeTokenPriceUsdt(
 
     }
 
-
-    /*
-       Keep the last successfully fetched real price
-       for a limited emergency fallback window.
-
-       This is used only when CoinGecko temporarily
-       rate-limits or fails. We never invent or
-       hardcode a token price.
-    */
 
     const canUseStaleCache =
         cached &&
@@ -307,6 +427,10 @@ async function fetchLiveNativeTokenPriceUsdt(
         };
 
 
+    /*
+       PRIMARY SOURCE: CoinGecko
+    */
+
     const baseUrl =
         "https://api.coingecko.com/api/v3/simple/price";
 
@@ -317,12 +441,9 @@ async function fetchLiveNativeTokenPriceUsdt(
         )}&vs_currencies=usd&include_last_updated_at=true`;
 
 
-    let response;
-
-
     try {
 
-        response =
+        const response =
             await fetch(
                 url,
                 {
@@ -340,163 +461,155 @@ async function fetchLiveNativeTokenPriceUsdt(
                 }
             );
 
-    } catch (error) {
 
-        const staleResult =
-            returnStaleCache(
-                "price-api-request-failed"
-            );
+        if (!response.ok) {
 
-
-        if (staleResult) {
-
-            return staleResult;
-
-        }
-
-
-        throw new Error(
-            "Unable to fetch live native token price: " +
-            error.message
-        );
-
-    }
-
-
-    if (!response.ok) {
-
-        /*
-           CoinGecko rate limits can return HTTP 429.
-
-           Use the last known real price when it is
-           still inside the maximum safe age window.
-        */
-
-        const staleResult =
-            returnStaleCache(
-                "price-api-http-" +
+            throw new Error(
+                "CoinGecko HTTP " +
                 response.status
             );
 
-
-        if (staleResult) {
-
-            return staleResult;
-
         }
 
 
-        throw new Error(
-            "Live price API returned HTTP " +
-            response.status
-        );
-
-    }
-
-
-    let data;
-
-
-    try {
-
-        data =
+        const data =
             await response.json();
 
-    } catch (_) {
 
-        const staleResult =
-            returnStaleCache(
-                "price-api-invalid-json"
+        const price =
+            Number(
+                data?.[
+                    coinId
+                ]?.usd
             );
 
 
-        if (staleResult) {
-
-            return staleResult;
-
-        }
-
-
-        throw new Error(
-            "Live price API returned invalid JSON."
-        );
-
-    }
-
-
-    const price =
-        Number(
-            data?.[
-                coinId
-            ]?.usd
-        );
-
-
-    const providerUpdatedAtSeconds =
-        Number(
-            data?.[
-                coinId
-            ]?.last_updated_at
-        );
-
-
-    if (
-        !Number.isFinite(
-            price
-        ) ||
-        price <= 0
-    ) {
-
-        const staleResult =
-            returnStaleCache(
-                "price-api-invalid-price"
+        const providerUpdatedAtSeconds =
+            Number(
+                data?.[
+                    coinId
+                ]?.last_updated_at
             );
-
-
-        if (staleResult) {
-
-            return staleResult;
-
-        }
-
-
-        throw new Error(
-            "Live price API returned an invalid price for " +
-            config.nativeSymbol
-        );
-
-    }
-
-
-    /*
-       Reject clearly stale provider data.
-    */
-
-    if (
-        Number.isFinite(
-            providerUpdatedAtSeconds
-        ) &&
-        providerUpdatedAtSeconds > 0
-    ) {
-
-        const providerUpdatedAtMs =
-            providerUpdatedAtSeconds *
-            1000;
-
-
-        const priceAge =
-            now -
-            providerUpdatedAtMs;
 
 
         if (
-            priceAge >
-            MAX_PRICE_AGE_MS
+            !Number.isFinite(
+                price
+            ) ||
+            price <= 0
         ) {
+
+            throw new Error(
+                "CoinGecko returned an invalid price."
+            );
+
+        }
+
+
+        if (
+            Number.isFinite(
+                providerUpdatedAtSeconds
+            ) &&
+            providerUpdatedAtSeconds > 0
+        ) {
+
+            const providerUpdatedAtMs =
+                providerUpdatedAtSeconds *
+                1000;
+
+
+            if (
+                now -
+                providerUpdatedAtMs >
+                MAX_PRICE_AGE_MS
+            ) {
+
+                throw new Error(
+                    "CoinGecko returned a stale price."
+                );
+
+            }
+
+        }
+
+
+        const result = {
+
+            priceUsdt:
+                price,
+
+            fetchedAt:
+                now,
+
+            source:
+                "CoinGecko",
+
+            cached:
+                false,
+
+            stale:
+                false
+
+        };
+
+
+        priceCache.set(
+            coinId,
+            result
+        );
+
+
+        return result;
+
+
+    } catch (coinGeckoError) {
+
+        /*
+           SECONDARY SOURCE: Binance.
+
+           This is especially important after a Render
+           restart, when no in-memory CoinGecko cache
+           exists yet.
+        */
+
+        try {
+
+            const binanceResult =
+                await fetchBinanceNativeTokenPriceUsdt(
+                    config
+                );
+
+
+            priceCache.set(
+                coinId,
+                binanceResult
+            );
+
+
+            return {
+
+                ...binanceResult,
+
+                fallbackReason:
+                    "coingecko-failed: " +
+                    coinGeckoError.message
+
+            };
+
+
+        } catch (binanceError) {
+
+            /*
+               FINAL FALLBACK:
+
+               Use the last successfully fetched real
+               price only when it remains within the
+               configured safe age window.
+            */
 
             const staleResult =
                 returnStaleCache(
-                    "price-api-live-price-too-old"
+                    "coingecko-failed-and-binance-failed"
                 );
 
 
@@ -508,44 +621,18 @@ async function fetchLiveNativeTokenPriceUsdt(
 
 
             throw new Error(
-                "Live price is too old for withdrawal quoting."
+                "Unable to fetch native token price. " +
+                "CoinGecko: " +
+                coinGeckoError.message +
+                " | Binance: " +
+                binanceError.message
             );
 
         }
 
     }
 
-
-    const result = {
-
-        priceUsdt:
-            price,
-
-        fetchedAt:
-            now,
-
-        source:
-            "CoinGecko",
-
-        cached:
-            false,
-
-        stale:
-            false
-
-    };
-
-
-    priceCache.set(
-        coinId,
-        result
-    );
-
-
-    return result;
-
 }
-
 
 
 /* ==================================================
@@ -1138,6 +1225,8 @@ module.exports = {
     getNativeTokenPriceUsdt,
 
     fetchLiveNativeTokenPriceUsdt,
+
+    fetchBinanceNativeTokenPriceUsdt,
 
     getNetworkConfig,
 
