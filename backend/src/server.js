@@ -43,6 +43,10 @@ const referralRoutes =
     require("./routes/referral");
 
 
+const adminRoutes =
+    require("./routes/admin");
+
+
 
 const app =
     express();
@@ -114,6 +118,16 @@ app.use(
 app.use(
     "/api/referrals",
     referralRoutes
+);
+
+
+/* ==================================================
+   ADMIN ROUTES
+================================================== */
+
+app.use(
+    "/api/admin",
+    adminRoutes
 );
 
 

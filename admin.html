@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AVERYX | Admin Panel</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#070709;--panel:#101014;--panel2:#0b0b0f;--border:#292930;--border-soft:#202026;--text:#f5f5f7;--muted:#898992;--soft:#606069;--red:#e52249;--green:#42c998;--orange:#e6a84d}
+body{min-height:100vh;background:radial-gradient(circle at 82% 0%,rgba(126,20,52,.18),transparent 31%),var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.app{width:100%;max-width:1200px;margin:auto;padding:18px 18px 50px}
+.topbar{min-height:62px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{display:flex;align-items:center;gap:11px;color:inherit;text-decoration:none}
+.brand img{width:42px;height:42px;object-fit:contain}.brand-name{font-family:Georgia,serif;font-size:22px;letter-spacing:3px}
+.admin-tag{margin-top:2px;color:var(--red);font-size:8px;letter-spacing:1.8px;text-transform:uppercase}
+.logout{height:40px;padding:0 15px;border:1px solid var(--border);border-radius:10px;background:transparent;color:var(--muted);font-size:10px;font-weight:700}
+.logout:hover{background:#15151a;color:#fff}
+.welcome{padding:29px 2px 21px}.eyebrow{color:var(--muted);font-size:10px;letter-spacing:2.4px;text-transform:uppercase}
+h1{margin-top:7px;font-family:Georgia,serif;font-size:clamp(34px,7vw,48px)}.welcome p{margin-top:8px;color:var(--muted);font-size:12px;line-height:1.6}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.stat{padding:18px 14px;border:1px solid var(--border);border-radius:16px;background:var(--panel);text-align:center}.stat-value{font-family:Georgia,serif;font-size:26px}.stat-label{margin-top:6px;color:var(--soft);font-size:8px;letter-spacing:.7px;text-transform:uppercase}
+.section{margin-top:27px}.section-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:12px}.section-title{font-family:Georgia,serif;font-size:24px}.refresh{height:38px;padding:0 13px;border:1px solid var(--border);border-radius:9px;background:transparent;color:var(--muted);font-size:10px}.refresh:hover{background:#15151a;color:#fff}
+.filters{display:grid;grid-template-columns:1.2fr 1fr 1fr auto;gap:10px;margin-bottom:12px}.control{height:46px;width:100%;padding:0 12px;border:1px solid var(--border);border-radius:10px;background:var(--panel);color:var(--text);outline:none;font-size:11px}.control:focus{border-color:rgba(229,34,73,.65)}
+.table-wrap{overflow:auto;border:1px solid var(--border);border-radius:17px;background:var(--panel)}table{width:100%;border-collapse:collapse;min-width:850px}th{padding:13px 15px;color:var(--soft);font-size:8px;letter-spacing:1px;text-transform:uppercase;text-align:left;background:#0d0d11}td{padding:14px 15px;border-top:1px solid var(--border-soft);font-size:10px;vertical-align:middle}.amount{font-family:Georgia,serif;font-size:15px}.sub{margin-top:4px;color:var(--soft);font-size:8px}.status{display:inline-flex;padding:5px 8px;border-radius:6px;font-size:7px;letter-spacing:.8px;text-transform:uppercase}.status.pending{color:var(--orange);background:rgba(230,168,77,.10);border:1px solid rgba(230,168,77,.18)}.status.completed{color:var(--green);background:rgba(66,201,152,.08);border:1px solid rgba(66,201,152,.16)}.status.failed{color:#ff6682;background:rgba(229,34,73,.08);border:1px solid rgba(229,34,73,.16)}.view{height:33px;padding:0 11px;border:1px solid var(--border);border-radius:8px;background:transparent;color:#ddd;font-size:9px}.view:hover{border-color:rgba(229,34,73,.5);background:rgba(229,34,73,.06)}
+.empty{padding:34px 18px;color:var(--soft);text-align:center;font-size:11px}.loading{padding:34px 18px;color:var(--muted);text-align:center;font-size:11px}
+.modal-backdrop{position:fixed;inset:0;display:none;align-items:flex-end;justify-content:center;padding:16px;background:rgba(0,0,0,.66);backdrop-filter:blur(6px);z-index:50}.modal-backdrop.show{display:flex}.modal{width:100%;max-width:760px;max-height:92vh;overflow:auto;padding:23px;border:1px solid var(--border);border-radius:20px;background:var(--panel);box-shadow:0 30px 80px rgba(0,0,0,.5)}.modal-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.modal-title{font-family:Georgia,serif;font-size:27px}.modal-sub{margin-top:6px;color:var(--muted);font-size:10px}.close{width:38px;height:38px;border:1px solid var(--border);border-radius:9px;background:transparent;color:var(--muted);font-size:21px}.close:hover{color:#fff;background:#17171c}
+.details{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:20px}.detail{min-width:0;padding:13px;border:1px solid var(--border-soft);border-radius:12px;background:var(--panel2)}.detail.full{grid-column:1/-1}.detail-label{color:var(--soft);font-size:8px;letter-spacing:1px;text-transform:uppercase}.detail-value{margin-top:6px;font-size:11px;line-height:1.5;word-break:break-all}.hash-box{margin-top:18px}.hash-box label{display:block;margin-bottom:8px;color:var(--muted);font-size:9px;letter-spacing:1.2px;text-transform:uppercase}.hash-box input{width:100%;height:48px;padding:0 13px;border:1px solid var(--border);border-radius:10px;background:#0b0b0f;color:#fff;outline:none;font-size:11px}.hash-box input:focus{border-color:rgba(229,34,73,.65)}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.complete,.fail{height:49px;border-radius:10px;font-size:10px;font-weight:700}.complete{border:1px solid rgba(66,201,152,.35);background:rgba(66,201,152,.09);color:var(--green)}.fail{border:1px solid rgba(229,34,73,.42);background:rgba(229,34,73,.09);color:#ff6682}.complete:hover{background:rgba(66,201,152,.15)}.fail:hover{background:rgba(229,34,73,.15)}.actions button:disabled{opacity:.5;cursor:not-allowed}.notice{margin-top:12px;min-height:18px;color:var(--muted);font-size:10px;line-height:1.5}.notice.error{color:#ff6682}.notice.success{color:var(--green)}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}.filters{grid-template-columns:1fr 1fr}.filters .search{grid-column:1/-1}.details{grid-template-columns:1fr}.detail.full{grid-column:auto}}
+@media(max-width:430px){.app{padding:15px}.topbar{align-items:flex-start}.stats{grid-template-columns:1fr}.filters{grid-template-columns:1fr}.actions{grid-template-columns:1fr}.modal{padding:18px;border-radius:17px}.brand-name{font-size:19px}}
+</style>
+</head>
+<body>
+<main class="app">
+  <header class="topbar">
+    <a class="brand" href="dashboard.html">
+      <img src="logo.png" alt="AVERYX Logo">
+      <div><div class="brand-name">AVERYX</div><div class="admin-tag">Administration</div></div>
+    </a>
+    <button id="logoutButton" class="logout">LOG OUT</button>
+  </header>
+
+  <section class="welcome">
+    <div class="eyebrow">Withdrawal Control</div>
+    <h1>Admin Panel</h1>
+    <p>Review withdrawals, enter transaction hashes, complete manual processing, or fail and refund eligible requests.</p>
+  </section>
+
+  <section class="stats">
+    <div class="stat"><div id="totalCount" class="stat-value">0</div><div class="stat-label">Total</div></div>
+    <div class="stat"><div id="pendingCount" class="stat-value">0</div><div class="stat-label">Pending</div></div>
+    <div class="stat"><div id="completedCount" class="stat-value">0</div><div class="stat-label">Completed</div></div>
+    <div class="stat"><div id="failedCount" class="stat-value">0</div><div class="stat-label">Failed</div></div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <div class="section-title">Withdrawals</div>
+      <button id="refreshButton" class="refresh">REFRESH</button>
+    </div>
+
+    <div class="filters">
+      <input id="searchInput" class="control search" placeholder="Search ID, user, email or address">
+      <select id="statusFilter" class="control">
+        <option value="">All Statuses</option><option value="pending">Pending</option><option value="completed">Completed</option><option value="failed">Failed</option>
+      </select>
+      <select id="networkFilter" class="control">
+        <option value="">All Networks</option><option value="BEP20">BEP20</option><option value="ERC20">ERC20</option><option value="POLYGON">Polygon</option><option value="TRC20">TRC20</option>
+      </select>
+      <button id="clearFilters" class="refresh">CLEAR</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>ID / User</th><th>Amount</th><th>Network</th><th>Status</th><th>Created</th><th>Action</th></tr></thead>
+        <tbody id="withdrawalBody"><tr><td colspan="6" class="loading">Loading withdrawals...</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<div id="modalBackdrop" class="modal-backdrop">
+  <section class="modal" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <div><div id="modalTitle" class="modal-title">Withdrawal</div><div id="modalSub" class="modal-sub"></div></div>
+      <button id="closeModal" class="close" aria-label="Close">×</button>
+    </div>
+    <div id="detailGrid" class="details"></div>
+    <div class="hash-box">
+      <label for="txHashInput">Transaction Hash</label>
+      <input id="txHashInput" placeholder="Enter transaction hash before completing">
+    </div>
+    <div id="actionButtons" class="actions">
+      <button id="completeButton" class="complete">MARK COMPLETED</button>
+      <button id="failButton" class="fail">MARK FAILED & REFUND</button>
+    </div>
+    <div id="modalNotice" class="notice"></div>
+  </section>
+</div>
+
+<script>
+const API_BASE_URL =
+  window.AVERYX_API_BASE_URL ||
+  (window.location.protocol === "file:" ? "https://averyx.onrender.com" : "");
+
+const ADMIN_TOKEN_KEY = "averyx_admin_token";
+let withdrawals = [];
+let selectedWithdrawal = null;
+
+function adminToken() { return localStorage.getItem(ADMIN_TOKEN_KEY) || ""; }
+function money(value) { return `${(Number(value) || 0).toFixed(6).replace(/\.?0+$/, "")} USDT`; }
+function safe(value) { return value === null || value === undefined || value === "" ? "—" : String(value); }
+function formatDate(value) { try { return value ? new Date(value).toLocaleString() : "—"; } catch (_) { return "—"; } }
+function normalizedStatus(value) {
+  const s = String(value || "pending").toLowerCase();
+  if (s === "completed" || s === "failed") return s;
+  return "pending";
+}
+function networkName(value) {
+  const v = String(value || "").toUpperCase();
+  if (v === "POLYGON" || v === "POS") return "Polygon";
+  return v || "—";
+}
+function showModalNotice(text, type="") {
+  const el = document.getElementById("modalNotice");
+  el.textContent = text || "";
+  el.className = "notice" + (type ? " " + type : "");
+}
+
+async function request(endpoint, options = {}) {
+  const token = adminToken();
+  if (!token) { window.location.replace("admin-login.html"); return null; }
+
+  const headers = { ...(options.headers || {}), Authorization: `Bearer ${token}` };
+  if (options.body && !headers["Content-Type"]) headers["Content-Type"] = "application/json";
+
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+  let data = {};
+  try { data = await response.json(); } catch (_) {}
+
+  if (response.status === 401 || response.status === 403) {
+    localStorage.removeItem(ADMIN_TOKEN_KEY);
+    window.location.replace("admin-login.html");
+    return null;
+  }
+  if (!response.ok || data.success === false) throw new Error(data.message || "Request failed.");
+  return data;
+}
+
+function updateStats() {
+  document.getElementById("totalCount").textContent = withdrawals.length;
+  document.getElementById("pendingCount").textContent = withdrawals.filter(w => normalizedStatus(w.status) === "pending").length;
+  document.getElementById("completedCount").textContent = withdrawals.filter(w => normalizedStatus(w.status) === "completed").length;
+  document.getElementById("failedCount").textContent = withdrawals.filter(w => normalizedStatus(w.status) === "failed").length;
+}
+
+function filteredWithdrawals() {
+  const search = document.getElementById("searchInput").value.trim().toLowerCase();
+  const status = document.getElementById("statusFilter").value;
+  const network = document.getElementById("networkFilter").value;
+
+  return withdrawals.filter(w => {
+    const statusMatch = !status || normalizedStatus(w.status) === status;
+    const networkMatch = !network || String(w.network || "").toUpperCase() === network;
+    const haystack = [w.id,w.userId,w.nickname,w.email,w.toAddress,w.fromAddress,w.reference,w.txHash].join(" ").toLowerCase();
+    return statusMatch && networkMatch && (!search || haystack.includes(search));
+  });
+}
+
+function renderTable() {
+  const body = document.getElementById("withdrawalBody");
+  const rows = filteredWithdrawals();
+
+  if (!rows.length) {
+    body.innerHTML = '<tr><td colspan="6" class="empty">No withdrawals match the current filters.</td></tr>';
+    return;
+  }
+
+  body.innerHTML = rows.map(w => {
+    const status = normalizedStatus(w.status);
+    return `<tr>
+      <td><strong>#${safe(w.id)}</strong><div class="sub">${safe(w.nickname || w.email || `User ${w.userId}`)}</div></td>
+      <td><div class="amount">${money(w.amountUSDT)}</div><div class="sub">Recipient: ${money(w.recipientAmountUSDT)}</div></td>
+      <td>${networkName(w.network)}</td>
+      <td><span class="status ${status}">${status}</span></td>
+      <td>${formatDate(w.createdAt)}</td>
+      <td><button class="view" data-id="${w.id}">VIEW</button></td>
+    </tr>`;
+  }).join("");
+
+  body.querySelectorAll(".view").forEach(button => button.addEventListener("click", () => openWithdrawal(button.dataset.id)));
+}
+
+async function loadWithdrawals() {
+  document.getElementById("withdrawalBody").innerHTML = '<tr><td colspan="6" class="loading">Loading withdrawals...</td></tr>';
+  try {
+    const data = await request("/api/admin/withdrawals");
+    if (!data) return;
+    withdrawals = Array.isArray(data.withdrawals) ? data.withdrawals : [];
+    updateStats();
+    renderTable();
+  } catch (error) {
+    document.getElementById("withdrawalBody").innerHTML = `<tr><td colspan="6" class="empty">${safe(error.message)}</td></tr>`;
+  }
+}
+
+function detail(label, value, full=false) {
+  return `<div class="detail${full ? " full" : ""}"><div class="detail-label">${label}</div><div class="detail-value">${safe(value)}</div></div>`;
+}
+
+async function openWithdrawal(id) {
+  showModalNotice("");
+  document.getElementById("modalBackdrop").classList.add("show");
+  document.getElementById("detailGrid").innerHTML = '<div class="loading" style="grid-column:1/-1">Loading withdrawal details...</div>';
+  document.getElementById("actionButtons").style.display = "none";
+
+  try {
+    const data = await request(`/api/admin/withdrawals/${id}`);
+    if (!data) return;
+    selectedWithdrawal = data.withdrawal;
+    const w = selectedWithdrawal;
+    const status = normalizedStatus(w.status);
+
+    document.getElementById("modalTitle").textContent = `Withdrawal #${w.id}`;
+    document.getElementById("modalSub").textContent = `${networkName(w.network)} • ${status.toUpperCase()}`;
+    document.getElementById("txHashInput").value = w.txHash || "";
+
+    document.getElementById("detailGrid").innerHTML = [
+      detail("User", w.nickname || `User ${w.userId}`),
+      detail("Email", w.email),
+      detail("Requested Amount", money(w.amountUSDT)),
+      detail("Recipient Amount", money(w.recipientAmountUSDT)),
+      detail("Network", networkName(w.network)),
+      detail("Status", status.toUpperCase()),
+      detail("Gas Cost", money(w.gasCostUSDT)),
+      detail("Margin", money(w.marginUSDT)),
+      detail("Created", formatDate(w.createdAt)),
+      detail("Reference", w.reference),
+      detail("From Address", w.fromAddress, true),
+      detail("Recipient Address", w.toAddress, true)
+    ].join("");
+
+    const actions = document.getElementById("actionButtons");
+    actions.style.display = status === "pending" ? "grid" : "none";
+
+    if (status !== "pending") {
+      showModalNotice(status === "completed" ? "This withdrawal has already been completed." : "This withdrawal has already been failed.", "");
+    }
+  } catch (error) {
+    document.getElementById("detailGrid").innerHTML = `<div class="empty" style="grid-column:1/-1">${safe(error.message)}</div>`;
+  }
+}
+
+function closeModal() {
+  document.getElementById("modalBackdrop").classList.remove("show");
+  selectedWithdrawal = null;
+  showModalNotice("");
+}
+
+function setActionLoading(loading) {
+  document.getElementById("completeButton").disabled = loading;
+  document.getElementById("failButton").disabled = loading;
+}
+
+document.getElementById("completeButton").addEventListener("click", async () => {
+  if (!selectedWithdrawal) return;
+  const txHash = document.getElementById("txHashInput").value.trim();
+  if (!txHash) { showModalNotice("Enter the transaction hash before marking this withdrawal completed.", "error"); return; }
+  if (!confirm(`Mark withdrawal #${selectedWithdrawal.id} as completed?`)) return;
+
+  setActionLoading(true);
+  try {
+    await request(`/api/admin/withdrawals/${selectedWithdrawal.id}/complete`, {
+      method: "PATCH",
+      body: JSON.stringify({ txHash })
+    });
+    showModalNotice("Withdrawal marked completed successfully.", "success");
+    await loadWithdrawals();
+    await openWithdrawal(selectedWithdrawal.id);
+  } catch (error) {
+    showModalNotice(error.message, "error");
+  } finally { setActionLoading(false); }
+});
+
+document.getElementById("failButton").addEventListener("click", async () => {
+  if (!selectedWithdrawal) return;
+  if (!confirm(`IMPORTANT: Mark withdrawal #${selectedWithdrawal.id} as failed and restore the user's full withdrawal amount to their wallet? Only continue if the withdrawal was NOT sent.`)) return;
+
+  setActionLoading(true);
+  try {
+    await request(`/api/admin/withdrawals/${selectedWithdrawal.id}/fail`, { method: "PATCH" });
+    showModalNotice("Withdrawal marked failed and funds restored.", "success");
+    await loadWithdrawals();
+    await openWithdrawal(selectedWithdrawal.id);
+  } catch (error) {
+    showModalNotice(error.message, "error");
+  } finally { setActionLoading(false); }
+});
+
+document.getElementById("closeModal").addEventListener("click", closeModal);
+document.getElementById("modalBackdrop").addEventListener("click", e => { if (e.target.id === "modalBackdrop") closeModal(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+
+["searchInput","statusFilter","networkFilter"].forEach(id => {
+  document.getElementById(id).addEventListener(id === "searchInput" ? "input" : "change", renderTable);
+});
+document.getElementById("clearFilters").addEventListener("click", () => {
+  document.getElementById("searchInput").value = "";
+  document.getElementById("statusFilter").value = "";
+  document.getElementById("networkFilter").value = "";
+  renderTable();
+});
+document.getElementById("refreshButton").addEventListener("click", loadWithdrawals);
+document.getElementById("logoutButton").addEventListener("click", () => {
+  localStorage.removeItem(ADMIN_TOKEN_KEY);
+  window.location.replace("admin-login.html");
+});
+
+if (!adminToken()) {
+  window.location.replace("admin-login.html");
+} else {
+  loadWithdrawals();
+}
+</script>
+</body>
+</html>
