@@ -375,7 +375,11 @@
            WITHDRAWAL WIZARD
         ================================================== */
 
-        /* Progressive flow: previous sections remain visible. */
+        /*
+           Progressive flow by default.
+           If the network changes after progressing, all later
+           steps are reset and hidden for transaction safety.
+        */
         .step {
             display: none;
             margin-top: 22px;
@@ -1231,6 +1235,84 @@ function showStep(
 }
 
 
+function resetWithdrawalFlowAfterNetworkChange() {
+
+    /*
+       A network change invalidates every later withdrawal detail.
+       Clear amount, address, quote/confirmation UI and return
+       the wizard to Step 1 only.
+    */
+
+    amountInput.value =
+        "";
+
+    addressInput.value =
+        "";
+
+    document.getElementById(
+        "stepAmount"
+    ).classList.remove(
+        "active"
+    );
+
+    document.getElementById(
+        "stepAddress"
+    ).classList.remove(
+        "active"
+    );
+
+    document.getElementById(
+        "stepConfirm"
+    ).classList.remove(
+        "active"
+    );
+
+    document.getElementById(
+        "confirmRequestedAmount"
+    ).textContent =
+        "";
+
+    document.getElementById(
+        "confirmReceiveAmount"
+    ).textContent =
+        "";
+
+    document.getElementById(
+        "confirmNetwork"
+    ).textContent =
+        "";
+
+    document.getElementById(
+        "confirmAddress"
+    ).textContent =
+        "";
+
+    const messageElement =
+        document.getElementById(
+            "message"
+        );
+
+    messageElement.textContent =
+        "";
+
+    messageElement.className =
+        "message";
+
+
+    window.scrollTo(
+        {
+            top: document.getElementById(
+                "stepNetwork"
+            ).getBoundingClientRect().top +
+            window.scrollY -
+            20,
+            behavior: "smooth"
+        }
+    );
+
+}
+
+
 function updateSelectedNetworkUI() {
 
     const network =
@@ -1513,6 +1595,26 @@ document.querySelectorAll(
             "click",
             () => {
 
+                const nextNetwork =
+                    option.dataset.network;
+
+                const previousNetwork =
+                    networkInput.value;
+
+                /*
+                   If the user changes the network after Step 1,
+                   invalidate the entire in-progress withdrawal.
+                */
+                if (
+                    previousNetwork &&
+                    previousNetwork !== nextNetwork
+                ) {
+
+                    resetWithdrawalFlowAfterNetworkChange();
+
+                }
+
+
                 document.querySelectorAll(
                     ".network-card"
                 ).forEach(
@@ -1532,7 +1634,7 @@ document.querySelectorAll(
 
 
                 networkInput.value =
-                    option.dataset.network;
+                    nextNetwork;
 
             }
         );

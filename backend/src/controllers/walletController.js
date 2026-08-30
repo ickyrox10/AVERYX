@@ -8,10 +8,6 @@ const {
     createPublicQuote
 } = require("../services/gasQuoteService");
 
-const {
-    createTrc20GasQuote
-} = require("../services/tronGasQuoteService");
-
 const BSC_RPC_URL = process.env.BSC_RPC_URL;
 const BSC_USDT_CONTRACT = process.env.BSC_USDT_CONTRACT;
 const BEP20_DEPOSIT_ADDRESS = process.env.BEP20_DEPOSIT_ADDRESS;
@@ -417,18 +413,103 @@ async function createWithdrawalQuote({
 
 
     /*
-       TRC20 uses a live TRON simulation and the actual
-       configured withdrawal wallet resources.
+       TRC20 withdrawals are processed manually through Binance.
+       Use the configured Binance withdrawal fee instead of
+       simulating a TRON smart-contract transaction.
     */
 
     if (
         selectedNetwork === "TRC20"
     ) {
 
-        return await createTrc20GasQuote({
-            toAddress,
-            requestedAmount
-        });
+        const actualGasCostUsdt =
+            Number(
+                process.env.TRC20_ESTIMATED_GAS_COST_USDT
+            );
+
+
+        if (
+            !Number.isFinite(actualGasCostUsdt) ||
+            actualGasCostUsdt < 0
+        ) {
+
+            throw new Error(
+                "TRC20_ESTIMATED_GAS_COST_USDT is not configured."
+            );
+
+        }
+
+
+        const configuredMarginPercent =
+            Number(
+                process.env.TRC20_PLATFORM_MARGIN_PERCENT
+            );
+
+
+        const marginPercent =
+            Number.isFinite(
+                configuredMarginPercent
+            ) &&
+            configuredMarginPercent >= 0
+                ? configuredMarginPercent
+                : 30;
+
+
+        const platformMarginUsdt =
+            actualGasCostUsdt *
+            (
+                marginPercent /
+                100
+            );
+
+
+        const totalFeeUsdt =
+            actualGasCostUsdt +
+            platformMarginUsdt;
+
+
+        const recipientAmount =
+            roundUSDT(
+                Number(requestedAmount) -
+                totalFeeUsdt
+            );
+
+
+        if (
+            recipientAmount <= 0
+        ) {
+
+            throw new Error(
+                "Withdrawal amount is too small to cover TRC20 network costs."
+            );
+
+        }
+
+
+        return {
+            publicQuote: {
+                network: selectedNetwork,
+                requestedAmount:
+                    roundUSDT(
+                        requestedAmount
+                    ),
+                recipientAmount
+            },
+            internal: {
+                actualGasCostUsdt:
+                    roundUSDT(
+                        actualGasCostUsdt
+                    ),
+                platformMarginUsdt:
+                    roundUSDT(
+                        platformMarginUsdt
+                    ),
+                totalFeeUsdt:
+                    roundUSDT(
+                        totalFeeUsdt
+                    )
+            }
+        };
 
     }
 
