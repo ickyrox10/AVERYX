@@ -146,6 +146,82 @@ function roundUSDT(value) {
 }
 
 
+/* ==================================================
+   WITHDRAWAL MINIMUM AMOUNTS
+================================================== */
+
+const WITHDRAWAL_MINIMUM_AMOUNTS = {
+
+    BEP20: 1,
+
+    TRC20: 10,
+
+    ERC20: 5,
+
+    POLYGON: 5
+
+};
+
+
+function getWithdrawalMinimumAmount(
+    network
+) {
+
+    const selectedNetwork =
+        String(network || "")
+        .trim()
+        .toUpperCase();
+
+
+    return (
+        WITHDRAWAL_MINIMUM_AMOUNTS[
+            selectedNetwork
+        ] || 0
+    );
+
+}
+
+
+function validateWithdrawalMinimum(
+    network,
+    amount
+) {
+
+    const minimumAmount =
+        getWithdrawalMinimumAmount(
+            network
+        );
+
+
+    if (
+        Number(amount) < minimumAmount
+    ) {
+
+        return {
+
+            valid: false,
+
+            minimumAmount,
+
+            message:
+                `Minimum withdrawal amount for ${String(network || "").trim().toUpperCase()} is ${minimumAmount} USDT.`
+
+        };
+
+    }
+
+
+    return {
+
+        valid: true,
+
+        minimumAmount
+
+    };
+
+}
+
+
 
 
 /* ==================================================
@@ -1898,6 +1974,32 @@ async function getWithdrawalQuote(
         }
 
 
+        const minimumValidation =
+            validateWithdrawalMinimum(
+                selectedNetwork,
+                requestedAmount
+            );
+
+
+        if (
+            !minimumValidation.valid
+        ) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    minimumValidation.message,
+
+                minimumAmount:
+                    minimumValidation.minimumAmount
+
+            });
+
+        }
+
+
         if (
             !address ||
             typeof address !== "string" ||
@@ -2125,6 +2227,32 @@ async function createWithdrawal(
 
                 message:
                     "Please select a valid address type."
+
+            });
+
+        }
+
+
+        const minimumValidation =
+            validateWithdrawalMinimum(
+                selectedNetwork,
+                withdrawalAmount
+            );
+
+
+        if (
+            !minimumValidation.valid
+        ) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    minimumValidation.message,
+
+                minimumAmount:
+                    minimumValidation.minimumAmount
 
             });
 
