@@ -177,6 +177,29 @@ app.get(
 
 
 /* ==================================================
+   PUBLIC SUPPORT CONFIG
+================================================== */
+
+app.get(
+    "/api/support/config",
+    (req, res) => {
+        const username =
+            String(
+                process.env.TELEGRAM_SUPPORT_USERNAME ||
+                ""
+            )
+                .trim()
+                .replace(/^@/, "");
+
+        return res.status(200).json({
+            success: true,
+            telegramUsername: username || null
+        });
+    }
+);
+
+
+/* ==================================================
    404 HANDLER
 ================================================== */
 

@@ -1532,12 +1532,12 @@
 
 
         <div class="telegram-handle">
-            @ERISTICX
+            <span id="telegramSupportUsername">Loading support...</span>
         </div>
 
 
         <a
-            href="https://t.me/ERISTICX"
+            href="#" id="telegramSupportLink"
             target="_blank"
             rel="noopener noreferrer"
             class="telegram-button"
@@ -1809,6 +1809,86 @@ function filterFAQs() {
 
 }
 
+</script>
+
+
+<script>
+(function () {
+    const API_BASE =
+        "https://averyx.onrender.com";
+
+    const usernameElement =
+        document.getElementById(
+            "telegramSupportUsername"
+        );
+
+    const linkElement =
+        document.getElementById(
+            "telegramSupportLink"
+        );
+
+    async function loadSupportContact() {
+        try {
+            const response =
+                await fetch(
+                    API_BASE +
+                    "/api/support/config"
+                );
+
+            const data =
+                await response.json();
+
+            const username =
+                String(
+                    data?.telegramUsername ||
+                    ""
+                )
+                    .trim()
+                    .replace(/^@/, "");
+
+            if (!username) {
+                throw new Error(
+                    "Telegram support is not configured."
+                );
+            }
+
+            if (usernameElement) {
+                usernameElement.textContent =
+                    "@" + username;
+            }
+
+            if (linkElement) {
+                linkElement.href =
+                    "https://t.me/" + username;
+            }
+
+        } catch (error) {
+            console.error(
+                "Support config error:",
+                error
+            );
+
+            if (usernameElement) {
+                usernameElement.textContent =
+                    "Support temporarily unavailable";
+            }
+
+            if (linkElement) {
+                linkElement.removeAttribute(
+                    "href"
+                );
+
+                linkElement.style.opacity =
+                    "0.6";
+
+                linkElement.style.pointerEvents =
+                    "none";
+            }
+        }
+    }
+
+    loadSupportContact();
+})();
 </script>
 
 </body>
