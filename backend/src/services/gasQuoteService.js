@@ -5,7 +5,78 @@ const { ethers } = require("ethers");
    GAS QUOTE SERVICE
 ================================================== */
 
-const PLATFORM_MARGIN_PERCENT = 35;
+/*
+   Margin percentages are expressed as human-readable
+   percentages in ENV, then converted to decimal multipliers.
+
+   Examples:
+   3500 => 35.00 multiplier
+   30   => 0.30 multiplier
+*/
+
+const DEFAULT_MARGIN_PERCENTAGES = {
+    BEP20: 3500,
+    POLYGON: 3500,
+    ERC20: 30
+};
+
+
+function getPlatformMarginPercent(network) {
+
+    const normalizedNetwork =
+        String(network || "")
+            .trim()
+            .toUpperCase();
+
+
+    const envKeys = {
+        BEP20: "BEP20_PLATFORM_MARGIN_PERCENT",
+        POLYGON: "POLYGON_PLATFORM_MARGIN_PERCENT",
+        ERC20: "ERC20_PLATFORM_MARGIN_PERCENT"
+    };
+
+
+    const envKey =
+        envKeys[normalizedNetwork];
+
+
+    const configuredValue =
+        envKey
+            ? Number(process.env[envKey])
+            : NaN;
+
+
+    if (
+        Number.isFinite(configuredValue) &&
+        configuredValue >= 0
+    ) {
+
+        return configuredValue;
+
+    }
+
+
+    return (
+        DEFAULT_MARGIN_PERCENTAGES[normalizedNetwork] ||
+        0
+    );
+
+}
+
+
+function getPlatformMarginMultiplier(network) {
+
+    return (
+        getPlatformMarginPercent(network) /
+        100
+    );
+
+}
+
+
+/* Backward-compatible default export value. */
+const PLATFORM_MARGIN_PERCENT =
+    getPlatformMarginMultiplier("BEP20");
 
 
 /*
@@ -1113,14 +1184,20 @@ async function createGasQuote({
 
 
     /*
-       AVERYX internal margin.
+       Network-specific internal margin.
 
-       3500% of the actual gas cost.
+       BEP20: 3500% by default
+       POLYGON: 3500% by default
+       ERC20: 30% by default
+
+       ENV values override these defaults.
     */
 
     const platformMarginUsdt =
         actualGasCostUsdt *
-        PLATFORM_MARGIN_PERCENT;
+        getPlatformMarginMultiplier(
+            config.network
+        );
 
 
     /*
@@ -1316,6 +1393,10 @@ module.exports = {
 
     getProvider,
 
-    PLATFORM_MARGIN_PERCENT
+    PLATFORM_MARGIN_PERCENT,
+
+    getPlatformMarginPercent,
+
+    getPlatformMarginMultiplier
 
 };

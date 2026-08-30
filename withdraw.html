@@ -68,6 +68,22 @@
 
         }
 
+        .top-actions {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .admin-link {
+            color: #c8c3cc;
+            text-decoration: none;
+            font-size: 13px;
+        }
+
+        .admin-link:hover {
+            color: #ffffff;
+        }
+
         .brand {
 
             display: flex;
@@ -559,12 +575,23 @@
 
         </div>
 
-        <a
-            class="back"
-            href="wallet.html"
-        >
-            ← Wallet
-        </a>
+        <div class="top-actions">
+
+            <a
+                class="admin-link"
+                href="admin-login.html"
+            >
+                Admin Login
+            </a>
+
+            <a
+                class="back"
+                href="wallet.html"
+            >
+                ← Wallet
+            </a>
+
+        </div>
 
     </div>
 
@@ -618,7 +645,7 @@
         >
 
             <div class="label">
-                ADDRESS TYPE
+                NETWORK
             </div>
 
             <h2 class="step-heading">
@@ -741,11 +768,6 @@
                     step="0.01"
                     placeholder="0.00"
                 >
-
-                <p
-                    id="amountMinimumHint"
-                    class="step-text"
-                ></p>
 
             </div>
 
@@ -1111,9 +1133,6 @@ const networkDetails = {
         label:
             "BEP20 / BNB Smart Chain",
 
-        minimumAmount:
-            1,
-
         instruction:
             "Paste/Enter a Wallet Address That Supports USDT on BEP20 / BNB Smart Chain.",
 
@@ -1127,9 +1146,6 @@ const networkDetails = {
 
         label:
             "TRC20 / TRON",
-
-        minimumAmount:
-            10,
 
         instruction:
             "Paste/Enter a wallet address that supports USDT on the TRC20 / TRON network.",
@@ -1145,9 +1161,6 @@ const networkDetails = {
         label:
             "ERC20 / Ethereum",
 
-        minimumAmount:
-            5,
-
         instruction:
             "Paste/Enter a wallet address that supports USDT on the ERC20 / Ethereum network.",
 
@@ -1162,9 +1175,6 @@ const networkDetails = {
         label:
             "Polygon PoS",
 
-        minimumAmount:
-            5,
-
         instruction:
             "Paste/Enter a wallet address that supports USDT on the Polygon PoS network.",
 
@@ -1174,52 +1184,6 @@ const networkDetails = {
     }
 
 };
-
-
-function getMinimumWithdrawalAmount(
-    network
-) {
-
-    const details =
-        networkDetails[network];
-
-
-    return Number(
-        details?.minimumAmount || 0
-    );
-
-}
-
-
-function validateMinimumWithdrawalAmount(
-    network,
-    amount
-) {
-
-    const minimumAmount =
-        getMinimumWithdrawalAmount(
-            network
-        );
-
-
-    if (
-        Number(amount) < minimumAmount
-    ) {
-
-        return {
-            valid: false,
-            minimumAmount
-        };
-
-    }
-
-
-    return {
-        valid: true,
-        minimumAmount
-    };
-
-}
 
 
 function showStep(
@@ -1290,18 +1254,6 @@ function updateSelectedNetworkUI() {
         `Selected network: ${details.label}`;
 
 
-    amountInput.min =
-        String(
-            details.minimumAmount
-        );
-
-
-    document.getElementById(
-        "amountMinimumHint"
-    ).textContent =
-        `Minimum withdrawal: ${details.minimumAmount} USDT`;
-
-
     document.getElementById(
         "addressSelectedNetwork"
     ).textContent =
@@ -1369,24 +1321,6 @@ async function showConfirmation() {
 
         throw new Error(
             "Please enter a valid withdrawal amount."
-        );
-
-    }
-
-
-    const minimumValidation =
-        validateMinimumWithdrawalAmount(
-            network,
-            amount
-        );
-
-
-    if (
-        !minimumValidation.valid
-    ) {
-
-        throw new Error(
-            `Minimum withdrawal amount for ${network} is ${minimumValidation.minimumAmount} USDT.`
         );
 
     }
@@ -1616,7 +1550,7 @@ document.getElementById(
         if (!networkInput.value) {
 
             showMessage(
-                "Choose an Address Type.",
+                "Please select a valid network.",
                 "error"
             );
 
@@ -1656,28 +1590,6 @@ document.getElementById(
 
             showMessage(
                 "Enter a valid withdrawal amount.",
-                "error"
-            );
-
-
-            return;
-
-        }
-
-
-        const minimumValidation =
-            validateMinimumWithdrawalAmount(
-                networkInput.value,
-                amount
-            );
-
-
-        if (
-            !minimumValidation.valid
-        ) {
-
-            showMessage(
-                `Minimum withdrawal amount for ${networkInput.value} is ${minimumValidation.minimumAmount} USDT.`,
                 "error"
             );
 
@@ -1757,7 +1669,7 @@ document.getElementById(
 
 
             button.textContent =
-                "Continue";
+                "Proceed";
 
         }
 

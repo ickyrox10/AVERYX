@@ -8,6 +8,10 @@ const {
     createPublicQuote
 } = require("../services/gasQuoteService");
 
+const {
+    createTrc20GasQuote
+} = require("../services/tronGasQuoteService");
+
 const BSC_RPC_URL = process.env.BSC_RPC_URL;
 const BSC_USDT_CONTRACT = process.env.BSC_USDT_CONTRACT;
 const BEP20_DEPOSIT_ADDRESS = process.env.BEP20_DEPOSIT_ADDRESS;
@@ -142,6 +146,55 @@ function roundUSDT(value) {
             Number(value) * 100000000
         ) / 100000000
     );
+
+}
+
+
+/* ==================================================
+   WITHDRAWAL NETWORK ENABLEMENT
+================================================== */
+
+function isEnvTrue(value) {
+
+    return [
+        "true",
+        "1",
+        "yes",
+        "on"
+    ].includes(
+        String(value || "")
+            .trim()
+            .toLowerCase()
+    );
+
+}
+
+
+function getWithdrawalNetworkStates() {
+
+    return {
+
+        BEP20:
+            isEnvTrue(
+                process.env.BEP20_WITHDRAW_ENABLED
+            ),
+
+        TRC20:
+            isEnvTrue(
+                process.env.TRC20_WITHDRAW_ENABLED
+            ),
+
+        ERC20:
+            isEnvTrue(
+                process.env.ERC20_WITHDRAW_ENABLED
+            ),
+
+        POLYGON:
+            isEnvTrue(
+                process.env.POLYGON_WITHDRAW_ENABLED
+            )
+
+    };
 
 }
 
@@ -364,23 +417,18 @@ async function createWithdrawalQuote({
 
 
     /*
-       TRC20 is intentionally left on the existing
-       withdrawal flow until its dedicated quote engine
-       is implemented.
+       TRC20 uses a live TRON simulation and the actual
+       configured withdrawal wallet resources.
     */
 
     if (
         selectedNetwork === "TRC20"
     ) {
 
-        return {
-            publicQuote: {
-                network: selectedNetwork,
-                requestedAmount: roundUSDT(requestedAmount),
-                recipientAmount: roundUSDT(requestedAmount)
-            },
-            internal: null
-        };
+        return await createTrc20GasQuote({
+            toAddress,
+            requestedAmount
+        });
 
     }
 
@@ -1931,21 +1979,8 @@ async function getWithdrawalQuote(
             );
 
 
-        const withdrawalNetworks = {
-
-            BEP20:
-                process.env.BEP20_WITHDRAW_ENABLED === "true",
-
-            TRC20:
-                process.env.TRC20_WITHDRAW_ENABLED === "true",
-
-            ERC20:
-                process.env.ERC20_WITHDRAW_ENABLED === "true",
-
-            POLYGON:
-                process.env.POLYGON_WITHDRAW_ENABLED === "true"
-
-        };
+        const withdrawalNetworks =
+            getWithdrawalNetworkStates();
 
 
         const selectedNetwork =
@@ -1967,7 +2002,9 @@ async function getWithdrawalQuote(
                 success: false,
 
                 message:
-                    "Please select a valid address type."
+                    selectedNetwork
+                        ? `${selectedNetwork} withdrawals are currently disabled.`
+                        : "Please select a valid withdrawal network."
 
             });
 
@@ -2165,21 +2202,8 @@ async function createWithdrawal(
             Number(amount);
 
 
-        const withdrawalNetworks = {
-
-            BEP20:
-                process.env.BEP20_WITHDRAW_ENABLED === "true",
-
-            TRC20:
-                process.env.TRC20_WITHDRAW_ENABLED === "true",
-
-            ERC20:
-                process.env.ERC20_WITHDRAW_ENABLED === "true",
-
-            POLYGON:
-                process.env.POLYGON_WITHDRAW_ENABLED === "true"
-
-        };
+        const withdrawalNetworks =
+            getWithdrawalNetworkStates();
 
 
         const selectedNetwork =
@@ -2226,7 +2250,9 @@ async function createWithdrawal(
                 success: false,
 
                 message:
-                    "Please select a valid address type."
+                    selectedNetwork
+                        ? `${selectedNetwork} withdrawals are currently disabled.`
+                        : "Please select a valid withdrawal network."
 
             });
 

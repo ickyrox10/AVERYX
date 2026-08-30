@@ -10,19 +10,24 @@ function toWithdrawal(row) {
         userId: row.user_id,
         nickname: row.nickname || null,
         email: row.email || null,
+
         amountUSDT: Number(row.amount_usdt),
+
         recipientAmountUSDT:
             row.recipient_amount_usdt === null
                 ? null
                 : Number(row.recipient_amount_usdt),
+
         gasCostUSDT:
             row.gas_cost_usdt === null
                 ? null
                 : Number(row.gas_cost_usdt),
+
         marginUSDT:
             row.margin_usdt === null
                 ? null
                 : Number(row.margin_usdt),
+
         status: row.status,
         reference: row.reference,
         txHash: row.tx_hash,
@@ -255,8 +260,13 @@ async function getAdminWithdrawalById(req, res) {
 /* ==================================================
    COMPLETE WITHDRAWAL MANUALLY
 
-   Intended for a withdrawal already sent externally.
-   A non-empty transaction hash is required.
+   Only pending withdrawals can be completed manually.
+   A transaction hash is required.
+
+   This prevents:
+   - Completing a failed withdrawal
+   - Overwriting an existing transaction hash
+   - Re-completing an already completed withdrawal
 ================================================== */
 
 async function completeAdminWithdrawal(req, res) {
@@ -317,15 +327,44 @@ async function completeAdminWithdrawal(req, res) {
         const current =
             currentResult.rows[0];
 
-        if (
-            String(current.status).toLowerCase() ===
-            "completed"
-        ) {
+        const currentStatus =
+            String(current.status || "")
+                .toLowerCase()
+                .trim();
+
+        if (currentStatus === "completed") {
             await client.query("ROLLBACK");
 
             return res.status(400).json({
                 success: false,
                 message: "Withdrawal is already completed."
+            });
+        }
+
+        if (currentStatus === "failed") {
+            await client.query("ROLLBACK");
+
+            return res.status(400).json({
+                success: false,
+                message: "Failed withdrawals cannot be completed."
+            });
+        }
+
+        if (current.tx_hash) {
+            await client.query("ROLLBACK");
+
+            return res.status(400).json({
+                success: false,
+                message: "Withdrawal already has a transaction hash."
+            });
+        }
+
+        if (currentStatus !== "pending") {
+            await client.query("ROLLBACK");
+
+            return res.status(400).json({
+                success: false,
+                message: `Withdrawal cannot be manually completed while status is ${currentStatus || "unknown"}.`
             });
         }
 
@@ -391,8 +430,14 @@ async function completeAdminWithdrawal(req, res) {
 /* ==================================================
    FAIL WITHDRAWAL AND RESTORE RESERVED FUNDS
 
-   Only allowed when no transaction hash exists.
-   This prevents an accidental refund after broadcast.
+   Only pending withdrawals can be failed.
+
+   IMPORTANT:
+   The status check makes the refund idempotent.
+   Once failed, the withdrawal cannot be failed again,
+   preventing the user's balance from being restored twice.
+
+   A withdrawal with a transaction hash cannot be refunded.
 ================================================== */
 
 async function failAdminWithdrawal(req, res) {
@@ -447,6 +492,11 @@ async function failAdminWithdrawal(req, res) {
         const withdrawal =
             withdrawalResult.rows[0];
 
+        const currentStatus =
+            String(withdrawal.status || "")
+                .toLowerCase()
+                .trim();
+
         if (withdrawal.tx_hash) {
             await client.query("ROLLBACK");
 
@@ -456,15 +506,30 @@ async function failAdminWithdrawal(req, res) {
             });
         }
 
-        if (
-            String(withdrawal.status).toLowerCase() ===
-            "completed"
-        ) {
+        if (currentStatus === "completed") {
             await client.query("ROLLBACK");
 
             return res.status(400).json({
                 success: false,
                 message: "Completed withdrawals cannot be failed."
+            });
+        }
+
+        if (currentStatus === "failed") {
+            await client.query("ROLLBACK");
+
+            return res.status(400).json({
+                success: false,
+                message: "Withdrawal is already failed. Funds have already been restored."
+            });
+        }
+
+        if (currentStatus !== "pending") {
+            await client.query("ROLLBACK");
+
+            return res.status(400).json({
+                success: false,
+                message: `Withdrawal cannot be failed while status is ${currentStatus || "unknown"}.`
             });
         }
 
