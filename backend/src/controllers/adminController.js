@@ -106,10 +106,7 @@ function toAdminUser(row) {
         isActive: row.is_active === true,
 
         accountStatus:
-            String(
-                row.account_status ||
-                "ACTIVE"
-            ).toUpperCase(),
+            row.account_status || "ACTIVE",
 
         suspendedAt:
             row.suspended_at || null,
@@ -996,19 +993,12 @@ async function getAdminUserById(req, res) {
 
 
 /* ==================================================
-   SUSPEND USER
+   SUSPEND USER ACCOUNT
 ================================================== */
 
 async function suspendAdminUser(req, res) {
     try {
         const userId = Number(req.params.id);
-
-        const suspensionReason =
-            String(
-                req.body.suspensionReason ||
-                req.body.reason ||
-                ""
-            ).trim();
 
         if (!Number.isInteger(userId) || userId <= 0) {
             return res.status(400).json({
@@ -1016,6 +1006,12 @@ async function suspendAdminUser(req, res) {
                 message: "Invalid user ID."
             });
         }
+
+        const suspensionReason = String(
+            req.body.suspensionReason ||
+            req.body.suspension_reason ||
+            ""
+        ).trim();
 
         const result = await pool.query(
             `
@@ -1027,6 +1023,7 @@ async function suspendAdminUser(req, res) {
             WHERE id = $1
             RETURNING
                 id,
+                public_uid,
                 account_status,
                 suspended_at,
                 suspension_reason
@@ -1048,6 +1045,7 @@ async function suspendAdminUser(req, res) {
             message: "User suspended successfully.",
             user: {
                 id: user.id,
+                publicUid: user.public_uid,
                 accountStatus: user.account_status,
                 suspendedAt: user.suspended_at,
                 suspensionReason: user.suspension_reason
@@ -1055,7 +1053,7 @@ async function suspendAdminUser(req, res) {
         });
 
     } catch (error) {
-        console.error("Suspend user error:", error);
+        console.error("Suspend admin user error:", error);
 
         return res.status(500).json({
             success: false,
@@ -1066,7 +1064,7 @@ async function suspendAdminUser(req, res) {
 
 
 /* ==================================================
-   REACTIVATE USER
+   REACTIVATE USER ACCOUNT
 ================================================== */
 
 async function reactivateAdminUser(req, res) {
@@ -1090,6 +1088,7 @@ async function reactivateAdminUser(req, res) {
             WHERE id = $1
             RETURNING
                 id,
+                public_uid,
                 account_status,
                 suspended_at,
                 suspension_reason
@@ -1111,6 +1110,7 @@ async function reactivateAdminUser(req, res) {
             message: "User reactivated successfully.",
             user: {
                 id: user.id,
+                publicUid: user.public_uid,
                 accountStatus: user.account_status,
                 suspendedAt: user.suspended_at,
                 suspensionReason: user.suspension_reason
@@ -1118,7 +1118,7 @@ async function reactivateAdminUser(req, res) {
         });
 
     } catch (error) {
-        console.error("Reactivate user error:", error);
+        console.error("Reactivate admin user error:", error);
 
         return res.status(500).json({
             success: false,
@@ -1126,7 +1126,6 @@ async function reactivateAdminUser(req, res) {
         });
     }
 }
-
 
 module.exports = {
     adminLogin,
