@@ -108,7 +108,7 @@ const ADMIN_TOKEN_KEY = "averyx_admin_token";
 let withdrawals = [];
 let selectedWithdrawal = null;
 
-function adminToken() { return localStorage.getItem(ADMIN_TOKEN_KEY) || ""; }
+function adminToken() { return sessionStorage.getItem(ADMIN_TOKEN_KEY) || ""; }
 function money(value) { return `${(Number(value) || 0).toFixed(6).replace(/\.?0+$/, "")} USDT`; }
 function safe(value) { return value === null || value === undefined || value === "" ? "—" : String(value); }
 function formatDate(value) { try { return value ? new Date(value).toLocaleString() : "—"; } catch (_) { return "—"; } }
@@ -140,7 +140,7 @@ async function request(endpoint, options = {}) {
   try { data = await response.json(); } catch (_) {}
 
   if (response.status === 401 || response.status === 403) {
-    localStorage.removeItem(ADMIN_TOKEN_KEY);
+    sessionStorage.removeItem(ADMIN_TOKEN_KEY);
     window.location.replace("admin-login.html");
     return null;
   }
@@ -313,7 +313,7 @@ document.getElementById("clearFilters").addEventListener("click", () => {
 });
 document.getElementById("refreshButton").addEventListener("click", loadWithdrawals);
 document.getElementById("logoutButton").addEventListener("click", () => {
-  localStorage.removeItem(ADMIN_TOKEN_KEY);
+  sessionStorage.removeItem(ADMIN_TOKEN_KEY);
   window.location.replace("admin-login.html");
 });
 
