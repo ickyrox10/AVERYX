@@ -74,12 +74,6 @@
             gap: 18px;
         }
 
-        .admin-link {
-            color: #c8c3cc;
-            text-decoration: none;
-            font-size: 13px;
-        }
-
         .admin-link:hover {
             color: #ffffff;
         }
@@ -580,15 +574,7 @@
         </div>
 
         <div class="top-actions">
-
-            <a
-                class="admin-link"
-                href="admin-login.html"
-            >
-                Admin Login
-            </a>
-
-            <a
+<a
                 class="back"
                 href="wallet.html"
             >
@@ -1130,16 +1116,25 @@ const addressInput =
     );
 
 
+const withdrawalMinimumDisplay = {
+
+    BEP20: 1,
+
+    ERC20: 1,
+
+    POLYGON: 1,
+
+    TRC20: 10
+
+};
+
+
 const networkDetails = {
 
     BEP20: {
 
         label:
             "BEP20 / BNB Smart Chain",
-
-
-        minimumWithdrawal:
-            1,
 
         instruction:
             "Paste/Enter a Wallet Address That Supports USDT on BEP20 / BNB Smart Chain.",
@@ -1155,10 +1150,6 @@ const networkDetails = {
         label:
             "TRC20 / TRON",
 
-
-        minimumWithdrawal:
-            10,
-
         instruction:
             "Paste/Enter a wallet address that supports USDT on the TRC20 / TRON network.",
 
@@ -1173,10 +1164,6 @@ const networkDetails = {
         label:
             "ERC20 / Ethereum",
 
-
-        minimumWithdrawal:
-            1,
-
         instruction:
             "Paste/Enter a wallet address that supports USDT on the ERC20 / Ethereum network.",
 
@@ -1190,10 +1177,6 @@ const networkDetails = {
 
         label:
             "Polygon PoS",
-
-
-        minimumWithdrawal:
-            1,
 
         instruction:
             "Paste/Enter a wallet address that supports USDT on the Polygon PoS network.",
@@ -1336,33 +1319,13 @@ function updateSelectedNetworkUI() {
 
 
     const details =
-        const selectedDetails =
-            networkDetails[
-                networkInput.value
-            ];
-
-
-        if (
-            selectedDetails &&
-            Number.isFinite(
-                Number(
-                    selectedDetails.minimumWithdrawal
-                )
-            )
-        ) {
-
-            amountInput.placeholder =
-                `Minimum withdrawal is ${selectedDetails.minimumWithdrawal} USDT`;
-
-        } else {
-
-            amountInput.placeholder =
-                "Enter amount";
-
-        }
-
-
         networkDetails[network];
+
+
+    const minimumWithdrawal =
+        withdrawalMinimumDisplay[
+            network
+        ];
 
 
     if (!details) {
@@ -1376,6 +1339,16 @@ function updateSelectedNetworkUI() {
         "amountSelectedNetwork"
     ).textContent =
         `Selected network: ${details.label}`;
+
+
+    amountInput.placeholder =
+        Number.isFinite(
+            Number(
+                minimumWithdrawal
+            )
+        )
+            ? `Minimum withdrawal: ${minimumWithdrawal} USDT`
+            : "Enter amount";
 
 
     document.getElementById(
