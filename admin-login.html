@@ -69,7 +69,9 @@ const loginButton = document.getElementById("loginButton");
 
 // Admin authentication is intentionally non-persistent.
 // Visiting the admin login page always starts with a fresh login.
-sessionStorage.removeItem("averyx_admin_token");
+if (localStorage.getItem("averyx_admin_token")) {
+  window.location.replace("admin.html");
+}
 
 function showMessage(text, type = "") {
   message.textContent = text || "";
@@ -99,8 +101,8 @@ form.addEventListener("submit", async event => {
       throw new Error(data.message || "Unable to log in.");
     }
 
-    sessionStorage.setItem("averyx_admin_token", data.token);
-    window.location.href = "admin.html";
+    localStorage.setItem("averyx_admin_token", data.token);
+    window.location.replace("admin.html");
   } catch (error) {
     showMessage(error.message || "Unable to complete admin login.", "error");
   } finally {

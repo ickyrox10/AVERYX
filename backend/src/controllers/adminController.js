@@ -178,7 +178,10 @@ async function adminLogin(req, res) {
             });
         }
 
-        if (username !== configuredUsername) {
+        if (
+            username.toLowerCase() !==
+            configuredUsername.toLowerCase()
+        ) {
             return res.status(401).json({
                 success: false,
                 message: "Invalid admin credentials."
