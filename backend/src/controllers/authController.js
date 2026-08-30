@@ -781,6 +781,7 @@ async function login(req, res) {
                 referral_code,
                 public_uid,
                 is_active,
+                    account_status,
                 created_at
 
             FROM users
@@ -829,6 +830,31 @@ async function login(req, res) {
 
             message:
                 "This account is currently disabled."
+
+        });
+
+    }
+
+
+    /* ==================================================
+       SUSPENSION STATUS
+    ================================================== */
+
+    if (
+        String(
+            user.account_status || "ACTIVE"
+        ).toUpperCase() === "SUSPENDED"
+    ) {
+
+        return res.status(403).json({
+
+            success: false,
+
+            code:
+                "ACCOUNT_SUSPENDED",
+
+            message:
+                "Your account has been suspended. Please contact support."
 
         });
 
