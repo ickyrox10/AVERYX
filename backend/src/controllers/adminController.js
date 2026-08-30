@@ -122,6 +122,17 @@ function toAdminUser(row) {
         currentTierName: tier.name,
         currentTierDepositRequirement: tier.deposit,
 
+        /*
+           Keep these existing field names for admin.html.
+           The frontend already reads these names in both
+           the table and the user details popup.
+        */
+        highestUnlockedTier: tier.level,
+        selectedProfileTier: tier.level,
+
+        highestUnlockedTierName: tier.name,
+        selectedProfileTierName: tier.name,
+
         createdAt: row.created_at
     };
 }
