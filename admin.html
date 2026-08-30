@@ -38,12 +38,10 @@ h1{margin-top:7px;font-family:Georgia,serif;font-size:clamp(34px,7vw,48px)}.welc
 @media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}.filters{grid-template-columns:1fr 1fr}.filters .search{grid-column:1/-1}.details{grid-template-columns:1fr}.detail.full{grid-column:auto}}
 @media(max-width:430px){.app{padding:15px}.topbar{align-items:flex-start}.stats{grid-template-columns:1fr}.filters{grid-template-columns:1fr}.actions{grid-template-columns:1fr}.modal{padding:18px;border-radius:17px}.brand-name{font-size:19px}}
 
-.status.active{color:var(--green);background:rgba(66,201,152,.08);border:1px solid rgba(66,201,152,.16)}
 .status.suspended{color:#ff6682;background:rgba(229,34,73,.08);border:1px solid rgba(229,34,73,.16)}
 .user-action{height:33px;padding:0 11px;border:1px solid var(--border);border-radius:8px;background:transparent;font-size:9px}
 .user-action.suspend{color:#ff6682;border-color:rgba(229,34,73,.35)}
 .user-action.reactivate{color:var(--green);border-color:rgba(66,201,152,.35)}
-
 </style>
 </head>
 <body>
@@ -65,7 +63,6 @@ h1{margin-top:7px;font-family:Georgia,serif;font-size:clamp(34px,7vw,48px)}.welc
   <div class="panel-tabs">
     <button id="withdrawalsTab" class="panel-tab active" type="button">WITHDRAWALS</button>
     <button id="depositsTab" class="panel-tab" type="button">DEPOSITS</button>
-<button id="usersTab" class="panel-tab" type="button">USERS</button>
     <button id="usersTab" class="panel-tab" type="button">USERS</button>
   </div>
 
@@ -160,30 +157,6 @@ h1{margin-top:7px;font-family:Georgia,serif;font-size:clamp(34px,7vw,48px)}.welc
       </table>
     </div>
   </section>
-
-
-<section id="usersSection" class="section">
-  <div class="section-head">
-    <div class="section-title">Users</div>
-    <button id="refreshUsersButton" class="refresh" type="button">REFRESH</button>
-  </div>
-  <div class="filters">
-    <input id="userSearchInput" class="control search" placeholder="Search ID, username or email">
-    <select id="userStatusFilter" class="control">
-      <option value="">All Account Statuses</option>
-      <option value="ACTIVE">Active</option>
-      <option value="SUSPENDED">Suspended</option>
-    </select>
-    <div></div>
-    <button id="clearUserFilters" class="refresh" type="button">CLEAR</button>
-  </div>
-  <div class="table-wrap">
-    <table>
-      <thead><tr><th>ID / User</th><th>Email</th><th>Balance</th><th>Status</th><th>Reason</th><th>Action</th></tr></thead>
-      <tbody id="userBody"><tr><td colspan="6" class="loading">Loading users...</td></tr></tbody>
-    </table>
-  </div>
-</section>
 
 <div id="modalBackdrop" class="modal-backdrop">
   <section class="modal" role="dialog" aria-modal="true">
@@ -390,15 +363,16 @@ function updateStats(items) {
 
 function updateUserStats(items) {
   const rows = Array.isArray(items) ? items : [];
-  const active = rows.filter(user => user.isActive === true).length;
-  const inactive = rows.length - active;
+  const active = rows.filter(user => user.isActive === true && normalizedUserStatus(user) !== "suspended").length;
+  const inactive = rows.filter(user => user.isActive !== true && normalizedUserStatus(user) !== "suspended").length;
+  const suspended = rows.filter(user => normalizedUserStatus(user) === "suspended").length;
 
   document.getElementById("totalCount").textContent = rows.length;
   document.getElementById("pendingCount").textContent = active;
   document.getElementById("completedCount").textContent = inactive;
-  document.getElementById("failedCount").textContent = "—";
+  document.getElementById("failedCount").textContent = suspended;
 
-  setStatLabels(["Total Users", "Active", "Inactive", "Read Only"]);
+  setStatLabels(["Total Users", "Active", "Inactive", "Suspended"]);
 }
 
 function setStatsContext(section) {
@@ -560,29 +534,72 @@ function renderUsers() {
   const rows = filteredUsers();
 
   if (!rows.length) {
-    body.innerHTML =
-      '<tr><td colspan="7" class="empty">No users match the current filters.</td></tr>';
+    body.innerHTML = '<tr><td colspan="6" class="empty">No users match the current filters.</td></tr>';
     return;
   }
 
   body.innerHTML = rows.map(user => {
     const status = normalizedUserStatus(user);
-    return `<tr>
-      <td><strong>#${safe(user.id)}</strong><div class="sub">UID: ${safe(user.publicUid)}</div><div class="sub">${safe(user.nickname)}</div></td>
-      <td>${safe(user.email)}<div class="sub">${safe(user.phone)}</div></td>
-      <td><div class="amount">${money(user.balanceUSDT)}</div><div class="sub">Withdrawable: ${money(user.withdrawableUSDT)}</div></td>
-      <td>Tier ${safe(user.selectedProfileTier)}<div class="sub">Unlocked: ${safe(user.highestUnlockedTier)}</div></td>
-      <td><span class="status ${status}">${status}</span></td>
-      <td>${formatDate(user.createdAt)}</td>
-      <td><button class="view user-view" data-id="${user.id}">VIEW</button></td>
+    const suspended = status === "suspended";
+    const uid = user.publicUid || user.public_uid || user.uid || `#${user.id}`;
+    const tier = user.selectedProfileTier ?? user.selected_profile_tier ?? user.tier ?? "—";
+    const nickname = user.nickname || user.username || user.name || "—";
+
+    return `<tr class="user-row" data-user-id="${user.id}">
+      <td><strong>${safe(uid)}</strong><div class="sub">${safe(nickname)}</div></td>
+      <td>${safe(user.email || "—")}</td>
+      <td>Tier ${safe(tier)}</td>
+      <td><span class="status ${suspended ? "suspended" : status}">${safe(status.toUpperCase())}</span></td>
+      <td>${formatDate(user.createdAt || user.created_at)}</td>
+      <td>
+        <button class="view user-view" data-id="${user.id}">VIEW</button>
+        <button class="user-action ${suspended ? "reactivate" : "suspend"}" data-id="${user.id}" data-status="${status}">
+          ${suspended ? "REACTIVATE" : "SUSPEND"}
+        </button>
+      </td>
     </tr>`;
   }).join("");
 
   body.querySelectorAll(".user-view").forEach(button => {
-    button.addEventListener("click", () => openUser(button.dataset.id));
+    button.addEventListener("click", event => {
+      event.stopPropagation();
+      openUser(button.dataset.id);
+    });
+  });
+
+  body.querySelectorAll(".user-row").forEach(row => {
+    row.addEventListener("click", event => {
+      if (event.target.closest("button")) return;
+      openUser(row.dataset.userId);
+    });
+  });
+
+  body.querySelectorAll(".user-action").forEach(button => {
+    button.addEventListener("click", async event => {
+      event.stopPropagation();
+      const id = button.dataset.id;
+      const isSuspended = button.dataset.status === "suspended";
+
+      try {
+        if (isSuspended) {
+          if (!confirm("Reactivate this user account?")) return;
+          await request(`/api/admin/users/${id}/reactivate`, { method: "PATCH" });
+        } else {
+          const reason = prompt("Suspension reason (optional):");
+          if (reason === null) return;
+          if (!confirm("Suspend this user account?")) return;
+          await request(`/api/admin/users/${id}/suspend`, {
+            method: "PATCH",
+            body: JSON.stringify({ suspensionReason: reason.trim() })
+          });
+        }
+        await loadUsers();
+      } catch (error) {
+        alert(error.message || "Unable to update user status.");
+      }
+    });
   });
 }
-
 async function loadUsers() {
   document.getElementById("userBody").innerHTML =
     '<tr><td colspan="7" class="loading">Loading users...</td></tr>';
@@ -635,10 +652,16 @@ async function openUser(id) {
       detail("Selected Profile Tier", `Tier ${safe(user.selectedProfileTier)}`),
       detail("Highest Unlocked Tier", `Tier ${safe(user.highestUnlockedTier)}`),
       detail("Referral Code", user.referralCode),
+      detail("Suspension Reason", user.suspensionReason || "—"),
+      detail("Suspended At", user.suspendedAt ? formatDate(user.suspendedAt) : "—"),
       detail("Joined", formatDate(user.createdAt))
     ].join("");
 
-    showModalNotice("User information is read-only.");
+    showModalNotice(
+      status === "suspended"
+        ? `Suspended${user.suspensionReason ? `: ${user.suspensionReason}` : ""}`
+        : "Account is active."
+    );
   } catch (error) {
     document.getElementById("detailGrid").innerHTML =
       `<div class="empty" style="grid-column:1/-1">${safe(error.message)}</div>`;
@@ -878,124 +901,6 @@ if (!adminToken()) {
   setStatsContext("withdrawals");
   loadWithdrawals();
 }
-
-/* ===== USER SUSPENSION MANAGEMENT ===== */
-let adminUsers = [];
-
-function adminAccountStatus(user) {
-  return String(user.accountStatus || user.account_status || "ACTIVE").toUpperCase() === "SUSPENDED"
-    ? "SUSPENDED" : "ACTIVE";
-}
-
-function renderAdminUsers() {
-  const body = document.getElementById("userBody");
-  if (!body) return;
-
-  const search = (document.getElementById("userSearchInput")?.value || "").trim().toLowerCase();
-  const filter = document.getElementById("userStatusFilter")?.value || "";
-
-  const rows = adminUsers.filter(user => {
-    const hay = [user.id, user.username, user.nickname, user.name, user.email].join(" ").toLowerCase();
-    return (!search || hay.includes(search)) &&
-      (!filter || adminAccountStatus(user) === filter);
-  });
-
-  if (!rows.length) {
-    body.innerHTML = '<tr><td colspan="6" class="empty">No users found.</td></tr>';
-    return;
-  }
-
-  body.innerHTML = rows.map(user => {
-    const status = adminAccountStatus(user);
-    const suspended = status === "SUSPENDED";
-    const balance = user.balanceUSDT ?? user.balance_usdt ?? 0;
-    const reason = user.suspensionReason || user.suspension_reason || "—";
-    return `<tr>
-      <td><strong>#${safe(user.id)}</strong><div class="sub">${safe(user.username || user.nickname || user.name || "—")}</div></td>
-      <td>${safe(user.email || "—")}</td>
-      <td class="amount">${money(balance)}</td>
-      <td><span class="status ${suspended ? "suspended" : "active"}">${status}</span></td>
-      <td>${safe(reason)}</td>
-      <td><button class="user-action ${suspended ? "reactivate" : "suspend"}" data-user-id="${user.id}" data-user-status="${status}">${suspended ? "REACTIVATE" : "SUSPEND"}</button></td>
-    </tr>`;
-  }).join("");
-
-  body.querySelectorAll(".user-action").forEach(btn => {
-    btn.addEventListener("click", () => changeAdminUserStatus(btn.dataset.userId, btn.dataset.userStatus));
-  });
-}
-
-async function loadAdminUsers() {
-  const body = document.getElementById("userBody");
-  if (body) body.innerHTML = '<tr><td colspan="6" class="loading">Loading users...</td></tr>';
-  try {
-    const data = await request("/api/admin/users");
-    adminUsers = Array.isArray(data?.users) ? data.users : (Array.isArray(data?.data) ? data.data : []);
-    renderAdminUsers();
-  } catch (error) {
-    if (body) body.innerHTML = `<tr><td colspan="6" class="empty">${safe(error.message || "Unable to load users.")}</td></tr>`;
-  }
-}
-
-async function changeAdminUserStatus(userId, status) {
-  const isSuspended = status === "SUSPENDED";
-
-  if (isSuspended) {
-    if (!confirm("Reactivate this user account?")) return;
-    try {
-      await request(`/api/admin/users/${userId}/reactivate`, { method: "PATCH" });
-      await loadAdminUsers();
-    } catch (error) {
-      alert(error.message || "Unable to reactivate user.");
-    }
-    return;
-  }
-
-  const reason = prompt("Suspension reason (optional):");
-  if (reason === null) return;
-  if (!confirm("Suspend this user account?")) return;
-
-  try {
-    await request(`/api/admin/users/${userId}/suspend`, {
-      method: "PATCH",
-      body: JSON.stringify({ suspensionReason: reason.trim() })
-    });
-    await loadAdminUsers();
-  } catch (error) {
-    alert(error.message || "Unable to suspend user.");
-  }
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  const usersTab = document.getElementById("usersTab");
-  const withdrawalsTab = document.getElementById("withdrawalsTab");
-  const depositsTab = document.getElementById("depositsTab");
-  const usersSection = document.getElementById("usersSection");
-  const withdrawalsSection = document.getElementById("withdrawalsSection");
-  const depositsSection = document.getElementById("depositsSection");
-
-  function showUsersOnly() {
-    usersTab?.classList.add("active");
-    withdrawalsTab?.classList.remove("active");
-    depositsTab?.classList.remove("active");
-    usersSection?.classList.add("active");
-    withdrawalsSection?.classList.remove("active");
-    depositsSection?.classList.remove("active");
-    loadAdminUsers();
-  }
-
-  usersTab?.addEventListener("click", showUsersOnly);
-  document.getElementById("refreshUsersButton")?.addEventListener("click", loadAdminUsers);
-  document.getElementById("userSearchInput")?.addEventListener("input", renderAdminUsers);
-  document.getElementById("userStatusFilter")?.addEventListener("change", renderAdminUsers);
-  document.getElementById("clearUserFilters")?.addEventListener("click", () => {
-    document.getElementById("userSearchInput").value = "";
-    document.getElementById("userStatusFilter").value = "";
-    renderAdminUsers();
-  });
-});
-/* ===== END USER SUSPENSION MANAGEMENT ===== */
-
 </script>
 </body>
 </html>
