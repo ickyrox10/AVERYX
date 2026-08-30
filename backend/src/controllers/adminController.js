@@ -870,6 +870,9 @@ async function getAdminUsers(req, res) {
                 u.phone,
                 u.referral_code,
                 u.is_active,
+                u.account_status,
+                u.suspended_at,
+                u.suspension_reason,
                 u.created_at,
 
                 COALESCE(
@@ -938,6 +941,9 @@ async function getAdminUserById(req, res) {
                 u.phone,
                 u.referral_code,
                 u.is_active,
+                u.account_status,
+                u.suspended_at,
+                u.suspension_reason,
                 u.created_at,
 
                 COALESCE(
