@@ -7,7 +7,9 @@ const {
     completeAdminWithdrawal,
     failAdminWithdrawal,
     getAdminDeposits,
-    getAdminDepositById
+    getAdminDepositById,
+    getAdminUsers,
+    getAdminUserById
 } = require("../controllers/adminController");
 
 const {
@@ -65,6 +67,20 @@ router.get(
     "/deposits/:id",
     authenticateAdmin,
     getAdminDepositById
+);
+
+
+/* Protected admin user monitoring - read-only */
+router.get(
+    "/users",
+    authenticateAdmin,
+    getAdminUsers
+);
+
+router.get(
+    "/users/:id",
+    authenticateAdmin,
+    getAdminUserById
 );
 
 

@@ -56,8 +56,45 @@ function toDeposit(row) {
 }
 
 
+
+function toAdminUser(row) {
+    return {
+        id: row.id,
+        publicUid: row.public_uid || null,
+        nickname: row.nickname || null,
+        email: row.email || null,
+        phone: row.phone || null,
+        referralCode: row.referral_code || null,
+        isActive: row.is_active === true,
+
+        balanceUSDT:
+            row.balance_usdt === null
+                ? 0
+                : Number(row.balance_usdt),
+
+        withdrawableUSDT:
+            row.withdrawable_usdt === null
+                ? 0
+                : Number(row.withdrawable_usdt),
+
+        highestUnlockedTier:
+            row.highest_unlocked_tier === null
+                ? 1
+                : Number(row.highest_unlocked_tier),
+
+        selectedProfileTier:
+            row.selected_profile_tier === null
+                ? 1
+                : Number(row.selected_profile_tier),
+
+        createdAt: row.created_at
+    };
+}
+
+
 /* ==================================================
    ADMIN LOGIN
+
 ================================================== */
 
 async function adminLogin(req, res) {
@@ -756,6 +793,166 @@ async function getAdminDepositById(req, res) {
 }
 
 
+/* ==================================================
+   GET ALL USERS - READ ONLY
+================================================== */
+
+async function getAdminUsers(req, res) {
+    try {
+        const result = await pool.query(
+            `
+            SELECT
+                u.id,
+                u.public_uid,
+                u.nickname,
+                u.email,
+                u.phone,
+                u.referral_code,
+                u.is_active,
+                u.created_at,
+
+                COALESCE(
+                    w.balance_usdt,
+                    0
+                ) AS balance_usdt,
+
+                COALESCE(
+                    w.withdrawable_usdt,
+                    0
+                ) AS withdrawable_usdt,
+
+                COALESCE(
+                    p.highest_unlocked_tier,
+                    1
+                ) AS highest_unlocked_tier,
+
+                COALESCE(
+                    p.selected_profile_tier,
+                    1
+                ) AS selected_profile_tier
+
+            FROM users u
+
+            LEFT JOIN wallets w
+                ON w.user_id = u.id
+
+            LEFT JOIN profiles p
+                ON p.user_id = u.id
+
+            ORDER BY u.created_at DESC
+            `
+        );
+
+        return res.status(200).json({
+            success: true,
+            users: result.rows.map(toAdminUser)
+        });
+
+    } catch (error) {
+        console.error(
+            "Get admin users error:",
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            message: "Unable to load users."
+        });
+    }
+}
+
+
+/* ==================================================
+   GET ONE USER - READ ONLY
+================================================== */
+
+async function getAdminUserById(req, res) {
+    try {
+        const userId = Number(req.params.id);
+
+        if (
+            !Number.isInteger(userId) ||
+            userId <= 0
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid user ID."
+            });
+        }
+
+        const result = await pool.query(
+            `
+            SELECT
+                u.id,
+                u.public_uid,
+                u.nickname,
+                u.email,
+                u.phone,
+                u.referral_code,
+                u.is_active,
+                u.created_at,
+
+                COALESCE(
+                    w.balance_usdt,
+                    0
+                ) AS balance_usdt,
+
+                COALESCE(
+                    w.withdrawable_usdt,
+                    0
+                ) AS withdrawable_usdt,
+
+                COALESCE(
+                    p.highest_unlocked_tier,
+                    1
+                ) AS highest_unlocked_tier,
+
+                COALESCE(
+                    p.selected_profile_tier,
+                    1
+                ) AS selected_profile_tier
+
+            FROM users u
+
+            LEFT JOIN wallets w
+                ON w.user_id = u.id
+
+            LEFT JOIN profiles p
+                ON p.user_id = u.id
+
+            WHERE u.id = $1
+
+            LIMIT 1
+            `,
+            [userId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found."
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            user: toAdminUser(result.rows[0])
+        });
+
+    } catch (error) {
+        console.error(
+            "Get admin user error:",
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            message: "Unable to load user."
+        });
+    }
+}
+
+
 module.exports = {
     adminLogin,
     getAdminWithdrawals,
@@ -763,5 +960,7 @@ module.exports = {
     completeAdminWithdrawal,
     failAdminWithdrawal,
     getAdminDeposits,
-    getAdminDepositById
+    getAdminDepositById,
+    getAdminUsers,
+    getAdminUserById
 };
