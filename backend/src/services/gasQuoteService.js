@@ -17,7 +17,7 @@ const { ethers } = require("ethers");
 const DEFAULT_MARGIN_PERCENTAGES = {
     BEP20: 3500,
     POLYGON: 3500,
-    ERC20: 30
+    ERC20: 3500
 };
 
 
