@@ -57,7 +57,45 @@ function toDeposit(row) {
 
 
 
+function calculateTierFromBalance(value) {
+    const balance = Math.max(
+        0,
+        Number(value) || 0
+    );
+
+    const tiers = [
+        { level: 1, name: "The Fool", deposit: 0 },
+        { level: 2, name: "The Prodigy", deposit: 3.5 },
+        { level: 3, name: "The Magician", deposit: 16 },
+        { level: 4, name: "The Conqueror", deposit: 60 },
+        { level: 5, name: "The Emperor", deposit: 165 },
+        { level: 6, name: "The Shadow Monarch", deposit: 550 },
+        { level: 7, name: "The Berserk", deposit: 1440 }
+    ];
+
+    let currentTier = tiers[0];
+
+    for (const tier of tiers) {
+        if (balance >= tier.deposit) {
+            currentTier = tier;
+        }
+    }
+
+    return currentTier;
+}
+
+
 function toAdminUser(row) {
+    const balanceUSDT =
+        row.balance_usdt === null
+            ? 0
+            : Number(row.balance_usdt);
+
+    const tier =
+        calculateTierFromBalance(
+            balanceUSDT
+        );
+
     return {
         id: row.id,
         publicUid: row.public_uid || null,
@@ -67,25 +105,22 @@ function toAdminUser(row) {
         referralCode: row.referral_code || null,
         isActive: row.is_active === true,
 
-        balanceUSDT:
-            row.balance_usdt === null
-                ? 0
-                : Number(row.balance_usdt),
+        balanceUSDT,
 
         withdrawableUSDT:
             row.withdrawable_usdt === null
                 ? 0
                 : Number(row.withdrawable_usdt),
 
-        highestUnlockedTier:
-            row.highest_unlocked_tier === null
-                ? 1
-                : Number(row.highest_unlocked_tier),
-
-        selectedProfileTier:
-            row.selected_profile_tier === null
-                ? 1
-                : Number(row.selected_profile_tier),
+        /*
+           The working user-facing tier pages calculate
+           the real unlocked tier from live wallet balance.
+           Do the same here instead of trusting profile
+           fields that may be stale or only local.
+        */
+        currentTier: tier.level,
+        currentTierName: tier.name,
+        currentTierDepositRequirement: tier.deposit,
 
         createdAt: row.created_at
     };
@@ -819,25 +854,12 @@ async function getAdminUsers(req, res) {
                 COALESCE(
                     w.withdrawable_usdt,
                     0
-                ) AS withdrawable_usdt,
-
-                COALESCE(
-                    p.highest_unlocked_tier,
-                    1
-                ) AS highest_unlocked_tier,
-
-                COALESCE(
-                    p.selected_profile_tier,
-                    1
-                ) AS selected_profile_tier
+                ) AS withdrawable_usdt
 
             FROM users u
 
             LEFT JOIN wallets w
                 ON w.user_id = u.id
-
-            LEFT JOIN profiles p
-                ON p.user_id = u.id
 
             ORDER BY u.created_at DESC
             `
@@ -900,25 +922,12 @@ async function getAdminUserById(req, res) {
                 COALESCE(
                     w.withdrawable_usdt,
                     0
-                ) AS withdrawable_usdt,
-
-                COALESCE(
-                    p.highest_unlocked_tier,
-                    1
-                ) AS highest_unlocked_tier,
-
-                COALESCE(
-                    p.selected_profile_tier,
-                    1
-                ) AS selected_profile_tier
+                ) AS withdrawable_usdt
 
             FROM users u
 
             LEFT JOIN wallets w
                 ON w.user_id = u.id
-
-            LEFT JOIN profiles p
-                ON p.user_id = u.id
 
             WHERE u.id = $1
 
