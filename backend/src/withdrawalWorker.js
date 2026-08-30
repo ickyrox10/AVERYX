@@ -863,6 +863,127 @@ async function sendTrc20UsdtWithdrawal(withdrawal) {
 
 
 /* ==================================================
+   RECONCILE BROADCASTED EVM WITHDRAWALS
+
+   A transaction can be successfully broadcast and later
+   confirm after the original confirmation wait times out.
+   Broadcasted rows are therefore checked again on later
+   worker cycles and marked completed once an on-chain
+   successful receipt is available.
+================================================== */
+
+async function reconcileBroadcastedWithdrawals() {
+    const result = await pool.query(
+        `
+        SELECT
+            id,
+            network,
+            tx_hash
+        FROM transactions
+        WHERE
+            type = 'withdrawal'
+            AND LOWER(status) = 'broadcasted'
+            AND tx_hash IS NOT NULL
+            AND BTRIM(tx_hash) <> ''
+            AND UPPER(network) IN ('BEP20', 'ERC20', 'POLYGON')
+        ORDER BY created_at ASC
+        LIMIT 20
+        `
+    );
+
+    for (const withdrawal of result.rows) {
+        const network =
+            normalizeNetwork(
+                withdrawal.network
+            );
+
+        try {
+            const provider =
+                getProvider(
+                    network
+                );
+
+            const receipt =
+                await provider.getTransactionReceipt(
+                    withdrawal.tx_hash
+                );
+
+            /*
+               No receipt yet means the transaction is still
+               pending or the RPC has not indexed it yet.
+               Keep the withdrawal safely broadcasted.
+            */
+            if (!receipt) {
+                continue;
+            }
+
+            /*
+               Only a successful on-chain transaction is
+               automatically marked completed here.
+               Reverted broadcasts remain broadcasted for
+               explicit investigation rather than risking an
+               unsafe automatic balance change.
+            */
+            if (
+                Number(
+                    receipt.status
+                ) !== 1
+            ) {
+
+                console.error(
+                    "[Withdrawal Worker] Broadcasted transaction has a non-success receipt and requires review:",
+                    {
+                        id: withdrawal.id,
+                        network,
+                        txHash: withdrawal.tx_hash,
+                        receiptStatus:
+                            Number(
+                                receipt.status
+                            )
+                    }
+                );
+
+                continue;
+            }
+
+            const completed =
+                await markWithdrawalCompleted(
+                    withdrawal.id,
+                    withdrawal.tx_hash
+                );
+
+            if (completed) {
+                console.log(
+                    "[Withdrawal Worker] Broadcasted withdrawal reconciled and marked completed:",
+                    {
+                        id: withdrawal.id,
+                        network,
+                        txHash:
+                            withdrawal.tx_hash
+                    }
+                );
+            }
+
+        } catch (error) {
+
+            console.error(
+                "[Withdrawal Worker] Broadcast reconciliation error:",
+                {
+                    id: withdrawal.id,
+                    network,
+                    txHash:
+                        withdrawal.tx_hash,
+                    error:
+                        error.message
+                }
+            );
+
+        }
+    }
+}
+
+
+/* ==================================================
    PROCESS ONE WITHDRAWAL
 ================================================== */
 
@@ -938,6 +1059,14 @@ async function runWithdrawalWorker() {
 
             return;
         }
+
+        /*
+           Reconcile already-broadcasted EVM withdrawals first.
+           This safely completes transactions that confirmed
+           after the original confirmation wait timed out.
+        */
+        await reconcileBroadcastedWithdrawals();
+
 
         let targetWithdrawalId = null;
 
@@ -1057,6 +1186,7 @@ module.exports = {
     failWithdrawalBeforeBroadcast,
     persistBroadcast,
     markWithdrawalCompleted,
+    reconcileBroadcastedWithdrawals,
     processWithdrawal,
     sendEvmUsdtWithdrawal,
     sendTrc20UsdtWithdrawal
