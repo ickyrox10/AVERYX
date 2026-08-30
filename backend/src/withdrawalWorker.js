@@ -179,7 +179,7 @@ async function getPendingWithdrawals() {
             AND LOWER(status) = 'pending'
             AND tx_hash IS NULL
             AND network IS NOT NULL
-            AND UPPER(network) IN ('BEP20', 'ERC20', 'POLYGON', 'TRC20')
+            AND UPPER(network) IN ('BEP20', 'ERC20', 'POLYGON')
             AND to_address IS NOT NULL
             AND BTRIM(to_address) <> ''
             AND recipient_amount_usdt IS NOT NULL
@@ -213,7 +213,7 @@ async function claimNextPendingWithdrawal(targetWithdrawalId = null) {
                     AND LOWER(status) = 'pending'
                     AND tx_hash IS NULL
                     AND network IS NOT NULL
-                    AND UPPER(network) IN ('BEP20', 'ERC20', 'POLYGON', 'TRC20')
+                    AND UPPER(network) IN ('BEP20', 'ERC20', 'POLYGON')
                     AND to_address IS NOT NULL
                     AND BTRIM(to_address) <> ''
                     AND recipient_amount_usdt IS NOT NULL
@@ -664,7 +664,7 @@ async function sendEvmUsdtWithdrawal(withdrawal) {
 
 
 /* ==================================================
-   TRC20 SENDER
+   TRC20 SENDER (LEGACY / NOT USED BY WORKER)
 ================================================== */
 
 function getTronWebConstructor() {
@@ -898,7 +898,19 @@ async function processWithdrawal(withdrawal) {
     }
 
     if (network === "TRC20") {
-        return sendTrc20UsdtWithdrawal(withdrawal);
+        /*
+           TRC20 is intentionally manual.
+
+           The withdrawal worker must never broadcast a TRC20 transaction.
+           TRC20 requests remain in the database with status = pending until
+           an administrator manually sends the transfer and records the tx hash.
+        */
+        return {
+            success: false,
+            manual: true,
+            keepPending: true,
+            reason: "TRC20 withdrawals are processed manually and must remain pending."
+        };
     }
 
     throw new Error(`Unsupported withdrawal network: ${network}`);
