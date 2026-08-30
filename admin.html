@@ -20,7 +20,13 @@ button{cursor:pointer}
 .welcome{padding:29px 2px 21px}.eyebrow{color:var(--muted);font-size:10px;letter-spacing:2.4px;text-transform:uppercase}
 h1{margin-top:7px;font-family:Georgia,serif;font-size:clamp(34px,7vw,48px)}.welcome p{margin-top:8px;color:var(--muted);font-size:12px;line-height:1.6}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.stat{padding:18px 14px;border:1px solid var(--border);border-radius:16px;background:var(--panel);text-align:center}.stat-value{font-family:Georgia,serif;font-size:26px}.stat-label{margin-top:6px;color:var(--soft);font-size:8px;letter-spacing:.7px;text-transform:uppercase}
-.section{margin-top:27px}.section-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:12px}.section-title{font-family:Georgia,serif;font-size:24px}.refresh{height:38px;padding:0 13px;border:1px solid var(--border);border-radius:9px;background:transparent;color:var(--muted);font-size:10px}.refresh:hover{background:#15151a;color:#fff}
+.section{margin-top:27px}
+.panel-tabs{display:flex;gap:8px;margin-top:25px;margin-bottom:4px;flex-wrap:wrap}
+.panel-tab{height:40px;padding:0 16px;border:1px solid var(--border);border-radius:10px;background:transparent;color:var(--muted);font-size:10px;font-weight:700}
+.panel-tab:hover{background:#15151a;color:#fff}
+.panel-tab.active{border-color:rgba(229,34,73,.45);background:rgba(229,34,73,.08);color:#fff}
+.admin-panel-section{display:none}
+.admin-panel-section.active{display:block}.section-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:12px}.section-title{font-family:Georgia,serif;font-size:24px}.refresh{height:38px;padding:0 13px;border:1px solid var(--border);border-radius:9px;background:transparent;color:var(--muted);font-size:10px}.refresh:hover{background:#15151a;color:#fff}
 .filters{display:grid;grid-template-columns:1.2fr 1fr 1fr auto;gap:10px;margin-bottom:12px}.control{height:46px;width:100%;padding:0 12px;border:1px solid var(--border);border-radius:10px;background:var(--panel);color:var(--text);outline:none;font-size:11px}.control:focus{border-color:rgba(229,34,73,.65)}
 .table-wrap{overflow:auto;border:1px solid var(--border);border-radius:17px;background:var(--panel)}table{width:100%;border-collapse:collapse;min-width:850px}th{padding:13px 15px;color:var(--soft);font-size:8px;letter-spacing:1px;text-transform:uppercase;text-align:left;background:#0d0d11}td{padding:14px 15px;border-top:1px solid var(--border-soft);font-size:10px;vertical-align:middle}.amount{font-family:Georgia,serif;font-size:15px}.sub{margin-top:4px;color:var(--soft);font-size:8px}.status{display:inline-flex;padding:5px 8px;border-radius:6px;font-size:7px;letter-spacing:.8px;text-transform:uppercase}.status.pending{color:var(--orange);background:rgba(230,168,77,.10);border:1px solid rgba(230,168,77,.18)}.status.completed{color:var(--green);background:rgba(66,201,152,.08);border:1px solid rgba(66,201,152,.16)}.status.failed{color:#ff6682;background:rgba(229,34,73,.08);border:1px solid rgba(229,34,73,.16)}.view{height:33px;padding:0 11px;border:1px solid var(--border);border-radius:8px;background:transparent;color:#ddd;font-size:9px}.view:hover{border-color:rgba(229,34,73,.5);background:rgba(229,34,73,.06)}
 .empty{padding:34px 18px;color:var(--soft);text-align:center;font-size:11px}.loading{padding:34px 18px;color:var(--muted);text-align:center;font-size:11px}
@@ -54,7 +60,12 @@ h1{margin-top:7px;font-family:Georgia,serif;font-size:clamp(34px,7vw,48px)}.welc
     <div class="stat"><div id="failedCount" class="stat-value">0</div><div class="stat-label">Failed</div></div>
   </section>
 
-  <section class="section">
+  <div class="panel-tabs">
+    <button id="withdrawalsTab" class="panel-tab active" type="button">WITHDRAWALS</button>
+    <button id="depositsTab" class="panel-tab" type="button">DEPOSITS</button>
+  </div>
+
+  <section id="withdrawalsSection" class="section admin-panel-section active">
     <div class="section-head">
       <div class="section-title">Withdrawals</div>
       <button id="refreshButton" class="refresh">REFRESH</button>
@@ -79,6 +90,38 @@ h1{margin-top:7px;font-family:Georgia,serif;font-size:clamp(34px,7vw,48px)}.welc
     </div>
   </section>
 </main>
+
+  <section id="depositsSection" class="section admin-panel-section">
+    <div class="section-head">
+      <div class="section-title">Deposits</div>
+      <button id="refreshDepositsButton" class="refresh" type="button">REFRESH</button>
+    </div>
+
+    <div class="filters">
+      <input id="depositSearchInput" class="control search" placeholder="Search ID, user, email, hash or address">
+      <select id="depositStatusFilter" class="control">
+        <option value="">All Statuses</option>
+        <option value="pending">Pending</option>
+        <option value="completed">Completed</option>
+        <option value="failed">Failed</option>
+      </select>
+      <select id="depositNetworkFilter" class="control">
+        <option value="">All Networks</option>
+        <option value="BEP20">BEP20</option>
+        <option value="ERC20">ERC20</option>
+        <option value="POLYGON">Polygon</option>
+        <option value="TRC20">TRC20</option>
+      </select>
+      <button id="clearDepositFilters" class="refresh" type="button">CLEAR</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>ID / User</th><th>Amount</th><th>Network</th><th>Status</th><th>Created</th><th>Action</th></tr></thead>
+        <tbody id="depositBody"><tr><td colspan="6" class="loading">Deposits will load when opened...</td></tr></tbody>
+      </table>
+    </div>
+  </section>
 
 <div id="modalBackdrop" class="modal-backdrop">
   <section class="modal" role="dialog" aria-modal="true">
@@ -106,9 +149,10 @@ const API_BASE_URL =
 
 const ADMIN_TOKEN_KEY = "averyx_admin_token";
 let withdrawals = [];
+let deposits = [];
 let selectedWithdrawal = null;
 
-function adminToken() { return sessionStorage.getItem(ADMIN_TOKEN_KEY) || ""; }
+function adminToken() { return localStorage.getItem(ADMIN_TOKEN_KEY) || ""; }
 function money(value) { return `${(Number(value) || 0).toFixed(6).replace(/\.?0+$/, "")} USDT`; }
 function safe(value) { return value === null || value === undefined || value === "" ? "—" : String(value); }
 function formatDate(value) { try { return value ? new Date(value).toLocaleString() : "—"; } catch (_) { return "—"; } }
@@ -140,7 +184,7 @@ async function request(endpoint, options = {}) {
   try { data = await response.json(); } catch (_) {}
 
   if (response.status === 401 || response.status === 403) {
-    sessionStorage.removeItem(ADMIN_TOKEN_KEY);
+    localStorage.removeItem(ADMIN_TOKEN_KEY);
     window.location.replace("admin-login.html");
     return null;
   }
@@ -213,6 +257,7 @@ async function openWithdrawal(id) {
   showModalNotice("");
   document.getElementById("modalBackdrop").classList.add("show");
   document.getElementById("detailGrid").innerHTML = '<div class="loading" style="grid-column:1/-1">Loading withdrawal details...</div>';
+  document.getElementById("txHashInput").parentElement.style.display = "block";
   document.getElementById("actionButtons").style.display = "none";
 
   try {
@@ -262,6 +307,141 @@ function setActionLoading(loading) {
   document.getElementById("completeButton").disabled = loading;
   document.getElementById("failButton").disabled = loading;
 }
+
+
+
+function filteredDeposits() {
+  const search = document.getElementById("depositSearchInput").value.trim().toLowerCase();
+  const status = document.getElementById("depositStatusFilter").value;
+  const network = document.getElementById("depositNetworkFilter").value;
+
+  return deposits.filter(deposit => {
+    const depositStatus = normalizedStatus(deposit.status);
+    const statusMatch = !status || depositStatus === status;
+    const networkMatch = !network || String(deposit.network || "").toUpperCase() === network;
+    const haystack = [
+      deposit.id, deposit.userId, deposit.nickname, deposit.email,
+      deposit.txHash, deposit.toAddress, deposit.fromAddress, deposit.reference
+    ].join(" ").toLowerCase();
+
+    return statusMatch && networkMatch && (!search || haystack.includes(search));
+  });
+}
+
+function renderDeposits() {
+  const body = document.getElementById("depositBody");
+  const rows = filteredDeposits();
+
+  if (!rows.length) {
+    body.innerHTML = '<tr><td colspan="6" class="empty">No deposits match the current filters.</td></tr>';
+    return;
+  }
+
+  body.innerHTML = rows.map(deposit => {
+    const status = normalizedStatus(deposit.status);
+    return `<tr>
+      <td><strong>#${safe(deposit.id)}</strong><div class="sub">${safe(deposit.nickname || deposit.email || `User ${deposit.userId}`)}</div></td>
+      <td><div class="amount">${money(deposit.amountUSDT)}</div></td>
+      <td>${networkName(deposit.network)}</td>
+      <td><span class="status ${status}">${status}</span></td>
+      <td>${formatDate(deposit.createdAt)}</td>
+      <td><button class="view deposit-view" data-id="${deposit.id}">VIEW</button></td>
+    </tr>`;
+  }).join("");
+
+  body.querySelectorAll(".deposit-view").forEach(button => {
+    button.addEventListener("click", () => openDeposit(button.dataset.id));
+  });
+}
+
+async function loadDeposits() {
+  document.getElementById("depositBody").innerHTML =
+    '<tr><td colspan="6" class="loading">Loading deposits...</td></tr>';
+
+  try {
+    const data = await request("/api/admin/deposits");
+    if (!data) return;
+
+    deposits = Array.isArray(data.deposits) ? data.deposits : [];
+    renderDeposits();
+  } catch (error) {
+    document.getElementById("depositBody").innerHTML =
+      `<tr><td colspan="6" class="empty">${safe(error.message)}</td></tr>`;
+  }
+}
+
+async function openDeposit(id) {
+  showModalNotice("");
+  selectedWithdrawal = null;
+
+  document.getElementById("modalBackdrop").classList.add("show");
+  document.getElementById("detailGrid").innerHTML =
+    '<div class="loading" style="grid-column:1/-1">Loading deposit details...</div>';
+
+  document.getElementById("actionButtons").style.display = "none";
+  document.getElementById("txHashInput").parentElement.style.display = "none";
+
+  try {
+    const data = await request(`/api/admin/deposits/${id}`);
+    if (!data) return;
+
+    const deposit = data.deposit;
+    const status = normalizedStatus(deposit.status);
+
+    document.getElementById("modalTitle").textContent = `Deposit #${deposit.id}`;
+    document.getElementById("modalSub").textContent =
+      `${networkName(deposit.network)} • ${status.toUpperCase()}`;
+
+    document.getElementById("detailGrid").innerHTML = [
+      detail("User", deposit.nickname || `User ${deposit.userId}`),
+      detail("Email", deposit.email),
+      detail("Amount", money(deposit.amountUSDT)),
+      detail("Network", networkName(deposit.network)),
+      detail("Status", status.toUpperCase()),
+      detail("Created", formatDate(deposit.createdAt)),
+      detail("Transaction Hash", deposit.txHash, true),
+      detail("From Address", deposit.fromAddress, true),
+      detail("Deposit Address", deposit.toAddress, true),
+      detail("Reference", deposit.reference, true)
+    ].join("");
+
+    showModalNotice("Deposit information is read-only.");
+  } catch (error) {
+    document.getElementById("detailGrid").innerHTML =
+      `<div class="empty" style="grid-column:1/-1">${safe(error.message)}</div>`;
+  }
+}
+
+function showAdminSection(section) {
+  const showingDeposits = section === "deposits";
+
+  document.getElementById("withdrawalsTab").classList.toggle("active", !showingDeposits);
+  document.getElementById("depositsTab").classList.toggle("active", showingDeposits);
+  document.getElementById("withdrawalsSection").classList.toggle("active", !showingDeposits);
+  document.getElementById("depositsSection").classList.toggle("active", showingDeposits);
+
+  if (showingDeposits) loadDeposits();
+}
+
+document.getElementById("withdrawalsTab").addEventListener("click", () => showAdminSection("withdrawals"));
+document.getElementById("depositsTab").addEventListener("click", () => showAdminSection("deposits"));
+
+["depositSearchInput", "depositStatusFilter", "depositNetworkFilter"].forEach(id => {
+  document.getElementById(id).addEventListener(
+    id === "depositSearchInput" ? "input" : "change",
+    renderDeposits
+  );
+});
+
+document.getElementById("clearDepositFilters").addEventListener("click", () => {
+  document.getElementById("depositSearchInput").value = "";
+  document.getElementById("depositStatusFilter").value = "";
+  document.getElementById("depositNetworkFilter").value = "";
+  renderDeposits();
+});
+
+document.getElementById("refreshDepositsButton").addEventListener("click", loadDeposits);
+
 
 document.getElementById("completeButton").addEventListener("click", async () => {
   if (!selectedWithdrawal) return;
@@ -313,7 +493,7 @@ document.getElementById("clearFilters").addEventListener("click", () => {
 });
 document.getElementById("refreshButton").addEventListener("click", loadWithdrawals);
 document.getElementById("logoutButton").addEventListener("click", () => {
-  sessionStorage.removeItem(ADMIN_TOKEN_KEY);
+  localStorage.removeItem(ADMIN_TOKEN_KEY);
   window.location.replace("admin-login.html");
 });
 

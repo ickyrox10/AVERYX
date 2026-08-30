@@ -5,7 +5,9 @@ const {
     getAdminWithdrawals,
     getAdminWithdrawalById,
     completeAdminWithdrawal,
-    failAdminWithdrawal
+    failAdminWithdrawal,
+    getAdminDeposits,
+    getAdminDepositById
 } = require("../controllers/adminController");
 
 const {
@@ -50,6 +52,19 @@ router.patch(
     "/withdrawals/:id/fail",
     authenticateAdmin,
     failAdminWithdrawal
+);
+
+/* Protected admin deposit monitoring - read-only */
+router.get(
+    "/deposits",
+    authenticateAdmin,
+    getAdminDeposits
+);
+
+router.get(
+    "/deposits/:id",
+    authenticateAdmin,
+    getAdminDepositById
 );
 
 

@@ -38,6 +38,23 @@ function toWithdrawal(row) {
     };
 }
 
+function toDeposit(row) {
+    return {
+        id: row.id,
+        userId: row.user_id,
+        nickname: row.nickname || null,
+        email: row.email || null,
+        amountUSDT: row.amount_usdt === null ? null : Number(row.amount_usdt),
+        status: row.status,
+        reference: row.reference,
+        txHash: row.tx_hash,
+        network: row.network,
+        fromAddress: row.from_address,
+        toAddress: row.to_address,
+        createdAt: row.created_at
+    };
+}
+
 
 /* ==================================================
    ADMIN LOGIN
@@ -632,10 +649,119 @@ async function failAdminWithdrawal(req, res) {
 }
 
 
+/* ==================================================
+   GET ALL DEPOSITS - READ ONLY
+================================================== */
+
+async function getAdminDeposits(req, res) {
+    try {
+        const result = await pool.query(`
+            SELECT
+                t.id,
+                t.user_id,
+                u.nickname,
+                u.email,
+                t.amount_usdt,
+                t.status,
+                t.reference,
+                t.tx_hash,
+                t.network,
+                t.from_address,
+                t.to_address,
+                t.created_at
+            FROM transactions t
+            LEFT JOIN users u
+                ON u.id = t.user_id
+            WHERE LOWER(t.type) = 'deposit'
+            ORDER BY t.created_at DESC
+        `);
+
+        return res.status(200).json({
+            success: true,
+            deposits: result.rows.map(toDeposit)
+        });
+
+    } catch (error) {
+        console.error("Get admin deposits error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Unable to load deposits."
+        });
+    }
+}
+
+
+/* ==================================================
+   GET ONE DEPOSIT - READ ONLY
+================================================== */
+
+async function getAdminDepositById(req, res) {
+    try {
+        const depositId = Number(req.params.id);
+
+        if (!Number.isInteger(depositId) || depositId <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid deposit ID."
+            });
+        }
+
+        const result = await pool.query(
+            `
+            SELECT
+                t.id,
+                t.user_id,
+                u.nickname,
+                u.email,
+                t.amount_usdt,
+                t.status,
+                t.reference,
+                t.tx_hash,
+                t.network,
+                t.from_address,
+                t.to_address,
+                t.created_at
+            FROM transactions t
+            LEFT JOIN users u
+                ON u.id = t.user_id
+            WHERE
+                t.id = $1
+                AND LOWER(t.type) = 'deposit'
+            LIMIT 1
+            `,
+            [depositId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Deposit not found."
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            deposit: toDeposit(result.rows[0])
+        });
+
+    } catch (error) {
+        console.error("Get admin deposit error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Unable to load deposit."
+        });
+    }
+}
+
+
 module.exports = {
     adminLogin,
     getAdminWithdrawals,
     getAdminWithdrawalById,
     completeAdminWithdrawal,
-    failAdminWithdrawal
+    failAdminWithdrawal,
+    getAdminDeposits,
+    getAdminDepositById
 };
