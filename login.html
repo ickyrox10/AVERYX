@@ -553,6 +553,108 @@
         }
 
     </style>
+
+<!-- AVERYX Login Premium UI Enhancement: Authentication Logic Preserved -->
+<style>
+:root{
+    --login-line:rgba(255,255,255,.09);
+    --login-surface:rgba(255,255,255,.035);
+    --login-glow:rgba(229,34,73,.16);
+}
+
+body{
+    background:
+        radial-gradient(circle at 82% -8%,var(--login-glow),transparent 33%),
+        radial-gradient(circle at 5% 100%,rgba(255,255,255,.025),transparent 24%),
+        #050507 !important;
+}
+
+.login-card,
+.auth-card,
+.card,
+.login-box{
+    position:relative;
+    overflow:hidden;
+}
+
+.login-card::before,
+.auth-card::before,
+.login-box::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    background:linear-gradient(125deg,rgba(255,255,255,.035),transparent 42%);
+}
+
+.brand,
+.logo{
+    transition:transform .18s ease;
+}
+
+.brand:hover,
+.logo:hover{
+    transform:translateY(-1px);
+}
+
+input{
+    transition:
+        border-color .18s ease,
+        background .18s ease,
+        box-shadow .18s ease,
+        transform .18s ease !important;
+}
+
+input:hover{
+    background:rgba(255,255,255,.045);
+}
+
+input:focus{
+    border-color:rgba(229,34,73,.65) !important;
+    box-shadow:0 0 0 3px rgba(229,34,73,.10) !important;
+    background:rgba(255,255,255,.055) !important;
+}
+
+button,
+.login-btn,
+.primary-btn{
+    transition:
+        transform .16s ease,
+        filter .16s ease,
+        box-shadow .16s ease !important;
+}
+
+button:hover,
+.login-btn:hover,
+.primary-btn:hover{
+    transform:translateY(-1px);
+    filter:brightness(1.05);
+    box-shadow:0 10px 24px rgba(0,0,0,.22);
+}
+
+button:active,
+.login-btn:active,
+.primary-btn:active{
+    transform:scale(.985);
+}
+
+a{
+    transition:color .16s ease,opacity .16s ease;
+}
+
+a:hover{
+    opacity:.92;
+}
+
+@media(max-width:560px){
+    body{
+        background:
+            radial-gradient(circle at 85% -5%,rgba(229,34,73,.13),transparent 30%),
+            #050507 !important;
+    }
+}
+</style>
+
 </head>
 
 

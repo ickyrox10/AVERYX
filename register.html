@@ -699,6 +699,157 @@
 
     </style>
 
+
+<!-- AVERYX Register Premium UI Enhancement: Mechanism Preserved -->
+<style>
+:root{
+    --register-glow:rgba(229,34,73,.18);
+    --register-line:rgba(255,255,255,.09);
+    --register-surface:rgba(255,255,255,.035);
+}
+
+body{
+    background:
+        radial-gradient(circle at 82% -7%,var(--register-glow),transparent 33%),
+        radial-gradient(circle at 5% 92%,rgba(255,255,255,.025),transparent 24%),
+        #050507 !important;
+}
+
+.register-container,
+.register-card,
+.auth-card,
+.signup-card,
+.card{
+    position:relative;
+    overflow:hidden;
+}
+
+.register-card::before,
+.auth-card::before,
+.signup-card::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    background:
+        radial-gradient(circle at 100% 0%,rgba(229,34,73,.07),transparent 34%),
+        linear-gradient(125deg,rgba(255,255,255,.035),transparent 43%);
+}
+
+.brand,
+.logo{
+    transition:transform .18s ease;
+}
+
+.brand:hover,
+.logo:hover{
+    transform:translateY(-1px);
+}
+
+input,
+select{
+    transition:
+        border-color .18s ease,
+        background .18s ease,
+        box-shadow .18s ease,
+        transform .18s ease !important;
+}
+
+input:hover,
+select:hover{
+    background:rgba(255,255,255,.045);
+}
+
+input:focus,
+select:focus{
+    border-color:rgba(229,34,73,.65) !important;
+    box-shadow:0 0 0 3px rgba(229,34,73,.10) !important;
+    background:rgba(255,255,255,.055) !important;
+}
+
+input::placeholder{
+    color:rgba(255,255,255,.36);
+}
+
+label{
+    letter-spacing:.1px;
+}
+
+button,
+.register-btn,
+.primary-btn,
+.submit-btn{
+    transition:
+        transform .16s ease,
+        filter .16s ease,
+        box-shadow .16s ease !important;
+}
+
+button:hover,
+.register-btn:hover,
+.primary-btn:hover,
+.submit-btn:hover{
+    transform:translateY(-1px);
+    filter:brightness(1.06);
+    box-shadow:0 10px 24px rgba(0,0,0,.22);
+}
+
+button:active,
+.register-btn:active,
+.primary-btn:active,
+.submit-btn:active{
+    transform:scale(.985);
+}
+
+.password-wrap,
+.input-wrap,
+.field{
+    transition:transform .16s ease;
+}
+
+.password-wrap:focus-within,
+.input-wrap:focus-within{
+    transform:translateY(-1px);
+}
+
+a{
+    transition:color .16s ease,opacity .16s ease;
+}
+
+a:hover{
+    opacity:.92;
+}
+
+/* Make grouped registration fields easier to scan */
+.form-group,
+.field-group{
+    padding:2px 0;
+}
+
+/* Refined divider and helper areas */
+.divider,
+.terms,
+.login-link,
+.auth-footer{
+    border-color:var(--register-line);
+}
+
+/* Mobile refinement */
+@media(max-width:560px){
+    body{
+        background:
+            radial-gradient(circle at 86% -5%,rgba(229,34,73,.14),transparent 31%),
+            #050507 !important;
+    }
+
+    .register-container,
+    .container{
+        padding-left:15px;
+        padding-right:15px;
+    }
+}
+</style>
+
 </head>
 
 

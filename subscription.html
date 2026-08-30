@@ -986,6 +986,155 @@
             }
         }
     </style>
+
+    <!-- AVERYX Subscription Visual Polish -->
+    <style>
+        :root {
+            --sub-glow: rgba(229,34,73,.12);
+            --sub-surface: rgba(255,255,255,.035);
+            --sub-line: rgba(255,255,255,.09);
+        }
+
+        body {
+            background:
+                radial-gradient(circle at 78% -4%, var(--sub-glow), transparent 30%),
+                radial-gradient(circle at 12% 18%, rgba(255,255,255,.025), transparent 22%),
+                var(--bg);
+        }
+
+        .topbar {
+            border-bottom: 1px solid var(--sub-line);
+            background: linear-gradient(180deg, rgba(255,255,255,.018), transparent);
+        }
+
+        .subscription-profile {
+            border-radius: 18px;
+            transition: background .18s ease, transform .18s ease;
+        }
+
+        .subscription-profile:hover {
+            background: var(--sub-surface);
+            transform: translateY(-1px);
+        }
+
+        .header {
+            padding-top: 34px;
+            padding-bottom: 27px;
+        }
+
+        .header h1 {
+            letter-spacing: -.5px;
+            line-height: 1.08;
+        }
+
+        .current-tier,
+        .progress-card,
+        .tier-card,
+        .info-card {
+            border-color: var(--sub-line) !important;
+            box-shadow:
+                0 12px 30px rgba(0,0,0,.16),
+                inset 0 1px 0 rgba(255,255,255,.025);
+        }
+
+        .current-tier {
+            background:
+                linear-gradient(135deg, rgba(255,255,255,.055), rgba(255,255,255,.018));
+            overflow: hidden;
+        }
+
+        .progress-card {
+            background:
+                linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.018));
+        }
+
+        .progress-track {
+            box-shadow: inset 0 1px 4px rgba(0,0,0,.3);
+        }
+
+        .progress-fill {
+            box-shadow: 0 0 18px rgba(229,34,73,.2);
+        }
+
+        .tier-card {
+            transition:
+                transform .18s ease,
+                border-color .18s ease,
+                box-shadow .18s ease;
+        }
+
+        .tier-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(255,255,255,.16) !important;
+            box-shadow: 0 16px 34px rgba(0,0,0,.22);
+        }
+
+        .tier-card.selected,
+        .tier-card.active {
+            box-shadow:
+                0 16px 36px rgba(0,0,0,.24),
+                0 0 0 1px rgba(229,34,73,.12);
+        }
+
+        .tier-card button,
+        .tier-select,
+        .select-btn {
+            transition:
+                transform .16s ease,
+                filter .16s ease,
+                box-shadow .16s ease;
+        }
+
+        .tier-card button:hover,
+        .tier-select:hover,
+        .select-btn:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.05);
+            box-shadow: 0 8px 18px rgba(0,0,0,.18);
+        }
+
+        .tier-card button:active,
+        .tier-select:active,
+        .select-btn:active {
+            transform: scale(.985);
+        }
+
+        .bottom-nav {
+            border-top-color: var(--sub-line) !important;
+            backdrop-filter: blur(18px);
+            box-shadow: 0 -10px 28px rgba(0,0,0,.18);
+        }
+
+        .nav-item {
+            border-radius: 12px;
+            transition: background .18s ease, transform .18s ease;
+        }
+
+        .nav-item:hover {
+            background: rgba(255,255,255,.045);
+            transform: translateY(-1px);
+        }
+
+        .nav-item.active {
+            background: rgba(255,255,255,.06);
+        }
+
+        @media (max-width: 520px) {
+            .app {
+                padding-left: 15px;
+                padding-right: 15px;
+            }
+
+            .header {
+                padding-top: 27px;
+            }
+
+            .header h1 {
+                font-size: clamp(27px, 8vw, 34px);
+            }
+        }
+    </style>
+
 </head>
 
 <body>
@@ -2495,5 +2644,7 @@ initializesubscription();
 
 </script>
 
+
+<script src="auth-guard.js"></script>
 </body>
 </html>

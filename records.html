@@ -640,6 +640,188 @@ button{
 
 </style>
 
+
+<!-- AVERYX Records Visual Polish -->
+<style>
+:root{
+    --records-glow:rgba(229,34,73,.13);
+    --records-line:rgba(255,255,255,.09);
+}
+
+body{
+    background:
+        radial-gradient(circle at 78% -5%,var(--records-glow),transparent 30%),
+        radial-gradient(circle at 10% 20%,rgba(255,255,255,.025),transparent 21%),
+        var(--bg);
+}
+
+.topbar{
+    border-bottom:1px solid var(--records-line);
+    background:linear-gradient(180deg,rgba(255,255,255,.018),transparent);
+}
+
+.profile-button{
+    border-radius:17px;
+    transition:background .18s ease,transform .18s ease;
+}
+
+.profile-button:hover{
+    background:rgba(255,255,255,.04);
+    transform:translateY(-1px);
+}
+
+.header{
+    padding-top:34px;
+    padding-bottom:27px;
+}
+
+.header h1{
+    letter-spacing:-.55px;
+    line-height:1.08;
+}
+
+.filters{
+    padding:5px;
+    border:1px solid var(--records-line);
+    border-radius:14px;
+    background:rgba(255,255,255,.022);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.02);
+}
+
+.filter-btn{
+    border-color:transparent;
+    border-radius:10px;
+    background:transparent;
+    transition:background .16s ease,color .16s ease,transform .16s ease;
+}
+
+.filter-btn:hover{
+    background:rgba(255,255,255,.045);
+    transform:translateY(-1px);
+}
+
+.filter-btn.active{
+    border-color:rgba(229,34,73,.28);
+    box-shadow:0 6px 16px rgba(0,0,0,.14);
+}
+
+.records{
+    border-color:var(--records-line);
+    box-shadow:
+        0 16px 36px rgba(0,0,0,.17),
+        inset 0 1px 0 rgba(255,255,255,.02);
+}
+
+.record{
+    transition:background .17s ease,transform .17s ease;
+}
+
+.record.clickable:hover{
+    background:linear-gradient(90deg,rgba(255,255,255,.03),rgba(255,255,255,.012));
+}
+
+.record.clickable:active{
+    transform:scale(.997);
+}
+
+.record-icon{
+    border:1px solid rgba(255,255,255,.055);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.025);
+}
+
+.record-amount{
+    color:#fff;
+    font-weight:700;
+}
+
+.record-status{
+    padding:4px 7px;
+    border-radius:999px;
+    border:1px solid transparent;
+}
+
+.record-status.completed{
+    color:#42d392;
+    background:rgba(66,211,146,.10);
+    border-color:rgba(66,211,146,.16);
+}
+
+.record-status.pending{
+    color:#f2c94c;
+    background:rgba(242,201,76,.10);
+    border-color:rgba(242,201,76,.16);
+}
+
+.record-status.failed{
+    color:#ff6374;
+    background:rgba(255,99,116,.10);
+    border-color:rgba(255,99,116,.16);
+}
+
+.record-status.broadcasted{
+    color:#ff9f43;
+    background:rgba(255,159,67,.10);
+    border-color:rgba(255,159,67,.16);
+}
+
+.record-modal-card{
+    border-color:var(--records-line);
+    background:
+        radial-gradient(circle at 100% 0%,rgba(229,34,73,.08),transparent 34%),
+        #121218;
+}
+
+.record-modal-close{
+    transition:background .16s ease,color .16s ease,transform .16s ease;
+}
+
+.record-modal-close:hover{
+    background:rgba(255,255,255,.05);
+    color:#fff;
+    transform:rotate(3deg);
+}
+
+.bottom-nav{
+    border-top:1px solid var(--records-line);
+    box-shadow:0 -10px 28px rgba(0,0,0,.2);
+    backdrop-filter:blur(18px);
+}
+
+.nav-item{
+    border-radius:12px;
+    transition:background .18s ease,transform .18s ease;
+}
+
+.nav-item:hover{
+    background:rgba(255,255,255,.045);
+    transform:translateY(-1px);
+}
+
+.nav-item.active{
+    background:rgba(255,255,255,.06);
+}
+
+@media(max-width:520px){
+    .app{
+        padding-left:15px;
+        padding-right:15px;
+    }
+
+    .header{
+        padding-top:27px;
+    }
+
+    .filters{
+        gap:4px;
+        overflow-x:auto;
+    }
+
+    .filter-btn{
+        min-width:72px;
+    }
+}
+</style>
+
 </head>
 
 
@@ -2359,6 +2541,8 @@ setInterval(
 
 </script>
 
+
+<script src="auth-guard.js"></script>
 </body>
 
 </html>

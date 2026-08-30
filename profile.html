@@ -828,6 +828,283 @@
             }
         }
     </style>
+
+<!-- AVERYX Profile Visual Polish -->
+<style>
+:root{
+    --profile-line:rgba(255,255,255,.09);
+    --profile-surface:rgba(255,255,255,.04);
+}
+
+body{
+    background:
+        radial-gradient(circle at 78% -5%,rgba(229,34,73,.14),transparent 31%),
+        radial-gradient(circle at 8% 20%,rgba(255,255,255,.025),transparent 22%),
+        var(--bg);
+}
+
+.topbar{
+    border-bottom:1px solid var(--profile-line);
+    background:linear-gradient(180deg,rgba(255,255,255,.018),transparent);
+}
+
+.brand img{
+    filter:none !important;
+    box-shadow:none !important;
+}
+
+.back{
+    padding:8px 10px;
+    border-radius:9px;
+    transition:background .16s ease,color .16s ease;
+}
+
+.back:hover{
+    color:#fff;
+    background:var(--profile-surface);
+}
+
+.profile-card{
+    position:relative;
+    overflow:hidden;
+    box-shadow:
+        0 18px 40px rgba(0,0,0,.22),
+        inset 0 1px 0 rgba(255,255,255,.03);
+}
+
+.profile-card::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    background:linear-gradient(125deg,rgba(255,255,255,.035),transparent 42%);
+}
+
+.profile-dp{
+    box-shadow:
+        0 12px 25px rgba(0,0,0,.2),
+        inset 0 1px 0 rgba(255,255,255,.035);
+}
+
+.edit-button{
+    transition:
+        transform .16s ease,
+        background .16s ease,
+        color .16s ease,
+        border-color .16s ease;
+}
+
+.edit-button:hover{
+    transform:translateY(-1px);
+    background:rgba(255,255,255,.055);
+}
+
+.section-title{
+    letter-spacing:-.3px;
+}
+
+.details,
+.subscription-card,
+.menu{
+    border-color:var(--profile-line);
+    box-shadow:
+        0 14px 32px rgba(0,0,0,.15),
+        inset 0 1px 0 rgba(255,255,255,.02);
+}
+
+.detail-row{
+    transition:background .16s ease;
+}
+
+.detail-row:hover{
+    background:rgba(255,255,255,.022);
+}
+
+.detail-value{
+    color:#f0f0f3;
+}
+
+.subscription-card{
+    position:relative;
+    overflow:hidden;
+    background:
+        radial-gradient(circle at 100% 0%,rgba(229,34,73,.07),transparent 35%),
+        var(--panel);
+    transition:
+        transform .18s ease,
+        border-color .18s ease,
+        box-shadow .18s ease;
+}
+
+.subscription-card:hover{
+    transform:translateY(-2px);
+    border-color:rgba(229,34,73,.28);
+    box-shadow:0 18px 36px rgba(0,0,0,.2);
+}
+
+.subscription-logo{
+    box-shadow:
+        0 10px 22px rgba(0,0,0,.18),
+        inset 0 1px 0 rgba(255,255,255,.03);
+}
+
+.subscription-link{
+    padding:7px 9px;
+    border-radius:8px;
+    transition:background .16s ease,color .16s ease;
+}
+
+.subscription-link:hover{
+    color:#fff;
+    background:rgba(255,255,255,.05);
+}
+
+.menu-item{
+    transition:background .16s ease,transform .16s ease;
+}
+
+.menu-item:hover{
+    background:linear-gradient(90deg,rgba(255,255,255,.03),transparent);
+}
+
+.menu-item:hover .menu-arrow{
+    color:#fff;
+    transform:translateX(2px);
+}
+
+.menu-icon{
+    border:1px solid rgba(255,255,255,.045);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.02);
+}
+
+.menu-arrow{
+    transition:color .16s ease,transform .16s ease;
+}
+
+.bottom-nav{
+    border-top:1px solid var(--profile-line);
+    box-shadow:0 -10px 28px rgba(0,0,0,.2);
+    backdrop-filter:blur(18px);
+}
+
+.nav-item{
+    border-radius:12px;
+    transition:background .18s ease,transform .18s ease;
+}
+
+.nav-item:hover{
+    background:rgba(255,255,255,.045);
+    transform:translateY(-1px);
+}
+
+.nav-item.active{
+    background:rgba(255,255,255,.06);
+}
+
+@media(max-width:560px){
+    .app{
+        padding-left:15px;
+        padding-right:15px;
+    }
+
+    .profile-card{
+        padding:19px;
+        gap:14px;
+    }
+
+    .profile-dp{
+        width:82px;
+        height:82px;
+    }
+
+    .profile-name{
+        font-size:23px;
+    }
+}
+</style>
+
+
+<!-- Profile Header Cut-Out Logo And Enhanced UI -->
+<style>
+/* Top-right profile logo: remove the artificial box completely */
+.top-profile-avatar,
+#topProfileAvatar {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    border-radius: 0 !important;
+    overflow: visible !important;
+}
+
+.top-profile-avatar::before,
+.top-profile-avatar::after,
+#topProfileAvatar::before,
+#topProfileAvatar::after {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.top-profile-avatar img,
+#topProfileAvatar img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    filter: none !important;
+}
+
+/* Extra visual refinement for the profile page */
+.profile-card {
+    background:
+        radial-gradient(circle at 100% 0%, rgba(229,34,73,.10), transparent 35%),
+        linear-gradient(135deg, rgba(255,255,255,.055), rgba(255,255,255,.018));
+}
+
+.profile-card:hover {
+    transform: translateY(-2px);
+    transition: transform .18s ease, box-shadow .18s ease;
+    box-shadow: 0 20px 42px rgba(0,0,0,.25);
+}
+
+.details,
+.subscription-card,
+.menu {
+    background: linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.015));
+}
+
+.detail-row {
+    padding-top: 14px;
+    padding-bottom: 14px;
+}
+
+.menu-item {
+    border-radius: 12px;
+    margin: 3px 0;
+}
+
+.menu-item:active {
+    transform: scale(.992);
+}
+
+.profile-dp {
+    position: relative;
+}
+
+.profile-dp::after {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    border-radius: inherit;
+    border: 1px solid rgba(229,34,73,.16);
+    pointer-events: none;
+}
+</style>
+
 </head>
 
 <body>
@@ -1868,5 +2145,7 @@
 
 </script>
 
+
+<script src="auth-guard.js"></script>
 </body>
 </html>

@@ -906,6 +906,24 @@
             }
         }
     </style>
+<style>
+:root{--ref-line:rgba(255,255,255,.09);--ref-glow:rgba(229,34,73,.15)}
+body{background:radial-gradient(circle at 82% -5%,var(--ref-glow),transparent 31%),radial-gradient(circle at 8% 20%,rgba(255,255,255,.025),transparent 21%),var(--bg)}
+.topbar{border-bottom:1px solid var(--ref-line)}
+.back{padding:8px 11px;border-radius:9px;transition:.16s}.back:hover{background:rgba(255,255,255,.045);transform:translateY(-1px)}
+.referral-card,.stats-grid>*,.history-card,.info-card{box-shadow:0 18px 40px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.025)}
+.referral-card{position:relative;overflow:hidden;background:radial-gradient(circle at 100% 0%,rgba(229,34,73,.09),transparent 38%),linear-gradient(135deg,rgba(255,255,255,.04),rgba(255,255,255,.012))}
+.referral-card::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(125deg,rgba(255,255,255,.035),transparent 42%)}
+#referralCode{color:#fff;text-shadow:0 0 18px rgba(229,34,73,.12)}
+#referralLink{color:rgba(255,255,255,.78);word-break:break-all}
+.copy-btn,.share-button,button{transition:transform .16s,filter .16s,box-shadow .16s}.copy-btn:hover,.share-button:hover{transform:translateY(-1px);filter:brightness(1.06);box-shadow:0 10px 22px rgba(0,0,0,.18)}.copy-btn:active,.share-button:active{transform:scale(.985)}
+.stat-card{transition:transform .18s,border-color .18s,background .18s}.stat-card:hover{transform:translateY(-2px);border-color:rgba(229,34,73,.25);background:rgba(255,255,255,.045)}
+.history-row{transition:background .16s}.history-row:hover{background:rgba(255,255,255,.025)}
+.info-card{background:linear-gradient(135deg,rgba(255,255,255,.025),rgba(255,255,255,.01))}
+.bottom-nav{border-top:1px solid var(--ref-line);box-shadow:0 -10px 28px rgba(0,0,0,.22);backdrop-filter:blur(18px)}
+.nav-item{border-radius:12px;transition:.16s}.nav-item:hover{background:rgba(255,255,255,.045);transform:translateY(-1px)}
+@media(max-width:560px){.app{padding-left:15px;padding-right:15px}#referralLink{font-size:10px}}
+</style>
 </head>
 
 <body>
@@ -2282,5 +2300,7 @@ document.getElementById(
 
 
 
+
+<script src="auth-guard.js"></script>
 </body>
 </html>

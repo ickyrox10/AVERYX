@@ -670,6 +670,355 @@ button {
 }
 
     </style>
+
+<!-- AVERYX Wallet Visual Polish -->
+<style>
+:root {
+    --wallet-glow: rgba(229, 34, 73, .13);
+    --wallet-surface: rgba(255,255,255,.045);
+    --wallet-line: rgba(255,255,255,.09);
+}
+
+body {
+    background:
+        radial-gradient(circle at 78% -5%, var(--wallet-glow), transparent 30%),
+        radial-gradient(circle at 8% 22%, rgba(255,255,255,.025), transparent 20%),
+        var(--bg);
+}
+
+.topbar {
+    border-bottom: 1px solid var(--wallet-line);
+    background: linear-gradient(180deg, rgba(255,255,255,.018), transparent);
+}
+
+.wallet-profile {
+    border-radius: 17px;
+    transition: background .18s ease, transform .18s ease;
+}
+
+.wallet-profile:hover {
+    background: var(--wallet-surface);
+    transform: translateY(-1px);
+}
+
+.page-header {
+    padding-top: 34px;
+    padding-bottom: 25px;
+}
+
+.page-header h1 {
+    letter-spacing: -.55px;
+    line-height: 1.08;
+}
+
+.page-header p {
+    max-width: 460px;
+}
+
+.balance-card {
+    border-color: rgba(229,34,73,.34);
+    box-shadow:
+        0 18px 40px rgba(0,0,0,.22),
+        inset 0 1px 0 rgba(255,255,255,.035);
+}
+
+.balance-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(125deg, rgba(255,255,255,.035), transparent 38%);
+}
+
+.balance-box,
+.next-tier,
+.stat,
+.records {
+    border-color: var(--wallet-line);
+    box-shadow:
+        0 12px 30px rgba(0,0,0,.14),
+        inset 0 1px 0 rgba(255,255,255,.02);
+}
+
+.balance-box {
+    background: rgba(7,7,10,.72);
+}
+
+.actions .action {
+    transition:
+        transform .17s ease,
+        background .17s ease,
+        border-color .17s ease,
+        box-shadow .17s ease;
+}
+
+.actions .action:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255,255,255,.14);
+    box-shadow: 0 10px 22px rgba(0,0,0,.18);
+}
+
+.actions .action:active {
+    transform: translateY(0) scale(.985);
+}
+
+.next-tier {
+    background:
+        linear-gradient(135deg, rgba(255,255,255,.045), rgba(255,255,255,.018));
+    transition:
+        transform .18s ease,
+        border-color .18s ease,
+        box-shadow .18s ease;
+}
+
+.next-tier:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255,255,255,.14);
+    box-shadow: 0 16px 34px rgba(0,0,0,.2);
+}
+
+.next-tier-logo {
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
+}
+
+.btn {
+    transition:
+        transform .16s ease,
+        background .16s ease,
+        border-color .16s ease,
+        box-shadow .16s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(0,0,0,.18);
+}
+
+.stats .stat {
+    transition:
+        transform .18s ease,
+        border-color .18s ease;
+}
+
+.stats .stat:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255,255,255,.14);
+}
+
+.record {
+    transition: background .16s ease;
+}
+
+.record:hover {
+    background: rgba(255,255,255,.025);
+}
+
+.tabs button {
+    border-radius: 8px 8px 0 0;
+    transition: color .16s ease, background .16s ease;
+}
+
+.tabs button:hover {
+    color: var(--text);
+    background: rgba(255,255,255,.035);
+}
+
+.bottom-nav {
+    border-color: var(--wallet-line);
+    box-shadow: 0 -10px 28px rgba(0,0,0,.2);
+}
+
+.nav-item {
+    transition: background .18s ease, transform .18s ease, color .18s ease;
+}
+
+.nav-item:hover {
+    background: rgba(255,255,255,.045);
+    transform: translateY(-1px);
+}
+
+@media (max-width: 620px) {
+    .page-header {
+        padding-top: 28px;
+    }
+}
+
+@media (max-width: 430px) {
+    .page-header h1 {
+        font-size: clamp(34px, 10vw, 42px);
+    }
+}
+</style>
+
+
+<style id="wallet-requested-transaction-update">
+.record {
+    min-height: 82px;
+    align-items: center;
+}
+
+.record-main {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.record-main b {
+    color: #fff;
+}
+
+.record-type {
+    margin-top: 5px !important;
+    color: rgba(255,255,255,.72) !important;
+}
+
+.record-date {
+    margin-top: 3px !important;
+}
+
+.record-right {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 7px;
+}
+
+.amount-white,
+.record .amt.amount-white {
+    color: #fff !important;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.status {
+    margin-top: 0 !important;
+    border: 1px solid transparent;
+}
+
+.status-completed {
+    color: #42d392 !important;
+    background: rgba(66,211,146,.11) !important;
+    border-color: rgba(66,211,146,.18) !important;
+}
+
+.status-pending {
+    color: #f2c94c !important;
+    background: rgba(242,201,76,.11) !important;
+    border-color: rgba(242,201,76,.18) !important;
+}
+
+.status-failed {
+    color: #ff6374 !important;
+    background: rgba(255,99,116,.11) !important;
+    border-color: rgba(255,99,116,.18) !important;
+}
+
+.status-broadcasted {
+    color: #ff9f43 !important;
+    background: rgba(255,159,67,.11) !important;
+    border-color: rgba(255,159,67,.18) !important;
+}
+
+.status-default {
+    color: #c8c8d0 !important;
+    background: rgba(255,255,255,.06) !important;
+    border-color: rgba(255,255,255,.09) !important;
+}
+
+/* Enhanced next tier: entire card opens Subscription */
+.next-tier {
+    position: relative;
+    cursor: pointer;
+    padding: 23px;
+    grid-template-columns: 86px 1fr auto;
+    background:
+        radial-gradient(circle at 100% 0%, rgba(229,34,73,.12), transparent 36%),
+        linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,255,255,.018));
+}
+
+.next-tier::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    background: linear-gradient(120deg, rgba(255,255,255,.035), transparent 42%);
+}
+
+.next-tier:hover {
+    transform: translateY(-3px);
+    border-color: rgba(229,34,73,.34) !important;
+    box-shadow:
+        0 18px 38px rgba(0,0,0,.25),
+        0 0 0 1px rgba(229,34,73,.06);
+}
+
+.next-tier:focus-visible {
+    outline: 2px solid rgba(229,34,73,.7);
+    outline-offset: 3px;
+}
+
+.next-tier-logo {
+    width: 86px;
+    height: 86px;
+    box-shadow:
+        0 12px 24px rgba(0,0,0,.2),
+        inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+.next-tier-name {
+    font-size: 26px;
+}
+
+.next-tier-details {
+    position: relative;
+    z-index: 1;
+    color: rgba(255,255,255,.82);
+    font-size: 10px;
+    letter-spacing: .4px;
+    white-space: nowrap;
+    transition: transform .16s ease, color .16s ease;
+}
+
+.next-tier:hover .next-tier-details {
+    color: #fff;
+    transform: translateX(2px);
+}
+
+@media (max-width: 560px) {
+    .next-tier {
+        grid-template-columns: 72px 1fr;
+        gap: 14px;
+        padding: 18px;
+    }
+
+    .next-tier-logo {
+        width: 72px;
+        height: 72px;
+    }
+
+    .next-tier-name {
+        font-size: 21px;
+    }
+
+    .next-tier-stats {
+        gap: 16px;
+    }
+
+    .next-tier-details {
+        grid-column: 2;
+        justify-self: start;
+        margin-top: -4px;
+    }
+
+    .record {
+        padding: 13px 14px;
+    }
+}
+</style>
+
 </head>
 
 <body>
@@ -732,7 +1081,7 @@ button {
     </h1>
 
     <p>
-        Manage your deposits, rewards and withdrawals from one place.
+        Manage Your Deposits, Rewards and Withdrawals From One Place.
     </p>
 
 </section>
@@ -757,7 +1106,7 @@ button {
     </div>
 
     <div class="balance-sub">
-        Deposited funds remain locked.
+        Deposited Funds Remain Locked.
         <strong id="dailyReturn">
             0 USDT/day
         </strong>
@@ -834,13 +1183,19 @@ button {
             href="subscription.html"
             class="section-link"
         >
-            View all →
+            View All →
         </a>
 
     </div>
 
 
-    <div class="next-tier">
+    <div
+        class="next-tier"
+        id="nextTierCard"
+        role="link"
+        tabindex="0"
+        aria-label="Open Subscription Details"
+    >
 
         <div
             class="next-tier-logo"
@@ -851,7 +1206,7 @@ button {
         <div>
 
             <div class="tier-label">
-                UPGRADE YOUR TIER
+                Upgrade Your Tier
             </div>
 
             <div
@@ -865,7 +1220,7 @@ button {
                 class="next-tier-copy"
                 id="nextTierDescription"
             >
-                Loading tier requirement...
+                Loading Tier Requirement...
             </div>
 
 
@@ -900,16 +1255,8 @@ button {
 
         </div>
 
-
-        <button
-            class="btn"
-            id="subscriptionButton"
-            type="button"
-        >
-            View Subscription
-        </button>
-
-    </div>
+        <div class="next-tier-details">Details ›</div>
+</div>
 
 </section>
 
@@ -991,7 +1338,7 @@ button {
             href="records.html"
             class="section-link"
         >
-            View all →
+            View All →
         </a>
 
     </div>
@@ -1054,7 +1401,7 @@ button {
 
 
     <a
-        href="Wallet.html"
+        href="wallet.html"
         class="nav-item active"
     >
         <span class="nav-icon">◈</span>
@@ -1373,18 +1720,6 @@ function renderTransaction(
     const isWithdrawal =
         type.includes("withdraw");
 
-    const sign =
-        isDeposit
-            ? "+"
-            : isWithdrawal
-                ? "-"
-                : "";
-
-    const amountClass =
-        isDeposit
-            ? "in"
-            : "out";
-
     const title =
         isDeposit
             ? "Deposit"
@@ -1396,44 +1731,57 @@ function renderTransaction(
                     "Activity"
                 );
 
-    const reference =
-        transaction.reference ??
-        transaction.txHash ??
-        transaction.transactionHash ??
-        "";
+    const transactionType =
+        transaction.network ||
+        transaction.chain ||
+        transaction.addressType ||
+        transaction.paymentType ||
+        "USDT";
 
     const status =
-        transaction.status ||
-        "COMPLETED";
+        String(
+            transaction.status ||
+            "COMPLETED"
+        ).toUpperCase();
+
+    const statusClass =
+        status.includes("COMPLETED") ||
+        status.includes("PAID")
+            ? "status-completed"
+            : status.includes("PENDING")
+                ? "status-pending"
+                : status.includes("BROADCAST")
+                    ? "status-broadcasted"
+                    : status.includes("FAILED") ||
+                      status.includes("FAIL")
+                        ? "status-failed"
+                        : "status-default";
 
     row.innerHTML = `
 
-        <div>
+        <div class="record-main">
 
             <b>
                 ${title}
             </b>
 
-            <small>
+            <small class="record-type">
+                ${transactionType}
+            </small>
+
+            <small class="record-date">
                 ${date}
-                ${
-                    reference
-                        ? ` · ${reference}`
-                        : ""
-                }
             </small>
 
         </div>
 
-        <div>
+        <div class="record-right">
 
-            <span class="amt ${amountClass}">
-                ${sign}${money(amount)} USDT
+            <span class="amt amount-white">
+                ${money(amount)} USDT
             </span>
 
-            <br>
-
-            <span class="status">
+            <span class="status ${statusClass}">
                 ${status}
             </span>
 
@@ -1444,7 +1792,6 @@ function renderTransaction(
     return row;
 
 }
-
 
 let allTransactions = [];
 
@@ -2002,13 +2349,38 @@ async function initializeWallet() {
    ACTIONS
 ================================================== */
 
-const subscriptionButton =
-    document.getElementById("subscriptionButton");
+const nextTierCard =
+    document.getElementById("nextTierCard");
 
-if (subscriptionButton) {
-    subscriptionButton.addEventListener("click", () => {
-        window.location.href = "subscription.html";
-    });
+if (nextTierCard) {
+
+    const openSubscriptionDetails = () => {
+        window.location.href =
+            "subscription.html";
+    };
+
+    nextTierCard.addEventListener(
+        "click",
+        openSubscriptionDetails
+    );
+
+    nextTierCard.addEventListener(
+        "keydown",
+        event => {
+
+            if (
+                event.key === "Enter" ||
+                event.key === " "
+            ) {
+
+                event.preventDefault();
+                openSubscriptionDetails();
+
+            }
+
+        }
+    );
+
 }
 
 const withdrawAction =
@@ -2073,5 +2445,7 @@ initializeWallet();
 
 </script>
 
+
+<script src="auth-guard.js"></script>
 </body>
 </html>

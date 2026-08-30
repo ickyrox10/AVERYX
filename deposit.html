@@ -1154,6 +1154,131 @@
 
     </style>
 
+
+<!-- AVERYX Deposit Theme Enhancement: Mechanism Preserved -->
+<style>
+:root{
+    --deposit-line: rgba(255,255,255,.09);
+    --deposit-surface: rgba(255,255,255,.035);
+}
+
+body{
+    background:
+        radial-gradient(circle at 82% -6%, rgba(220,24,65,.16), transparent 31%),
+        radial-gradient(circle at 7% 18%, rgba(255,255,255,.025), transparent 20%),
+        #050507;
+}
+
+.top,
+.topbar,
+.header{
+    border-bottom-color: var(--deposit-line);
+}
+
+.back{
+    border-radius: 9px;
+    transition: background .16s ease, color .16s ease, transform .16s ease;
+}
+
+.back:hover{
+    background: var(--deposit-surface);
+    transform: translateY(-1px);
+}
+
+.deposit-card,
+.balance-card,
+.network-card,
+.address-card,
+.qr-card,
+.confirm-card,
+.instruction-card{
+    border-color: var(--deposit-line) !important;
+    box-shadow:
+        0 16px 36px rgba(0,0,0,.17),
+        inset 0 1px 0 rgba(255,255,255,.025);
+}
+
+.deposit-card,
+.balance-card{
+    position: relative;
+    overflow: hidden;
+}
+
+.deposit-card::after,
+.balance-card::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    background:linear-gradient(125deg,rgba(255,255,255,.035),transparent 42%);
+}
+
+.network-card,
+.network-option,
+.network-item{
+    transition:
+        transform .17s ease,
+        border-color .17s ease,
+        background .17s ease,
+        box-shadow .17s ease;
+}
+
+.network-card:hover,
+.network-option:hover,
+.network-item:hover{
+    transform:translateY(-2px);
+    border-color:rgba(255,255,255,.15) !important;
+    box-shadow:0 12px 25px rgba(0,0,0,.17);
+}
+
+input:focus,
+select:focus,
+textarea:focus{
+    box-shadow:0 0 0 3px rgba(220,24,65,.10) !important;
+}
+
+button,
+.btn,
+.primary-btn,
+.copy-btn{
+    transition:
+        transform .16s ease,
+        filter .16s ease,
+        box-shadow .16s ease,
+        background .16s ease;
+}
+
+button:hover,
+.btn:hover,
+.primary-btn:hover,
+.copy-btn:hover{
+    transform:translateY(-1px);
+    filter:brightness(1.05);
+    box-shadow:0 9px 20px rgba(0,0,0,.18);
+}
+
+button:active,
+.btn:active,
+.primary-btn:active,
+.copy-btn:active{
+    transform:scale(.985);
+}
+
+.qr-container,
+.qr-box{
+    box-shadow:
+        0 12px 26px rgba(0,0,0,.22),
+        inset 0 1px 0 rgba(255,255,255,.035);
+}
+
+@media(max-width:560px){
+    .container,
+    .app{
+        width:min(100% - 30px,900px);
+    }
+}
+</style>
+
 </head>
 
 
@@ -2768,5 +2893,7 @@
 </script>
 
 
+
+<script src="auth-guard.js"></script>
 </body>
 </html>

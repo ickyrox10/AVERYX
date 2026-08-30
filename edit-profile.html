@@ -715,6 +715,30 @@
             }
         }
     </style>
+
+<!-- Remove Top-Right Logo Box: Keep Only Cut-Out Logo -->
+<style>
+.top-profile-avatar,
+.top-profile-avatar::before,
+.top-profile-avatar::after {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+.top-profile-avatar {
+    border-radius: 0 !important;
+    overflow: visible !important;
+}
+
+.top-profile-avatar img {
+    background: transparent !important;
+    box-shadow: none !important;
+    object-fit: contain !important;
+}
+</style>
+
 </head>
 
 <body>
@@ -2157,5 +2181,7 @@ function showToast(
 
 </script>
 
+
+<script src="auth-guard.js"></script>
 </body>
 </html>

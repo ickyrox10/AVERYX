@@ -922,6 +922,247 @@
             }
         }
     </style>
+
+    <!-- Dashboard Polish: subtle visual improvements only -->
+    <style>
+        .topbar {
+            border-bottom: 1px solid rgba(255,255,255,.035);
+        }
+
+        .welcome {
+            padding-top: 33px;
+        }
+
+        .balance-card,
+        .tier-card,
+        .overview-card,
+        .activity-card,
+        .referral-card {
+            transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+        }
+
+        .balance-card:hover,
+        .tier-card:hover,
+        .overview-card:hover,
+        .activity-card:hover,
+        .referral-card:hover {
+            transform: translateY(-1px);
+            border-color: rgba(255,255,255,.13);
+            box-shadow: 0 12px 30px rgba(0,0,0,.14);
+        }
+
+        .quick-action,
+        .action-card,
+        .bottom-nav a {
+            transition: transform .16s ease, opacity .16s ease;
+        }
+
+        .quick-action:hover,
+        .action-card:hover {
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 480px) {
+            .app {
+                padding-left: 15px;
+                padding-right: 15px;
+            }
+
+            .welcome h1 {
+                letter-spacing: -.4px;
+            }
+        }
+    </style>
+
+
+<style>
+/* AVERYX Dashboard Premium Polish */
+:root{
+    --dash-card-border:rgba(255,255,255,.085);
+    --dash-card-hover:rgba(255,255,255,.14);
+    --dash-soft-shadow:0 16px 40px rgba(0,0,0,.22);
+}
+
+.app{
+    max-width:1180px;
+}
+
+.topbar{
+    position:sticky;
+    top:0;
+    z-index:50;
+    backdrop-filter:blur(18px);
+    -webkit-backdrop-filter:blur(18px);
+    border-bottom:1px solid rgba(255,255,255,.07);
+}
+
+.profile-button{
+    border:1px solid rgba(255,255,255,.08);
+    transition:transform .2s ease,border-color .2s ease,background .2s ease;
+}
+
+.profile-button:hover{
+    transform:translateY(-1px);
+    border-color:rgba(255,255,255,.18);
+}
+
+.welcome{
+    position:relative;
+    padding:42px 0 30px;
+}
+
+.welcome:after{
+    content:"";
+    position:absolute;
+    width:210px;
+    height:210px;
+    right:-60px;
+    top:-40px;
+    border-radius:50%;
+    background:radial-gradient(circle,rgba(255,255,255,.055),transparent 68%);
+    pointer-events:none;
+}
+
+.eyebrow{
+    letter-spacing:.08em;
+}
+
+.balance-card,
+.tier-card,
+.progress-card,
+.reward-countdown,
+.stat,
+.activity-card{
+    border:1px solid var(--dash-card-border);
+    box-shadow:0 8px 28px rgba(0,0,0,.12);
+    transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease;
+}
+
+.balance-card:hover,
+.tier-card:hover,
+.progress-card:hover,
+.reward-countdown:hover,
+.stat:hover,
+.activity-card:hover{
+    transform:translateY(-3px);
+    border-color:var(--dash-card-hover);
+    box-shadow:var(--dash-soft-shadow);
+}
+
+.balance-column{
+    position:relative;
+}
+
+.balance-column + .balance-column:before{
+    box-shadow:0 0 18px rgba(255,255,255,.025);
+}
+
+.balance{
+    letter-spacing:-.03em;
+}
+
+.balance-action,
+.action{
+    position:relative;
+    overflow:hidden;
+    transition:transform .18s ease,filter .18s ease,box-shadow .18s ease;
+}
+
+.balance-action:hover,
+.action:hover{
+    transform:translateY(-2px);
+    filter:brightness(1.06);
+    box-shadow:0 10px 24px rgba(0,0,0,.2);
+}
+
+.balance-action:active,
+.action:active{
+    transform:translateY(0);
+}
+
+.section{
+    margin-top:34px;
+}
+
+.section-head{
+    margin-bottom:16px;
+}
+
+.section-title{
+    letter-spacing:-.02em;
+}
+
+.tier-card{
+    overflow:hidden;
+}
+
+.tier-card:after{
+    content:"";
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    background:linear-gradient(120deg,transparent 35%,rgba(255,255,255,.025),transparent 65%);
+}
+
+.progress-track{
+    overflow:hidden;
+}
+
+.progress-fill{
+    box-shadow:0 0 18px rgba(255,255,255,.13);
+}
+
+.stat{
+    min-height:118px;
+}
+
+.stat-value{
+    letter-spacing:-.025em;
+}
+
+.bottom-nav{
+    border-top:1px solid rgba(255,255,255,.075);
+    box-shadow:0 -14px 35px rgba(0,0,0,.14);
+    backdrop-filter:blur(20px);
+    -webkit-backdrop-filter:blur(20px);
+}
+
+.bottom-nav a{
+    transition:transform .18s ease,opacity .18s ease;
+}
+
+.bottom-nav a:hover{
+    transform:translateY(-1px);
+}
+
+@media (min-width:900px){
+    .balance-card{
+        padding:30px;
+    }
+
+    .welcome h1{
+        font-size:clamp(2rem,3vw,2.8rem);
+    }
+}
+
+@media (max-width:600px){
+    .welcome{
+        padding:31px 0 24px;
+    }
+
+    .balance-card,
+    .tier-card,
+    .progress-card,
+    .reward-countdown{
+        border-radius:18px;
+    }
+
+    .section{
+        margin-top:29px;
+    }
+}
+</style>
+
 </head>
 
 <body>
@@ -2263,6 +2504,127 @@ window.addEventListener(
 initDashboard();
 </script>
 
+
+
+<script>
+/* ==================================================
+   AVERYX SUSPENSION AUTO-LOGOUT
+   Dashboard Only
+================================================== */
+
+(function () {
+    "use strict";
+
+    const SUSPENSION_CHECK_INTERVAL = 60000;
+    let suspensionCheckRunning = false;
+    let suspensionLogoutDone = false;
+
+    function getSuspensionGuardToken() {
+        return (
+            localStorage.getItem("averyx_token") ||
+            localStorage.getItem("token") ||
+            localStorage.getItem("authToken") ||
+            ""
+        );
+    }
+
+    function logoutSuspendedUser(message) {
+        if (suspensionLogoutDone) return;
+
+        suspensionLogoutDone = true;
+
+        localStorage.removeItem("averyx_token");
+        localStorage.removeItem("token");
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("averyx_user");
+        localStorage.removeItem("user");
+
+        sessionStorage.removeItem("averyx_token");
+        sessionStorage.removeItem("token");
+        sessionStorage.removeItem("authToken");
+
+        sessionStorage.setItem(
+            "averyx_auth_message",
+            message ||
+            "Your Account Has Been Suspended. Please Contact Support."
+        );
+
+        window.location.replace("login.html");
+    }
+
+    async function checkSuspensionStatus() {
+        const token = getSuspensionGuardToken();
+
+        if (
+            !token ||
+            suspensionCheckRunning ||
+            suspensionLogoutDone
+        ) {
+            return;
+        }
+
+        suspensionCheckRunning = true;
+
+        try {
+            const response = await fetch(
+                `${API_BASE_URL}/api/auth/me`,
+                {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            if (
+                response.status !== 401 &&
+                response.status !== 403
+            ) {
+                return;
+            }
+
+            let data = {};
+
+            try {
+                data = await response.json();
+            } catch (_) {}
+
+            const code =
+                String(
+                    data.code || ""
+                ).toUpperCase();
+
+            const message =
+                String(
+                    data.message || ""
+                ).toLowerCase();
+
+            if (
+                code === "ACCOUNT_SUSPENDED" ||
+                message.includes("suspended")
+            ) {
+                logoutSuspendedUser(
+                    data.message ||
+                    "Your Account Has Been Suspended. Please Contact Support."
+                );
+            }
+
+        } catch (_) {
+            /*
+               Network errors do not log out
+               a legitimate active user.
+            */
+        } finally {
+            suspensionCheckRunning = false;
+        }
+    }
+
+    setInterval(
+        checkSuspensionStatus,
+        SUSPENSION_CHECK_INTERVAL
+    );
+})();
+</script>
 
 </body>
 </html>
