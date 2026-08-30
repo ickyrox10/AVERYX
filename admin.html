@@ -21,13 +21,15 @@ button{cursor:pointer}
 h1{margin-top:7px;font-family:Georgia,serif;font-size:clamp(34px,7vw,48px)}.welcome p{margin-top:8px;color:var(--muted);font-size:12px;line-height:1.6}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.stat{padding:18px 14px;border:1px solid var(--border);border-radius:16px;background:var(--panel);text-align:center}.stat-value{font-family:Georgia,serif;font-size:26px}.stat-label{margin-top:6px;color:var(--soft);font-size:8px;letter-spacing:.7px;text-transform:uppercase}
 .section{margin-top:27px}
-.panel-tabs{display:flex;gap:8px;margin-top:25px;margin-bottom:4px;flex-wrap:wrap}
+.panel-tabs{display:flex;gap:8px;margin-top:25px;margin-bottom:14px;flex-wrap:wrap}
+.stats{margin-top:0;margin-bottom:4px}
 .panel-tab{height:40px;padding:0 16px;border:1px solid var(--border);border-radius:10px;background:transparent;color:var(--muted);font-size:10px;font-weight:700}
 .panel-tab:hover{background:#15151a;color:#fff}
 .panel-tab.active{border-color:rgba(229,34,73,.45);background:rgba(229,34,73,.08);color:#fff}
 .admin-panel-section{display:none}
 .admin-panel-section.active{display:block}.section-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:12px}.section-title{font-family:Georgia,serif;font-size:24px}.refresh{height:38px;padding:0 13px;border:1px solid var(--border);border-radius:9px;background:transparent;color:var(--muted);font-size:10px}.refresh:hover{background:#15151a;color:#fff}
 .filters{display:grid;grid-template-columns:1.2fr 1fr 1fr auto;gap:10px;margin-bottom:12px}.control{height:46px;width:100%;padding:0 12px;border:1px solid var(--border);border-radius:10px;background:var(--panel);color:var(--text);outline:none;font-size:11px}.control:focus{border-color:rgba(229,34,73,.65)}
+.theme-select{position:relative;width:100%;min-width:0}.theme-select-native{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px}.theme-select-button{height:46px;width:100%;padding:0 12px;border:1px solid var(--border);border-radius:10px;background:var(--panel);color:var(--text);display:flex;align-items:center;justify-content:space-between;text-align:left;font-size:11px}.theme-select-button:hover,.theme-select.open .theme-select-button{border-color:rgba(229,34,73,.5);background:#15151a}.theme-select-arrow{color:var(--muted);font-size:11px;transition:transform .18s ease}.theme-select.open .theme-select-arrow{transform:rotate(180deg);color:#fff}.theme-select-menu{position:absolute;left:0;right:0;top:calc(100% + 7px);z-index:40;display:none;padding:6px;border:1px solid var(--border);border-radius:12px;background:#101014;box-shadow:0 18px 45px rgba(0,0,0,.45)}.theme-select.open .theme-select-menu{display:block}.theme-select-option{width:100%;min-height:38px;padding:0 10px;border:0;border-radius:8px;background:transparent;color:var(--muted);text-align:left;font-size:10px}.theme-select-option:hover,.theme-select-option.selected{background:rgba(229,34,73,.08);color:#fff}
 .table-wrap{overflow:auto;border:1px solid var(--border);border-radius:17px;background:var(--panel)}table{width:100%;border-collapse:collapse;min-width:850px}th{padding:13px 15px;color:var(--soft);font-size:8px;letter-spacing:1px;text-transform:uppercase;text-align:left;background:#0d0d11}td{padding:14px 15px;border-top:1px solid var(--border-soft);font-size:10px;vertical-align:middle}.amount{font-family:Georgia,serif;font-size:15px}.sub{margin-top:4px;color:var(--soft);font-size:8px}.status{display:inline-flex;padding:5px 8px;border-radius:6px;font-size:7px;letter-spacing:.8px;text-transform:uppercase}.status.pending{color:var(--orange);background:rgba(230,168,77,.10);border:1px solid rgba(230,168,77,.18)}.status.completed{color:var(--green);background:rgba(66,201,152,.08);border:1px solid rgba(66,201,152,.16)}.status.failed{color:#ff6682;background:rgba(229,34,73,.08);border:1px solid rgba(229,34,73,.16)}.view{height:33px;padding:0 11px;border:1px solid var(--border);border-radius:8px;background:transparent;color:#ddd;font-size:9px}.view:hover{border-color:rgba(229,34,73,.5);background:rgba(229,34,73,.06)}
 .empty{padding:34px 18px;color:var(--soft);text-align:center;font-size:11px}.loading{padding:34px 18px;color:var(--muted);text-align:center;font-size:11px}
 .modal-backdrop{position:fixed;inset:0;display:none;align-items:flex-end;justify-content:center;padding:16px;background:rgba(0,0,0,.66);backdrop-filter:blur(6px);z-index:50}.modal-backdrop.show{display:flex}.modal{width:100%;max-width:760px;max-height:92vh;overflow:auto;padding:23px;border:1px solid var(--border);border-radius:20px;background:var(--panel);box-shadow:0 30px 80px rgba(0,0,0,.5)}.modal-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.modal-title{font-family:Georgia,serif;font-size:27px}.modal-sub{margin-top:6px;color:var(--muted);font-size:10px}.close{width:38px;height:38px;border:1px solid var(--border);border-radius:9px;background:transparent;color:var(--muted);font-size:21px}.close:hover{color:#fff;background:#17171c}
@@ -48,10 +50,17 @@ h1{margin-top:7px;font-family:Georgia,serif;font-size:clamp(34px,7vw,48px)}.welc
   </header>
 
   <section class="welcome">
-    <div class="eyebrow">Withdrawal Control</div>
+    <div id="welcomeEyebrow" class="eyebrow">Transaction Control</div>
     <h1>Admin Panel</h1>
-    <p>Review withdrawals, enter transaction hashes, complete manual processing, or fail and refund eligible requests.</p>
+    <p id="welcomeDescription">Review and manage transaction activity across withdrawals and deposits.</p>
   </section>
+
+  <div class="panel-tabs">
+    <button id="withdrawalsTab" class="panel-tab active" type="button">WITHDRAWALS</button>
+    <button id="depositsTab" class="panel-tab" type="button">DEPOSITS</button>
+  </div>
+
+  <div id="statsContext" class="eyebrow" style="margin:0 0 10px 2px">WITHDRAWAL OVERVIEW</div>
 
   <section class="stats">
     <div class="stat"><div id="totalCount" class="stat-value">0</div><div class="stat-label">Total</div></div>
@@ -59,11 +68,6 @@ h1{margin-top:7px;font-family:Georgia,serif;font-size:clamp(34px,7vw,48px)}.welc
     <div class="stat"><div id="completedCount" class="stat-value">0</div><div class="stat-label">Completed</div></div>
     <div class="stat"><div id="failedCount" class="stat-value">0</div><div class="stat-label">Failed</div></div>
   </section>
-
-  <div class="panel-tabs">
-    <button id="withdrawalsTab" class="panel-tab active" type="button">WITHDRAWALS</button>
-    <button id="depositsTab" class="panel-tab" type="button">DEPOSITS</button>
-  </div>
 
   <section id="withdrawalsSection" class="section admin-panel-section active">
     <div class="section-head">
@@ -193,10 +197,7 @@ async function request(endpoint, options = {}) {
 }
 
 function updateStats() {
-  document.getElementById("totalCount").textContent = withdrawals.length;
-  document.getElementById("pendingCount").textContent = withdrawals.filter(w => normalizedStatus(w.status) === "pending").length;
-  document.getElementById("completedCount").textContent = withdrawals.filter(w => normalizedStatus(w.status) === "completed").length;
-  document.getElementById("failedCount").textContent = withdrawals.filter(w => normalizedStatus(w.status) === "failed").length;
+  updateStats(withdrawals);
 }
 
 function filteredWithdrawals() {
@@ -310,6 +311,34 @@ function setActionLoading(loading) {
 
 
 
+
+function updateStats(items) {
+  const rows = Array.isArray(items) ? items : [];
+
+  document.getElementById("totalCount").textContent = rows.length;
+  document.getElementById("pendingCount").textContent =
+    rows.filter(item => normalizedStatus(item.status) === "pending").length;
+  document.getElementById("completedCount").textContent =
+    rows.filter(item => normalizedStatus(item.status) === "completed").length;
+  document.getElementById("failedCount").textContent =
+    rows.filter(item => normalizedStatus(item.status) === "failed").length;
+}
+
+function setStatsContext(section) {
+  const isDeposit = section === "deposits";
+
+  document.getElementById("statsContext").textContent =
+    isDeposit ? "DEPOSIT OVERVIEW" : "WITHDRAWAL OVERVIEW";
+
+  document.getElementById("welcomeEyebrow").textContent =
+    isDeposit ? "Deposit Monitoring" : "Withdrawal Control";
+
+  document.getElementById("welcomeDescription").textContent =
+    isDeposit
+      ? "Review deposit activity, transaction hashes, networks, and completed records."
+      : "Review withdrawals, enter transaction hashes, complete manual processing, or fail and refund eligible requests.";
+}
+
 function filteredDeposits() {
   const search = document.getElementById("depositSearchInput").value.trim().toLowerCase();
   const status = document.getElementById("depositStatusFilter").value;
@@ -363,6 +392,7 @@ async function loadDeposits() {
     if (!data) return;
 
     deposits = Array.isArray(data.deposits) ? data.deposits : [];
+    updateStats(deposits);
     renderDeposits();
   } catch (error) {
     document.getElementById("depositBody").innerHTML =
@@ -420,11 +450,112 @@ function showAdminSection(section) {
   document.getElementById("withdrawalsSection").classList.toggle("active", !showingDeposits);
   document.getElementById("depositsSection").classList.toggle("active", showingDeposits);
 
-  if (showingDeposits) loadDeposits();
+  setStatsContext(section);
+
+  if (showingDeposits) {
+    if (deposits.length) {
+      updateStats(deposits);
+      renderDeposits();
+    } else {
+      loadDeposits();
+    }
+  } else {
+    updateStats(withdrawals);
+  }
 }
 
 document.getElementById("withdrawalsTab").addEventListener("click", () => showAdminSection("withdrawals"));
 document.getElementById("depositsTab").addEventListener("click", () => showAdminSection("deposits"));
+
+
+function setupThemeSelect(select) {
+  if (!select || select.dataset.themeReady === "true") return;
+
+  select.dataset.themeReady = "true";
+  select.classList.add("theme-select-native");
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "theme-select";
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "theme-select-button";
+
+  const label = document.createElement("span");
+  label.className = "theme-select-label";
+
+  const arrow = document.createElement("span");
+  arrow.className = "theme-select-arrow";
+  arrow.textContent = "⌄";
+
+  button.append(label, arrow);
+
+  const menu = document.createElement("div");
+  menu.className = "theme-select-menu";
+
+  function selectedText() {
+    return select.options[select.selectedIndex]?.text || "";
+  }
+
+  function refresh() {
+    label.textContent = selectedText();
+
+    menu.querySelectorAll(".theme-select-option").forEach(option => {
+      option.classList.toggle(
+        "selected",
+        option.dataset.value === select.value
+      );
+    });
+  }
+
+  Array.from(select.options).forEach(option => {
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = "theme-select-option";
+    item.textContent = option.text;
+    item.dataset.value = option.value;
+
+    item.addEventListener("click", () => {
+      select.value = option.value;
+      refresh();
+      wrapper.classList.remove("open");
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+
+    menu.appendChild(item);
+  });
+
+  button.addEventListener("click", event => {
+    event.stopPropagation();
+
+    document.querySelectorAll(".theme-select.open").forEach(other => {
+      if (other !== wrapper) other.classList.remove("open");
+    });
+
+    wrapper.classList.toggle("open");
+  });
+
+  select.parentNode.insertBefore(wrapper, select);
+  wrapper.append(button, menu, select);
+
+  select.addEventListener("change", refresh);
+  refresh();
+}
+
+function setupAllThemeSelects() {
+  [
+    "statusFilter",
+    "networkFilter",
+    "depositStatusFilter",
+    "depositNetworkFilter"
+  ].forEach(id => setupThemeSelect(document.getElementById(id)));
+}
+
+document.addEventListener("click", () => {
+  document.querySelectorAll(".theme-select.open").forEach(select => {
+    select.classList.remove("open");
+  });
+});
 
 ["depositSearchInput", "depositStatusFilter", "depositNetworkFilter"].forEach(id => {
   document.getElementById(id).addEventListener(
@@ -497,9 +628,12 @@ document.getElementById("logoutButton").addEventListener("click", () => {
   window.location.replace("admin-login.html");
 });
 
+setupAllThemeSelects();
+
 if (!adminToken()) {
   window.location.replace("admin-login.html");
 } else {
+  setStatsContext("withdrawals");
   loadWithdrawals();
 }
 </script>
