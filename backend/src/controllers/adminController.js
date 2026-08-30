@@ -105,6 +105,18 @@ function toAdminUser(row) {
         referralCode: row.referral_code || null,
         isActive: row.is_active === true,
 
+        accountStatus:
+            String(
+                row.account_status ||
+                "ACTIVE"
+            ).toUpperCase(),
+
+        suspendedAt:
+            row.suspended_at || null,
+
+        suspensionReason:
+            row.suspension_reason || null,
+
         balanceUSDT,
 
         withdrawableUSDT:
@@ -976,6 +988,140 @@ async function getAdminUserById(req, res) {
 }
 
 
+
+/* ==================================================
+   SUSPEND USER
+================================================== */
+
+async function suspendAdminUser(req, res) {
+    try {
+        const userId = Number(req.params.id);
+
+        const suspensionReason =
+            String(
+                req.body.suspensionReason ||
+                req.body.reason ||
+                ""
+            ).trim();
+
+        if (!Number.isInteger(userId) || userId <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid user ID."
+            });
+        }
+
+        const result = await pool.query(
+            `
+            UPDATE users
+            SET
+                account_status = 'SUSPENDED',
+                suspended_at = NOW(),
+                suspension_reason = $2
+            WHERE id = $1
+            RETURNING
+                id,
+                account_status,
+                suspended_at,
+                suspension_reason
+            `,
+            [userId, suspensionReason || null]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found."
+            });
+        }
+
+        const user = result.rows[0];
+
+        return res.status(200).json({
+            success: true,
+            message: "User suspended successfully.",
+            user: {
+                id: user.id,
+                accountStatus: user.account_status,
+                suspendedAt: user.suspended_at,
+                suspensionReason: user.suspension_reason
+            }
+        });
+
+    } catch (error) {
+        console.error("Suspend user error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Unable to suspend user."
+        });
+    }
+}
+
+
+/* ==================================================
+   REACTIVATE USER
+================================================== */
+
+async function reactivateAdminUser(req, res) {
+    try {
+        const userId = Number(req.params.id);
+
+        if (!Number.isInteger(userId) || userId <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid user ID."
+            });
+        }
+
+        const result = await pool.query(
+            `
+            UPDATE users
+            SET
+                account_status = 'ACTIVE',
+                suspended_at = NULL,
+                suspension_reason = NULL
+            WHERE id = $1
+            RETURNING
+                id,
+                account_status,
+                suspended_at,
+                suspension_reason
+            `,
+            [userId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found."
+            });
+        }
+
+        const user = result.rows[0];
+
+        return res.status(200).json({
+            success: true,
+            message: "User reactivated successfully.",
+            user: {
+                id: user.id,
+                accountStatus: user.account_status,
+                suspendedAt: user.suspended_at,
+                suspensionReason: user.suspension_reason
+            }
+        });
+
+    } catch (error) {
+        console.error("Reactivate user error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Unable to reactivate user."
+        });
+    }
+}
+
+
 module.exports = {
     adminLogin,
     getAdminWithdrawals,
@@ -985,5 +1131,7 @@ module.exports = {
     getAdminDeposits,
     getAdminDepositById,
     getAdminUsers,
-    getAdminUserById
+    getAdminUserById,
+    suspendAdminUser,
+    reactivateAdminUser
 };

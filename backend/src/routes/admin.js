@@ -9,7 +9,9 @@ const {
     getAdminDeposits,
     getAdminDepositById,
     getAdminUsers,
-    getAdminUserById
+    getAdminUserById,
+    suspendAdminUser,
+    reactivateAdminUser
 } = require("../controllers/adminController");
 
 const {
@@ -81,6 +83,20 @@ router.get(
     "/users/:id",
     authenticateAdmin,
     getAdminUserById
+);
+
+
+/* Protected admin user account controls */
+router.patch(
+    "/users/:id/suspend",
+    authenticateAdmin,
+    suspendAdminUser
+);
+
+router.patch(
+    "/users/:id/reactivate",
+    authenticateAdmin,
+    reactivateAdminUser
 );
 
 
