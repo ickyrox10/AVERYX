@@ -1137,6 +1137,10 @@ const networkDetails = {
         label:
             "BEP20 / BNB Smart Chain",
 
+
+        minimumWithdrawal:
+            1,
+
         instruction:
             "Paste/Enter a Wallet Address That Supports USDT on BEP20 / BNB Smart Chain.",
 
@@ -1150,6 +1154,10 @@ const networkDetails = {
 
         label:
             "TRC20 / TRON",
+
+
+        minimumWithdrawal:
+            10,
 
         instruction:
             "Paste/Enter a wallet address that supports USDT on the TRC20 / TRON network.",
@@ -1165,6 +1173,10 @@ const networkDetails = {
         label:
             "ERC20 / Ethereum",
 
+
+        minimumWithdrawal:
+            1,
+
         instruction:
             "Paste/Enter a wallet address that supports USDT on the ERC20 / Ethereum network.",
 
@@ -1178,6 +1190,10 @@ const networkDetails = {
 
         label:
             "Polygon PoS",
+
+
+        minimumWithdrawal:
+            1,
 
         instruction:
             "Paste/Enter a wallet address that supports USDT on the Polygon PoS network.",
@@ -1320,6 +1336,32 @@ function updateSelectedNetworkUI() {
 
 
     const details =
+        const selectedDetails =
+            networkDetails[
+                networkInput.value
+            ];
+
+
+        if (
+            selectedDetails &&
+            Number.isFinite(
+                Number(
+                    selectedDetails.minimumWithdrawal
+                )
+            )
+        ) {
+
+            amountInput.placeholder =
+                `Minimum withdrawal is ${selectedDetails.minimumWithdrawal} USDT`;
+
+        } else {
+
+            amountInput.placeholder =
+                "Enter amount";
+
+        }
+
+
         networkDetails[network];
 
 

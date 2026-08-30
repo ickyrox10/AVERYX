@@ -212,6 +212,23 @@ const WITHDRAWAL_MINIMUM_AMOUNTS = {
 };
 
 
+const WITHDRAWAL_MINIMUM_ENV_KEYS = {
+
+    BEP20:
+        "BEP20_MIN_WITHDRAWAL_USDT",
+
+    TRC20:
+        "TRC20_MIN_WITHDRAWAL_USDT",
+
+    ERC20:
+        "ERC20_MIN_WITHDRAWAL_USDT",
+
+    POLYGON:
+        "POLYGON_MIN_WITHDRAWAL_USDT"
+
+};
+
+
 function getWithdrawalMinimumAmount(
     network
 ) {
@@ -222,10 +239,53 @@ function getWithdrawalMinimumAmount(
         .toUpperCase();
 
 
-    return (
-        WITHDRAWAL_MINIMUM_AMOUNTS[
+    const defaultMinimum =
+        Number(
+            WITHDRAWAL_MINIMUM_AMOUNTS[
+                selectedNetwork
+            ]
+        );
+
+
+    const envKey =
+        WITHDRAWAL_MINIMUM_ENV_KEYS[
             selectedNetwork
-        ] || 0
+        ];
+
+
+    const configuredMinimum =
+        envKey
+            ? Number(
+                process.env[
+                    envKey
+                ]
+            )
+            : NaN;
+
+
+    /*
+       Use the Render environment value when it is a
+       valid positive number. Otherwise preserve the
+       existing network default.
+    */
+    if (
+        Number.isFinite(
+            configuredMinimum
+        ) &&
+        configuredMinimum > 0
+    ) {
+
+        return configuredMinimum;
+
+    }
+
+
+    return (
+        Number.isFinite(
+            defaultMinimum
+        )
+            ? defaultMinimum
+            : 0
     );
 
 }
