@@ -1190,22 +1190,48 @@ async function ensurePremiumSystemEnabled() {
     const response =
       await fetch(
         API_BASE_URL +
-        "/api/priority-config/settings"
+        "/api/priority-config/settings",
+        {
+          cache: "no-store"
+        }
       );
 
 
-    const data =
-      await response.json();
+    const responseText =
+      await response.text();
 
 
-    const enabled =
+    let data;
+
+    try {
+
+      data =
+        responseText
+          ? JSON.parse(responseText)
+          : {};
+
+    } catch (error) {
+
+      console.error(
+        "Invalid priority configuration response:",
+        responseText
+      );
+
+      return true;
+
+    }
+
+
+    /*
+       Redirect only when the backend successfully
+       confirms that the priority system is disabled.
+    */
+
+    if (
       response.ok &&
       data.success === true &&
-      data.prioritySystemEnabled === true &&
-      data.averyxPremiumPass?.enabled === true;
-
-
-    if (!enabled) {
+      data.prioritySystemEnabled === false
+    ) {
 
       window.location.replace(
         "dashboard.html"
@@ -1216,22 +1242,48 @@ async function ensurePremiumSystemEnabled() {
     }
 
 
+    /*
+       Redirect only when the backend explicitly
+       confirms that Premium Pass is disabled.
+    */
+
+    if (
+      response.ok &&
+      data.success === true &&
+      data.averyxPremiumPass &&
+      data.averyxPremiumPass.enabled === false
+    ) {
+
+      window.location.replace(
+        "dashboard.html"
+      );
+
+      return false;
+
+    }
+
+
+    /*
+       Keep the page open for API failures or
+       unexpected responses. Do not redirect users
+       because of temporary network/backend issues.
+    */
+
     return true;
 
-  }
-
-  catch (error) {
+  } catch (error) {
 
     console.error(
       "Priority system configuration error:",
       error
     );
 
-    window.location.replace(
-      "dashboard.html"
-    );
 
-    return false;
+    /*
+       Do not redirect on temporary failures.
+    */
+
+    return true;
 
   }
 
