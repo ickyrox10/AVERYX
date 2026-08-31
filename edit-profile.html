@@ -2058,7 +2058,15 @@ document.getElementById(
                     response.status !== 404 &&
                     response.status !== 405
                 ) {
+                    const errorData =
+                        await response
+                            .json()
+                            .catch(
+                                () => ({})
+                            );
+
                     throw new Error(
+                        errorData.message ||
                         "Unable to save profile"
                     );
                 }
