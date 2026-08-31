@@ -60,8 +60,8 @@ button:disabled{opacity:.55;cursor:not-allowed}
 
 <script>
 const API_BASE_URL =
-  window.AVERYX_API_BASE_URL ||
-  (window.location.protocol === "file:" ? "https://averyx.onrender.com" : "");
+    window.AVERYX_API_BASE_URL ||
+    "https://averyx.onrender.com";
 
 const form = document.getElementById("adminLoginForm");
 const message = document.getElementById("message");
