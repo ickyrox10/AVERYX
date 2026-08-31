@@ -14,8 +14,8 @@ const BSC_RPC_URL =
 const BSC_USDT_CONTRACT =
     process.env.BSC_USDT_CONTRACT;
 
-const AVERYX_PREMIUM_BEP20_DEPOSIT_ADDRESS =
-    process.env.AVERYX_PREMIUM_BEP20_DEPOSIT_ADDRESS;
+const PREMIUM_BEP20_DEPOSIT_ADDRESS =
+    process.env.PREMIUM_BEP20_DEPOSIT_ADDRESS;
 
 
 const TRON_API_URL =
@@ -24,8 +24,8 @@ const TRON_API_URL =
 const TRC20_USDT_CONTRACT =
     process.env.TRC20_USDT_CONTRACT;
 
-const AVERYX_PREMIUM_TRC20_DEPOSIT_ADDRESS =
-    process.env.AVERYX_PREMIUM_TRC20_DEPOSIT_ADDRESS;
+const PREMIUM_TRC20_DEPOSIT_ADDRESS =
+    process.env.PREMIUM_TRC20_DEPOSIT_ADDRESS;
 
 
 const ETH_RPC_URL =
@@ -34,8 +34,8 @@ const ETH_RPC_URL =
 const ERC20_USDT_CONTRACT =
     process.env.ERC20_USDT_CONTRACT;
 
-const AVERYX_PREMIUM_ERC20_DEPOSIT_ADDRESS =
-    process.env.AVERYX_PREMIUM_ERC20_DEPOSIT_ADDRESS;
+const PREMIUM_ERC20_DEPOSIT_ADDRESS =
+    process.env.PREMIUM_ERC20_DEPOSIT_ADDRESS;
 
 
 const POLYGON_RPC_URL =
@@ -44,8 +44,45 @@ const POLYGON_RPC_URL =
 const POLYGON_USDT_CONTRACT =
     process.env.POLYGON_USDT_CONTRACT;
 
-const AVERYX_PREMIUM_POLYGON_DEPOSIT_ADDRESS =
-    process.env.AVERYX_PREMIUM_POLYGON_DEPOSIT_ADDRESS;
+const PREMIUM_POLYGON_DEPOSIT_ADDRESS =
+    process.env.PREMIUM_POLYGON_DEPOSIT_ADDRESS;
+
+
+/*
+   Token decimals are configurable because the exact
+   USDT contract used on each network determines units.
+*/
+const PREMIUM_BEP20_USDT_DECIMALS =
+    Number(
+        process.env.PREMIUM_BEP20_USDT_DECIMALS || 18
+    );
+
+const PREMIUM_TRC20_USDT_DECIMALS =
+    Number(
+        process.env.PREMIUM_TRC20_USDT_DECIMALS || 6
+    );
+
+const PREMIUM_ERC20_USDT_DECIMALS =
+    Number(
+        process.env.PREMIUM_ERC20_USDT_DECIMALS || 6
+    );
+
+const PREMIUM_POLYGON_USDT_DECIMALS =
+    Number(
+        process.env.PREMIUM_POLYGON_USDT_DECIMALS || 6
+    );
+
+
+/*
+   Payment comparison tolerance.
+
+   Example:
+   PAYMENT_AMOUNT_TOLERANCE_USDT=0.5
+*/
+const PAYMENT_AMOUNT_TOLERANCE_USDT =
+    Number(
+        process.env.PAYMENT_AMOUNT_TOLERANCE_USDT || 0.5
+    );
 
 
 /* ==================================================
@@ -84,6 +121,62 @@ function roundUSDT(value) {
         Math.round(
             Number(value) * 100000000
         ) / 100000000
+    );
+
+}
+
+
+function getSafeNonNegativeNumber(
+    value,
+    fallback
+) {
+
+    const numberValue =
+        Number(value);
+
+    if (
+        !Number.isFinite(
+            numberValue
+        ) ||
+        numberValue < 0
+    ) {
+        return fallback;
+    }
+
+    return numberValue;
+
+}
+
+
+function amountMatchesExpected(
+    receivedAmount,
+    expectedAmount
+) {
+
+    const received =
+        Number(receivedAmount);
+
+    const expected =
+        Number(expectedAmount);
+
+    const tolerance =
+        getSafeNonNegativeNumber(
+            PAYMENT_AMOUNT_TOLERANCE_USDT,
+            0.5
+        );
+
+    if (
+        !Number.isFinite(received) ||
+        !Number.isFinite(expected)
+    ) {
+        return false;
+    }
+
+    return (
+        Math.abs(
+            received -
+            expected
+        ) <= tolerance
     );
 
 }
@@ -324,7 +417,40 @@ async function getPremiumStatus(
 
                 soldPasses,
 
-                remainingPasses
+                remainingPasses,
+
+                paymentAmountToleranceUSDT:
+                    getSafeNonNegativeNumber(
+                        PAYMENT_AMOUNT_TOLERANCE_USDT,
+                        0.5
+                    ),
+
+                /*
+                   Premium payment addresses are kept separate
+                   from the normal deposit system.
+
+                   The frontend receives these addresses only
+                   through the authenticated Premium status flow.
+                */
+                depositAddresses: {
+
+                    BEP20:
+                        PREMIUM_BEP20_DEPOSIT_ADDRESS ||
+                        null,
+
+                    TRC20:
+                        PREMIUM_TRC20_DEPOSIT_ADDRESS ||
+                        null,
+
+                    ERC20:
+                        PREMIUM_ERC20_DEPOSIT_ADDRESS ||
+                        null,
+
+                    POLYGON:
+                        PREMIUM_POLYGON_DEPOSIT_ADDRESS ||
+                        null
+
+                }
 
             }
 
@@ -498,7 +624,7 @@ async function purchasePremiumPass(
 
             if (
                 !BSC_USDT_CONTRACT ||
-                !AVERYX_PREMIUM_BEP20_DEPOSIT_ADDRESS
+                !PREMIUM_BEP20_DEPOSIT_ADDRESS
             ) {
 
                 throw new Error(
@@ -522,7 +648,7 @@ async function purchasePremiumPass(
 
             const depositAddress =
                 ethers.getAddress(
-                    AVERYX_PREMIUM_BEP20_DEPOSIT_ADDRESS
+                    PREMIUM_BEP20_DEPOSIT_ADDRESS
                 );
 
 
@@ -646,7 +772,7 @@ async function purchasePremiumPass(
                             Number(
                                 ethers.formatUnits(
                                     parsedLog.args.value,
-                                    18
+                                    PREMIUM_BEP20_USDT_DECIMALS
                                 )
                             )
                         );
@@ -692,7 +818,7 @@ async function purchasePremiumPass(
 
             if (
                 !ERC20_USDT_CONTRACT ||
-                !AVERYX_PREMIUM_ERC20_DEPOSIT_ADDRESS
+                !PREMIUM_ERC20_DEPOSIT_ADDRESS
             ) {
 
                 throw new Error(
@@ -716,7 +842,7 @@ async function purchasePremiumPass(
 
             const depositAddress =
                 ethers.getAddress(
-                    AVERYX_PREMIUM_ERC20_DEPOSIT_ADDRESS
+                    PREMIUM_ERC20_DEPOSIT_ADDRESS
                 );
 
 
@@ -840,7 +966,7 @@ async function purchasePremiumPass(
                             Number(
                                 ethers.formatUnits(
                                     parsedLog.args.value,
-                                    6
+                                    PREMIUM_ERC20_USDT_DECIMALS
                                 )
                             )
                         );
@@ -886,7 +1012,7 @@ async function purchasePremiumPass(
 
             if (
                 !POLYGON_USDT_CONTRACT ||
-                !AVERYX_PREMIUM_POLYGON_DEPOSIT_ADDRESS
+                !PREMIUM_POLYGON_DEPOSIT_ADDRESS
             ) {
 
                 throw new Error(
@@ -910,7 +1036,7 @@ async function purchasePremiumPass(
 
             const depositAddress =
                 ethers.getAddress(
-                    AVERYX_PREMIUM_POLYGON_DEPOSIT_ADDRESS
+                    PREMIUM_POLYGON_DEPOSIT_ADDRESS
                 );
 
 
@@ -1034,7 +1160,7 @@ async function purchasePremiumPass(
                             Number(
                                 ethers.formatUnits(
                                     parsedLog.args.value,
-                                    6
+                                    PREMIUM_POLYGON_USDT_DECIMALS
                                 )
                             )
                         );
@@ -1080,7 +1206,7 @@ async function purchasePremiumPass(
 
             if (
                 !TRC20_USDT_CONTRACT ||
-                !AVERYX_PREMIUM_TRC20_DEPOSIT_ADDRESS
+                !PREMIUM_TRC20_DEPOSIT_ADDRESS
             ) {
 
                 throw new Error(
@@ -1203,7 +1329,7 @@ async function purchasePremiumPass(
             const depositAddressHex =
                 tronWeb.address
                     .toHex(
-                        AVERYX_PREMIUM_TRC20_DEPOSIT_ADDRESS
+                        PREMIUM_TRC20_DEPOSIT_ADDRESS
                     )
                     .toLowerCase();
 
@@ -1314,7 +1440,11 @@ async function purchasePremiumPass(
                         roundUSDT(
                             Number(
                                 rawValue
-                            ) / 1_000_000
+                            ) /
+                            (
+                                10 **
+                                PREMIUM_TRC20_USDT_DECIMALS
+                            )
                         );
 
 
@@ -1381,13 +1511,17 @@ async function purchasePremiumPass(
 
 
         /*
-           Premium Pass requires the exact
-           configured payment amount.
+           Premium Pass amount validation.
+
+           The received amount may differ from the configured
+           price by the configured tolerance, default 0.5 USDT.
         */
 
         if (
-            verifiedAmount !==
-            config.priceUSDT
+            !amountMatchesExpected(
+                verifiedAmount,
+                config.priceUSDT
+            )
         ) {
 
             return res.status(400).json({
@@ -1395,13 +1529,19 @@ async function purchasePremiumPass(
                 success: false,
 
                 message:
-                    `Premium Pass requires exactly ${config.priceUSDT} USDT.`,
+                    `Premium Pass payment must match ${config.priceUSDT} USDT within the configured tolerance.`,
 
                 expectedAmount:
                     config.priceUSDT,
 
                 receivedAmount:
-                    verifiedAmount
+                    verifiedAmount,
+
+                toleranceUSDT:
+                    getSafeNonNegativeNumber(
+                        PAYMENT_AMOUNT_TOLERANCE_USDT,
+                        0.5
+                    )
 
             });
 
@@ -1712,6 +1852,97 @@ async function purchasePremiumPass(
             );
 
 
+        /*
+           IMPORTANT PAYMENT SEPARATION
+
+           The Premium Pass payment itself is stored only in
+           averyx_premium_pass_purchases.
+
+           It is NOT inserted into transactions as a deposit,
+           does NOT increase a deposit amount, and therefore
+           cannot unlock investment/reward tiers.
+
+           Only the separately configured Premium reward below
+           is credited to the wallet.
+        */
+
+        /* ------------------------------------------
+           CREDIT PREMIUM PASS REWARD
+
+           The configured reward is credited
+           immediately after successful Premium
+           Pass activation.
+
+           The amount is added to both the user's
+           total wallet balance and withdrawable
+           wallet amount.
+        ------------------------------------------ */
+
+        let walletRewardResult =
+            await client.query(
+                `
+                UPDATE wallets
+                SET
+                    balance_usdt =
+                        balance_usdt + $1,
+
+                    withdrawable_usdt =
+                        withdrawable_usdt + $1,
+
+                    updated_at =
+                        NOW()
+                WHERE user_id = $2
+                RETURNING
+                    balance_usdt,
+                    withdrawable_usdt
+                `,
+                [
+                    config.rewardUSDT,
+                    userId
+                ]
+            );
+
+
+        /*
+           Keep the activation transaction safe even
+           if an older account somehow has no wallet
+           row yet.
+        */
+
+        if (
+            walletRewardResult.rows.length === 0
+        ) {
+
+            walletRewardResult =
+                await client.query(
+                    `
+                    INSERT INTO wallets (
+                        user_id,
+                        balance_usdt,
+                        withdrawable_usdt,
+                        created_at,
+                        updated_at
+                    )
+                    VALUES (
+                        $1,
+                        $2,
+                        $2,
+                        NOW(),
+                        NOW()
+                    )
+                    RETURNING
+                        balance_usdt,
+                        withdrawable_usdt
+                    `,
+                    [
+                        userId,
+                        config.rewardUSDT
+                    ]
+                );
+
+        }
+
+
         await client.query(
             "COMMIT"
         );
@@ -1723,6 +1954,10 @@ async function purchasePremiumPass(
 
         const activatedUser =
             activatedUserResult.rows[0];
+
+
+        const rewardedWallet =
+            walletRewardResult.rows[0];
 
 
         return res.status(201).json({
@@ -1782,12 +2017,31 @@ async function purchasePremiumPass(
                 rewardUSDT:
                     config.rewardUSDT,
 
+                rewardCreditedUSDT:
+                    config.rewardUSDT,
+
                 remainingPasses:
                     Math.max(
                         0,
                         config.totalPasses -
                         soldPasses -
                         1
+                    )
+
+            },
+
+            wallet: {
+
+                balanceUSDT:
+                    Number(
+                        rewardedWallet
+                            .balance_usdt
+                    ),
+
+                withdrawableUSDT:
+                    Number(
+                        rewardedWallet
+                            .withdrawable_usdt
                     )
 
             }

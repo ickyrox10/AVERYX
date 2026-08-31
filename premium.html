@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AVERYX | Premium Pass</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#070709;
+  --panel:#101014;
+  --border:#292930;
+  --border-soft:#202026;
+  --text:#f5f5f7;
+  --muted:#898992;
+  --soft:#606069;
+  --red:#e52249;
+  --red-soft:rgba(229,34,73,.10);
+  --green:#42c998;
+}
+html,body{min-height:100%}
+body{
+  background:
+    radial-gradient(circle at 82% 0%,rgba(126,20,52,.18),transparent 31%),
+    var(--bg);
+  color:var(--text);
+  font-family:Arial,Helvetica,sans-serif;
+}
+a{color:inherit;text-decoration:none}
+button{font:inherit}
+.app{
+  width:100%;
+  max-width:850px;
+  margin:auto;
+  padding:18px 18px 115px;
+}
+
+/* TOP BAR */
+.topbar{
+  height:62px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  border-bottom:1px solid rgba(255,255,255,.035);
+}
+.brand{display:flex;align-items:center;gap:11px}
+.brand img{width:42px;height:42px;object-fit:contain}
+.brand-name{
+  font-family:Georgia,serif;
+  font-size:22px;
+  letter-spacing:3px;
+}
+.profile-button{
+  min-width:176px;height:52px;
+  display:flex;align-items:center;justify-content:flex-end;
+  gap:9px;padding:4px 5px 4px 10px;
+  overflow:hidden;border:none;background:transparent;cursor:pointer;
+}
+.top-profile-details{min-width:0;flex:1;text-align:right;line-height:1.15}
+.top-profile-name{
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  color:#f5f5f7;font-size:10px;font-weight:600;
+}
+.top-profile-id{
+  margin-top:4px;color:var(--muted);font-family:monospace;
+  font-size:8px;letter-spacing:.5px;
+}
+.top-profile-avatar{
+  width:42px;height:42px;flex:0 0 42px;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;border-radius:50%;background:transparent;
+}
+.top-profile-avatar img{width:100%;height:100%;object-fit:contain}
+
+/* HERO */
+.hero{padding:29px 2px 21px}
+.eyebrow{
+  color:var(--muted);font-size:10px;letter-spacing:2.4px;
+  text-transform:uppercase;
+}
+.hero h1{
+  margin-top:7px;font-family:Georgia,serif;
+  font-size:clamp(34px,8vw,48px);
+}
+.hero p{
+  margin-top:8px;color:var(--muted);font-size:12px;line-height:1.6;
+  max-width:560px;
+}
+
+/* PASS CARD */
+.pass-card{
+  position:relative;overflow:hidden;
+  padding:26px 22px 22px;
+  border:1px solid rgba(229,34,73,.28);
+  border-radius:22px;
+  background:
+    radial-gradient(circle at 100% 0%,rgba(229,34,73,.16),transparent 42%),
+    radial-gradient(circle at 0% 100%,rgba(126,20,52,.09),transparent 42%),
+    var(--panel);
+}
+.pass-top{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  gap:18px;
+}
+.pass-label{
+  color:var(--muted);font-size:9px;letter-spacing:1.7px;
+  text-transform:uppercase;
+}
+.pass-title{
+  margin-top:7px;font-family:Georgia,serif;font-size:30px;
+}
+.pass-badge{
+  padding:6px 9px;border-radius:6px;
+  border:1px solid rgba(229,34,73,.28);
+  color:#ef6380;background:var(--red-soft);
+  font-size:8px;letter-spacing:1px;text-transform:uppercase;
+  white-space:nowrap;
+}
+.pass-stats{
+  margin-top:22px;
+  display:grid;grid-template-columns:repeat(3,1fr);
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+}
+.pass-stat{padding:18px 14px;min-width:0}
+.pass-stat + .pass-stat{border-left:1px solid var(--border)}
+.stat-label{
+  color:var(--muted);font-size:8px;letter-spacing:1.4px;
+  text-transform:uppercase;
+}
+.stat-value{
+  margin-top:7px;font-family:Georgia,serif;font-size:20px;
+  word-break:break-word;
+}
+.stat-value small{
+  color:var(--muted);font-family:Arial,sans-serif;font-size:9px;
+}
+.status-active{color:var(--green)}
+.status-inactive{color:#ef6380}
+.pass-note{
+  margin-top:16px;color:var(--muted);font-size:9px;line-height:1.6;
+}
+.pass-note strong{color:#f0f0f3}
+
+/* SECTIONS */
+.section{margin-top:28px}
+.section-head{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:12px;
+}
+.section-title{font-family:Georgia,serif;font-size:22px}
+.section-link{color:var(--muted);font-size:9px}
+
+.benefits{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:10px;
+}
+.benefit{
+  min-height:178px;padding:20px;
+  border:1px solid var(--border);border-radius:16px;background:var(--panel);
+}
+.benefit-icon{
+  width:37px;height:37px;display:flex;align-items:center;justify-content:center;
+  border-radius:10px;background:#18181d;color:#ef6380;font-size:15px;
+}
+.benefit-title{margin-top:15px;font-size:12px;font-weight:600}
+.benefit-desc{
+  margin-top:7px;color:var(--soft);font-size:9px;line-height:1.65;
+}
+
+/* DETAILS */
+.details{
+  overflow:hidden;border:1px solid var(--border);
+  border-radius:17px;background:var(--panel);
+}
+.detail-row{
+  min-height:64px;display:flex;align-items:center;justify-content:space-between;
+  gap:18px;padding:13px 16px;border-bottom:1px solid var(--border-soft);
+}
+.detail-row:last-child{border-bottom:0}
+.detail-left{min-width:0}
+.detail-label{
+  color:var(--muted);font-size:8px;letter-spacing:1.3px;text-transform:uppercase;
+}
+.detail-desc{margin-top:5px;color:var(--soft);font-size:9px;line-height:1.5}
+.detail-value{
+  flex:0 0 auto;text-align:right;font-size:11px;font-weight:600;
+}
+.reward-value{color:var(--green)}
+.price-value{color:#ef6380}
+
+/* ACTION */
+.action-card{
+  margin-top:13px;padding:20px;
+  border:1px solid rgba(229,34,73,.28);border-radius:17px;
+  background:linear-gradient(135deg,rgba(229,34,73,.09),rgba(16,16,20,.96));
+}
+.action-title{font-family:Georgia,serif;font-size:21px}
+.action-desc{margin-top:7px;color:var(--muted);font-size:10px;line-height:1.6}
+.action-button{
+  width:100%;min-height:49px;margin-top:17px;
+  border:1px solid rgba(229,34,73,.65);border-radius:10px;
+  background:rgba(229,34,73,.10);color:#ff3d61;
+  cursor:pointer;font-size:11px;font-weight:600;
+}
+.action-button:hover{background:rgba(229,34,73,.15)}
+.action-button:disabled{opacity:.55;cursor:not-allowed}
+
+.message{
+  display:none;margin-top:13px;padding:12px 14px;
+  border-radius:12px;border:1px solid var(--border);
+  background:var(--panel);color:var(--muted);font-size:10px;line-height:1.5;
+}
+.message.show{display:block}
+.message.error{border-color:rgba(229,34,73,.35);color:#ef6380}
+
+/* BOTTOM NAV */
+.bottom-nav{
+  position:fixed;left:50%;bottom:14px;transform:translateX(-50%);
+  width:calc(100% - 28px);max-width:760px;
+  display:grid;grid-template-columns:repeat(6,1fr);gap:4px;padding:7px;
+  border:1px solid var(--border);border-radius:18px;
+  background:rgba(11,11,15,.94);backdrop-filter:blur(16px);z-index:20;
+}
+.nav-item{
+  min-height:49px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:4px;border-radius:12px;
+  color:#707078;font-size:8px;
+}
+.nav-icon{font-size:15px}
+.nav-item.active{color:white;background:rgba(229,34,73,.12)}
+
+@media(max-width:560px){
+  .app{padding:15px 15px 115px}
+  .profile-button{min-width:135px}
+  .pass-stats{grid-template-columns:1fr}
+  .pass-stat + .pass-stat{border-left:0;border-top:1px solid var(--border)}
+  .benefits{grid-template-columns:1fr}
+  .bottom-nav{width:calc(100% - 20px);bottom:10px}
+  .nav-item{font-size:7px}
+  .nav-icon{font-size:13px}
+}
+@media(max-width:390px){
+  .brand-name{font-size:19px}
+  .profile-button{min-width:118px}
+  .top-profile-name{font-size:9px}
+}
+</style>
+</head>
+
+<body>
+<main class="app">
+
+  <header class="topbar">
+    <a href="dashboard.html" class="brand" aria-label="AVERYX Home">
+      <img src="logo.png" alt="AVERYX Logo" onerror="this.style.display='none'">
+      <div class="brand-name">AVERYX</div>
+    </a>
+
+    <button class="profile-button" id="profileButton" type="button">
+      <div class="top-profile-details">
+        <div class="top-profile-name" id="profileName">Loading...</div>
+        <div class="top-profile-id" id="profileUID">ID: -----</div>
+      </div>
+      <div class="top-profile-avatar">
+        <img id="profileAvatar" src="tier-fool.png" alt="Profile">
+      </div>
+    </button>
+  </header>
+
+  <section class="hero">
+    <div class="eyebrow">A-PASS</div>
+    <h1>Premium Pass</h1>
+    <p>Unlock priority access with faster withdrawal handling and an extra exclusive reward.</p>
+  </section>
+
+  <section class="pass-card">
+    <div class="pass-top">
+      <div>
+        <div class="pass-label">AVERYX Premium Access</div>
+        <div class="pass-title">Priority Pass</div>
+      </div>
+      <div class="pass-badge" id="passBadge">Checking</div>
+    </div>
+
+    <div class="pass-stats">
+      <div class="pass-stat">
+        <div class="stat-label">Pass Status</div>
+        <div class="stat-value status-inactive" id="passStatus">Checking...</div>
+      </div>
+      <div class="pass-stat">
+        <div class="stat-label">Pass Price</div>
+        <div class="stat-value" id="passPrice">-- <small>USDT</small></div>
+      </div>
+      <div class="pass-stat">
+        <div class="stat-label">Remaining</div>
+        <div class="stat-value" id="remainingPasses">--</div>
+      </div>
+    </div>
+
+    <div class="pass-note">
+      Premium withdrawal processing follows the configured priority system.
+      <strong>No countdown is shown here.</strong>
+    </div>
+  </section>
+
+  <div class="message" id="pageMessage"></div>
+
+  <section class="section">
+    <div class="section-head">
+      <h2 class="section-title">Premium Benefits</h2>
+    </div>
+
+    <div class="benefits">
+      <article class="benefit">
+        <div class="benefit-icon">↑</div>
+        <div class="benefit-title">Prioritized & Faster Withdrawals</div>
+        <div class="benefit-desc">
+          Premium members receive priority withdrawal handling according to
+          the configured Premium processing rules.
+        </div>
+      </article>
+
+      <article class="benefit">
+        <div class="benefit-icon">✦</div>
+        <div class="benefit-title">Extra & Exclusive Reward</div>
+        <div class="benefit-desc">
+          Receive the configured exclusive Premium Pass reward after
+          successful activation.
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <h2 class="section-title">Pass Details</h2>
+    </div>
+
+    <div class="details">
+      <div class="detail-row">
+        <div class="detail-left">
+          <div class="detail-label">Exclusive Reward</div>
+          <div class="detail-desc">
+            Configured reward credited after successful activation.
+          </div>
+        </div>
+        <div class="detail-value reward-value" id="rewardAmount">
+          -- USDT
+        </div>
+      </div>
+
+      <div class="detail-row">
+        <div class="detail-left">
+          <div class="detail-label">Pass Availability</div>
+          <div class="detail-desc">
+            Availability updates from the configured total pass limit.
+          </div>
+        </div>
+        <div class="detail-value" id="availabilityValue">
+          Checking...
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="action-card" id="actionCard">
+    <div class="action-title" id="actionTitle">
+      Unlock Premium Access
+    </div>
+
+    <div class="action-desc" id="actionDescription">
+      Activate your Premium Pass to receive priority withdrawal access
+      and the exclusive reward.
+    </div>
+
+    <button
+      class="action-button"
+      id="unlockButton"
+      type="button"
+    >
+      ACTIVATE PREMIUM PASS
+    </button>
+  </section>
+
+</main>
+
+<nav class="bottom-nav" id="bottomNav">
+
+  <a href="dashboard.html" class="nav-item">
+    <span class="nav-icon">⌂</span>
+    <span>Home</span>
+  </a>
+
+  <a href="subscription.html" class="nav-item">
+    <span class="nav-icon">◇</span>
+    <span>Subscription</span>
+  </a>
+
+  <a href="wallet.html" class="nav-item">
+    <span class="nav-icon">◈</span>
+    <span>Wallet</span>
+  </a>
+
+  <a
+    href="premium.html"
+    class="nav-item active"
+    id="aPassNav"
+  >
+    <span class="nav-icon">✦</span>
+    <span>A-Pass</span>
+  </a>
+
+  <a href="records.html" class="nav-item">
+    <span class="nav-icon">≡</span>
+    <span>Records</span>
+  </a>
+
+  <a href="profile.html" class="nav-item">
+    <span class="nav-icon">○</span>
+    <span>Profile</span>
+  </a>
+
+</nav>
+
+<script src="auth-guard.js"></script>
+
+<script>
+
+const API_BASE_URL =
+  window.AVERYX_API_BASE_URL ||
+  (
+    window.location.protocol === "file:"
+      ? "https://averyx.onrender.com"
+      : ""
+  );
+
+
+const TIERS = [
+  {
+    level: 1,
+    logo: "tier-fool.png"
+  },
+  {
+    level: 2,
+    logo: "tier-prodigy.png"
+  },
+  {
+    level: 3,
+    logo: "tier-magician.png"
+  },
+  {
+    level: 4,
+    logo: "tier-conqueror.png"
+  },
+  {
+    level: 5,
+    logo: "tier-emperor.png"
+  },
+  {
+    level: 6,
+    logo: "shadow-monarch.png"
+  },
+  {
+    level: 7,
+    logo: "tier-berserk.png"
+  }
+];
+
+
+/* ==================================================
+   TOKEN
+================================================== */
+
+function getToken() {
+
+  return (
+    localStorage.getItem("averyx_token") ||
+    localStorage.getItem("token") ||
+    localStorage.getItem("authToken") ||
+    localStorage.getItem("jwt") ||
+    ""
+  );
+
+}
+
+
+/* ==================================================
+   SAVED PROFILE
+================================================== */
+
+function getSavedProfile() {
+
+  try {
+
+    const raw =
+      localStorage.getItem("averyx_profile");
+
+    return raw
+      ? JSON.parse(raw)
+      : {};
+
+  } catch {
+
+    return {};
+
+  }
+
+}
+
+
+/* ==================================================
+   STORED USER
+================================================== */
+
+function getStoredUser() {
+
+  const keys = [
+    "user",
+    "currentUser",
+    "userData",
+    "averyx_user"
+  ];
+
+
+  for (const key of keys) {
+
+    try {
+
+      const raw =
+        localStorage.getItem(key);
+
+      if (raw) {
+
+        return JSON.parse(raw);
+
+      }
+
+    } catch {}
+
+  }
+
+
+  return {};
+
+}
+
+
+/* ==================================================
+   RESOLVE USER
+================================================== */
+
+function resolveUser(data) {
+
+  return (
+    data &&
+    (
+      data.user ||
+      data.data?.user ||
+      data.data
+    )
+  ) || {};
+
+}
+
+
+/* ==================================================
+   UPDATE PROFILE HEADER
+================================================== */
+
+function updateProfile(user) {
+
+  const savedProfile =
+    getSavedProfile();
+
+
+  const nickname =
+    user.nickname ||
+    user.name ||
+    savedProfile.nickname ||
+    savedProfile.name ||
+    "Member";
+
+
+  const uid =
+    user.publicUid ||
+    user.public_uid ||
+    user.uid ||
+    savedProfile.publicUid ||
+    savedProfile.public_uid ||
+    savedProfile.uid ||
+    "-----";
+
+
+  const selectedLevel =
+    Number(
+      savedProfile.selectedTierLevel ||
+      savedProfile.tierLevel ||
+      savedProfile.selectedTier ||
+      user.selectedTierLevel ||
+      user.tierLevel ||
+      1
+    );
+
+
+  const tier =
+    TIERS.find(
+      t => t.level === selectedLevel
+    ) ||
+    TIERS[0];
+
+
+  document.getElementById(
+    "profileName"
+  ).textContent =
+    nickname;
+
+
+  document.getElementById(
+    "profileUID"
+  ).textContent =
+    "ID: " + uid;
+
+
+  document.getElementById(
+    "profileAvatar"
+  ).src =
+    savedProfile.avatar ||
+    savedProfile.profileImage ||
+    user.avatar ||
+    user.profileImage ||
+    tier.logo;
+
+}
+
+
+/* ==================================================
+   FORMAT USDT
+================================================== */
+
+function formatUSDT(value) {
+
+  const n =
+    Number(value);
+
+
+  return Number.isFinite(n)
+
+    ? n.toLocaleString(
+        undefined,
+        {
+          maximumFractionDigits: 6
+        }
+      )
+
+    : "--";
+
+}
+
+
+/* ==================================================
+   MESSAGE
+================================================== */
+
+function showMessage(
+  message,
+  type = ""
+) {
+
+  const box =
+    document.getElementById(
+      "pageMessage"
+    );
+
+
+  box.textContent =
+    message;
+
+
+  box.className =
+    "message show" +
+    (
+      type
+        ? " " + type
+        : ""
+    );
+
+}
+
+
+/* ==================================================
+   HIDE PREMIUM NAV
+================================================== */
+
+function hidePremiumEverywhere() {
+
+  const nav =
+    document.getElementById(
+      "bottomNav"
+    );
+
+
+  const aPass =
+    document.getElementById(
+      "aPassNav"
+    );
+
+
+  if (aPass) {
+
+    aPass.remove();
+
+  }
+
+
+  if (nav) {
+
+    nav.style.gridTemplateColumns =
+      "repeat(5, 1fr)";
+
+  }
+
+}
+
+
+/* ==================================================
+   PREMIUM ENABLED CHECK
+================================================== */
+
+function premiumEnabledFrom(data) {
+
+  const root =
+    data || {};
+
+
+  const pass =
+    root.pass ||
+    root.data?.pass ||
+    {};
+
+
+  const enabled =
+    root.premiumPassEnabled ??
+    root.data?.premiumPassEnabled ??
+    pass.enabled ??
+    pass.isEnabled;
+
+
+  return enabled !== false;
+
+}
+
+
+/* ==================================================
+   NORMALIZE STATUS
+================================================== */
+
+function normalizeStatus(data) {
+
+  const root =
+    data || {};
+
+
+  const premium =
+    root.premium ||
+    root.data?.premium ||
+    {};
+
+
+  const pass =
+    root.pass ||
+    root.data?.pass ||
+    {};
+
+
+  const config =
+    root.config ||
+    root.data?.config ||
+    {};
+
+
+  const active =
+
+    premium.active === true ||
+
+    premium.isActive === true ||
+
+    root.isPremium === true ||
+
+    root.premiumActive === true;
+
+
+  const price =
+
+    pass.priceUSDT ??
+
+    pass.price_usdt ??
+
+    config.priceUSDT ??
+
+    config.price_usdt ??
+
+    root.priceUSDT ??
+
+    root.price ??
+
+    0;
+
+
+  const reward =
+
+    pass.rewardUSDT ??
+
+    pass.reward_usdt ??
+
+    config.rewardUSDT ??
+
+    config.reward_usdt ??
+
+    root.rewardUSDT ??
+
+    root.reward ??
+
+    0;
+
+
+  const total =
+
+    pass.totalPasses ??
+
+    pass.total ??
+
+    config.totalPasses ??
+
+    config.total ??
+
+    root.totalPasses ??
+
+    0;
+
+
+  const sold =
+
+    pass.soldPasses ??
+
+    pass.sold ??
+
+    root.soldPasses ??
+
+    0;
+
+
+  const remaining =
+
+    pass.remainingPasses ??
+
+    pass.remaining ??
+
+    root.remainingPasses ??
+
+    (
+      Number(total) > 0
+
+        ? Math.max(
+            0,
+            Number(total) -
+            Number(sold)
+          )
+
+        : 0
+    );
+
+
+  return {
+
+    active,
+
+    price,
+
+    reward,
+
+    total,
+
+    sold,
+
+    remaining,
+
+    soldOut:
+
+      Number(total) > 0 &&
+
+      Number(remaining) <= 0
+
+  };
+
+}
+
+
+/* ==================================================
+   UPDATE PREMIUM UI
+================================================== */
+
+function updatePremiumUI(rawData) {
+
+  if (
+    !premiumEnabledFrom(
+      rawData
+    )
+  ) {
+
+    hidePremiumEverywhere();
+
+    window.location.replace(
+      "dashboard.html"
+    );
+
+    return;
+
+  }
+
+
+  const data =
+    normalizeStatus(
+      rawData
+    );
+
+
+  const passStatus =
+    document.getElementById(
+      "passStatus"
+    );
+
+
+  const passBadge =
+    document.getElementById(
+      "passBadge"
+    );
+
+
+  const button =
+    document.getElementById(
+      "unlockButton"
+    );
+
+
+  const actionTitle =
+    document.getElementById(
+      "actionTitle"
+    );
+
+
+  const actionDescription =
+    document.getElementById(
+      "actionDescription"
+    );
+
+
+  passStatus.textContent =
+    data.active
+      ? "ACTIVE"
+      : "NOT ACTIVE";
+
+
+  passStatus.className =
+    "stat-value " +
+    (
+      data.active
+        ? "status-active"
+        : "status-inactive"
+    );
+
+
+  passBadge.textContent =
+    data.active
+      ? "ACTIVE PREMIUM"
+      : "PREMIUM ACCESS";
+
+
+  document.getElementById(
+    "passPrice"
+  ).innerHTML =
+
+    formatUSDT(
+      data.price
+    ) +
+
+    ' <small>USDT</small>';
+
+
+  document.getElementById(
+    "remainingPasses"
+  ).textContent =
+
+    data.total
+
+      ? formatUSDT(
+          data.remaining
+        )
+
+      : "--";
+
+
+  document.getElementById(
+    "rewardAmount"
+  ).textContent =
+
+    formatUSDT(
+      data.reward
+    ) +
+
+    " USDT";
+
+
+  document.getElementById(
+    "availabilityValue"
+  ).textContent =
+
+    data.total
+
+      ? formatUSDT(
+          data.remaining
+        ) +
+
+        " of " +
+
+        formatUSDT(
+          data.total
+        ) +
+
+        " remaining"
+
+      : "Checking...";
+
+
+  if (
+    data.active
+  ) {
+
+    actionTitle.textContent =
+      "Premium Pass Active";
+
+
+    actionDescription.textContent =
+      "Your account already has Premium access and priority withdrawal handling.";
+
+
+    button.textContent =
+      "PREMIUM PASS ACTIVE";
+
+
+    button.disabled =
+      true;
+
+  }
+
+  else if (
+    data.soldOut
+  ) {
+
+    actionTitle.textContent =
+      "Premium Pass Unavailable";
+
+
+    actionDescription.textContent =
+      "All currently configured Premium Passes have been activated.";
+
+
+    button.textContent =
+      "PREMIUM PASSES SOLD OUT";
+
+
+    button.disabled =
+      true;
+
+  }
+
+  else {
+
+    actionTitle.textContent =
+      "Unlock Premium Access";
+
+
+    actionDescription.textContent =
+      "Continue to the Premium Pass activation flow to complete your purchase.";
+
+
+    button.textContent =
+      "ACTIVATE PREMIUM PASS";
+
+
+    button.disabled =
+      false;
+
+  }
+
+}
+
+
+/* ==================================================
+   LOAD USER PROFILE
+================================================== */
+
+async function loadUserProfile() {
+
+  const token =
+    getToken();
+
+
+  updateProfile(
+    getStoredUser()
+  );
+
+
+  if (!token) {
+
+    return;
+
+  }
+
+
+  const endpoints = [
+
+    "/api/auth/me",
+
+    "/api/users/me",
+
+    "/api/profile/me"
+
+  ];
+
+
+  for (
+    const endpoint
+    of endpoints
+  ) {
+
+    try {
+
+      const response =
+        await fetch(
+          API_BASE_URL +
+          endpoint,
+          {
+            headers: {
+
+              Authorization:
+                "Bearer " +
+                token
+
+            }
+          }
+        );
+
+
+      if (
+        !response.ok
+      ) {
+
+        continue;
+
+      }
+
+
+      const data =
+        await response.json();
+
+
+      updateProfile(
+        resolveUser(
+          data
+        )
+      );
+
+
+      return;
+
+    }
+
+    catch {}
+
+  }
+
+}
+
+
+/* ==================================================
+   LOAD PREMIUM STATUS
+================================================== */
+
+async function loadPremiumStatus() {
+
+  const token =
+    getToken();
+
+
+  if (!token) {
+
+    showMessage(
+      "Authentication required. Please log in again.",
+      "error"
+    );
+
+    return;
+
+  }
+
+
+  try {
+
+    const response =
+      await fetch(
+        API_BASE_URL +
+        "/api/premium/status",
+        {
+          method: "GET",
+
+          headers: {
+
+            "Content-Type":
+              "application/json",
+
+            "Authorization":
+              "Bearer " +
+              token
+
+          }
+        }
+      );
+
+
+    const data =
+      await response.json();
+
+
+    if (
+      !response.ok ||
+
+      data.success === false
+    ) {
+
+      throw new Error(
+        data.message ||
+        "Unable to load Premium Pass status."
+      );
+
+    }
+
+
+    updatePremiumUI(
+      data
+    );
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "Premium status error:",
+      error
+    );
+
+
+    showMessage(
+      error.message ||
+      "Unable to load Premium Pass status.",
+      "error"
+    );
+
+  }
+
+}
+
+
+/* ==================================================
+   PROFILE BUTTON
+================================================== */
+
+document.getElementById(
+  "profileButton"
+).addEventListener(
+  "click",
+  () => {
+
+    window.location.href =
+      "profile.html";
+
+  }
+);
+
+
+/* ==================================================
+   OPEN PREMIUM PAYMENT FLOW
+================================================== */
+
+document.getElementById(
+  "unlockButton"
+).addEventListener(
+  "click",
+  () => {
+
+    const button =
+      document.getElementById(
+        "unlockButton"
+      );
+
+
+    if (
+      button.disabled
+    ) {
+
+      return;
+
+    }
+
+
+    /*
+      The payment page checks this
+      short-lived frontend intent.
+
+      Direct navigation without this
+      intent returns the user to
+      premium.html.
+    */
+
+    sessionStorage.setItem(
+
+      "averyx_premium_payment_intent",
+
+      JSON.stringify({
+
+        source:
+          "premium",
+
+        createdAt:
+          Date.now()
+
+      })
+
+    );
+
+
+    window.location.href =
+      "premium-payment.html";
+
+  }
+);
+
+
+/* ==================================================
+   INITIAL LOAD
+================================================== */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  async () => {
+
+    await loadUserProfile();
+
+    await loadPremiumStatus();
+
+  }
+);
+
+</script>
+
+</body>
+</html>

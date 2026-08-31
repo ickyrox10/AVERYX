@@ -1,0 +1,1793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AVERYX | Premium Pass Payment</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --bg: #070709;
+    --panel: #101014;
+    --border: #292930;
+    --text: #f5f5f7;
+    --muted: #898992;
+    --red: #e52249;
+    --green: #42c998;
+}
+
+body {
+    min-height: 100vh;
+    background:
+        radial-gradient(
+            circle at 90% 0%,
+            rgba(229,34,73,.14),
+            transparent 32%
+        ),
+        var(--bg);
+
+    color: var(--text);
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+}
+
+.app {
+    width: 100%;
+    max-width: 850px;
+
+    margin: auto;
+
+    padding:
+        18px
+        18px
+        50px;
+}
+
+/* =========================
+   TOP BAR
+========================= */
+
+.topbar {
+    height: 62px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    border-bottom:
+        1px solid
+        rgba(255,255,255,.04);
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+
+    gap: 11px;
+
+    text-decoration: none;
+    color: inherit;
+}
+
+.brand img {
+    width: 42px;
+    height: 42px;
+
+    object-fit: contain;
+}
+
+.brand-name {
+    font-family: Georgia, serif;
+
+    font-size: 22px;
+
+    letter-spacing: 3px;
+}
+
+.back {
+    border:
+        1px solid
+        var(--border);
+
+    background:
+        var(--panel);
+
+    color:
+        var(--text);
+
+    padding:
+        10px
+        14px;
+
+    border-radius: 10px;
+
+    cursor: pointer;
+
+    font-size: 10px;
+}
+
+/* =========================
+   HERO
+========================= */
+
+.hero {
+    padding:
+        30px
+        2px
+        22px;
+}
+
+.eyebrow {
+    font-size: 9px;
+
+    letter-spacing: 2px;
+
+    color:
+        var(--muted);
+}
+
+h1 {
+    margin-top: 8px;
+
+    font-family:
+        Georgia,
+        serif;
+
+    font-size: 40px;
+}
+
+.hero p {
+    margin-top: 9px;
+
+    color:
+        var(--muted);
+
+    font-size: 11px;
+
+    line-height: 1.6;
+}
+
+/* =========================
+   CARD
+========================= */
+
+.card {
+    border:
+        1px solid
+        var(--border);
+
+    background:
+        var(--panel);
+
+    border-radius: 20px;
+
+    padding: 22px;
+
+    margin-top: 14px;
+}
+
+.amount-card {
+    border-color:
+        rgba(229,34,73,.3);
+
+    background:
+        radial-gradient(
+            circle at 100% 0%,
+            rgba(229,34,73,.13),
+            transparent 42%
+        ),
+        var(--panel);
+}
+
+.label {
+    font-size: 8px;
+
+    letter-spacing: 1.5px;
+
+    color:
+        var(--muted);
+
+    text-transform:
+        uppercase;
+}
+
+.amount {
+    font-family:
+        Georgia,
+        serif;
+
+    font-size: 38px;
+
+    margin-top: 8px;
+}
+
+.amount small {
+    font-family:
+        Arial,
+        sans-serif;
+
+    font-size: 12px;
+
+    color:
+        var(--muted);
+}
+
+.note {
+    margin-top: 9px;
+
+    color:
+        var(--muted);
+
+    font-size: 9px;
+
+    line-height: 1.6;
+}
+
+/* =========================
+   SECTION
+========================= */
+
+.section-title {
+    font-family:
+        Georgia,
+        serif;
+
+    font-size: 22px;
+
+    margin-bottom: 13px;
+}
+
+/* =========================
+   NETWORKS
+========================= */
+
+.networks {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4,1fr);
+
+    gap: 9px;
+}
+
+.network {
+    padding:
+        13px
+        8px;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius: 11px;
+
+    background:
+        #121217;
+
+    color:
+        var(--muted);
+
+    cursor: pointer;
+
+    font-size: 10px;
+}
+
+.network.active {
+    border-color:
+        rgba(229,34,73,.65);
+
+    color:
+        #fff;
+
+    background:
+        rgba(229,34,73,.08);
+}
+
+/* =========================
+   ADDRESS
+========================= */
+
+.address-box {
+    margin-top: 14px;
+
+    padding: 15px;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius: 13px;
+
+    background:
+        #0c0c10;
+}
+
+.address {
+    margin-top: 8px;
+
+    font-family:
+        monospace;
+
+    font-size: 10px;
+
+    line-height: 1.6;
+
+    word-break:
+        break-all;
+
+    color:
+        #ddd;
+}
+
+.copy {
+    margin-top: 12px;
+
+    width: 100%;
+
+    padding: 12px;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius: 9px;
+
+    background:
+        #17171c;
+
+    color:
+        #fff;
+
+    cursor: pointer;
+
+    font-size: 10px;
+}
+
+/* =========================
+   QR
+========================= */
+
+.qr-wrap {
+    display: flex;
+
+    justify-content: center;
+
+    padding:
+        24px
+        0
+        8px;
+}
+
+.qr {
+    background:
+        #fff;
+
+    padding: 10px;
+
+    border-radius: 10px;
+
+    min-width: 160px;
+    min-height: 160px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+}
+
+.qr.empty {
+    color:
+        #555;
+
+    background:
+        #16161b;
+
+    font-size: 10px;
+}
+
+/* =========================
+   TRANSACTION HASH
+========================= */
+
+.hash {
+    width: 100%;
+
+    margin-top: 12px;
+
+    padding: 15px;
+
+    border-radius: 10px;
+
+    border:
+        1px solid
+        var(--border);
+
+    background:
+        #0b0b0f;
+
+    color:
+        #fff;
+
+    outline: none;
+
+    font-size: 11px;
+}
+
+.hash:focus {
+    border-color:
+        rgba(229,34,73,.6);
+}
+
+/* =========================
+   BUTTON
+========================= */
+
+.submit {
+    width: 100%;
+
+    min-height: 50px;
+
+    margin-top: 12px;
+
+    border:
+        1px solid
+        rgba(229,34,73,.65);
+
+    border-radius: 10px;
+
+    background:
+        rgba(229,34,73,.12);
+
+    color:
+        #ff496a;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    font-size: 11px;
+}
+
+.submit:disabled {
+    opacity: .5;
+
+    cursor:
+        not-allowed;
+}
+
+/* =========================
+   MESSAGE
+========================= */
+
+.message {
+    display: none;
+
+    margin-top: 13px;
+
+    padding:
+        12px
+        14px;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius: 10px;
+
+    font-size: 10px;
+
+    line-height: 1.5;
+
+    color:
+        var(--muted);
+}
+
+.message.show {
+    display: block;
+}
+
+.message.error {
+    border-color:
+        rgba(229,34,73,.4);
+
+    color:
+        #ef6380;
+}
+
+.message.success {
+    border-color:
+        rgba(66,201,152,.4);
+
+    color:
+        var(--green);
+}
+
+@media(max-width:560px) {
+
+    .app {
+        padding: 15px;
+    }
+
+    .networks {
+        grid-template-columns:
+            repeat(2,1fr);
+    }
+
+    h1 {
+        font-size: 34px;
+    }
+
+    .amount {
+        font-size: 34px;
+    }
+
+}
+</style>
+</head>
+
+<body>
+
+<main class="app">
+
+<header class="topbar">
+
+<a
+    href="premium.html"
+    class="brand"
+>
+
+<img
+    src="logo.png"
+    alt="AVERYX"
+    onerror="this.style.display='none'"
+>
+
+<span class="brand-name">
+AVERYX
+</span>
+
+</a>
+
+<button
+    class="back"
+    id="backButton"
+>
+← BACK
+</button>
+
+</header>
+
+
+<section class="hero">
+
+<div class="eyebrow">
+A-PASS ACTIVATION
+</div>
+
+<h1>
+Complete Payment
+</h1>
+
+<p>
+Send the exact Premium Pass payment to the selected network address,
+then submit your transaction hash for verification.
+</p>
+
+</section>
+
+
+<div
+    class="message"
+    id="message"
+></div>
+
+
+<!-- FIXED PRICE -->
+
+<section class="card amount-card">
+
+<div class="label">
+Fixed Premium Pass Price
+</div>
+
+<div
+    class="amount"
+    id="priceAmount"
+>
+Loading...
+<small>USDT</small>
+</div>
+
+<div class="note">
+This amount is fixed by the AVERYX Premium configuration
+and cannot be edited here.
+</div>
+
+</section>
+
+
+<!-- NETWORK -->
+
+<section class="card">
+
+<h2 class="section-title">
+1. Select Network
+</h2>
+
+<div
+    class="networks"
+    id="networkList"
+>
+
+<button
+    class="network"
+    data-network="BEP20"
+>
+BEP20
+</button>
+
+<button
+    class="network"
+    data-network="TRC20"
+>
+TRC20
+</button>
+
+<button
+    class="network"
+    data-network="ERC20"
+>
+ERC20
+</button>
+
+<button
+    class="network"
+    data-network="POLYGON"
+>
+POLYGON
+</button>
+
+</div>
+
+<div
+    class="note"
+    id="networkHint"
+>
+Select a network to load its Premium payment address.
+</div>
+
+</section>
+
+
+<!-- PAYMENT -->
+
+<section class="card">
+
+<h2 class="section-title">
+2. Send Payment
+</h2>
+
+<div
+    class="label"
+    id="addressLabel"
+>
+Premium Deposit Address
+</div>
+
+<div class="address-box">
+
+<div
+    class="address"
+    id="depositAddress"
+>
+Select a network first.
+</div>
+
+<button
+    class="copy"
+    id="copyButton"
+    disabled
+>
+COPY ADDRESS
+</button>
+
+</div>
+
+
+<div class="qr-wrap">
+
+<div
+    class="qr empty"
+    id="qrBox"
+>
+QR unavailable until an address is selected
+</div>
+
+</div>
+
+
+<div class="note">
+
+Send USDT only on the selected network.
+A payment to the wrong network or address
+may not be eligible for Premium activation.
+
+</div>
+
+</section>
+
+
+<!-- TRANSACTION -->
+
+<section class="card">
+
+<h2 class="section-title">
+3. Submit Transaction
+</h2>
+
+<div class="note">
+
+After sending the fixed amount,
+paste the transaction hash below.
+
+The backend independently verifies the payment
+and activates the pass only after successful verification.
+
+</div>
+
+
+<input
+    class="hash"
+    id="txHash"
+    autocomplete="off"
+    spellcheck="false"
+    placeholder="Paste transaction hash"
+>
+
+
+<button
+    class="submit"
+    id="submitButton"
+>
+VERIFY & ACTIVATE PREMIUM PASS
+</button>
+
+</section>
+
+</main>
+
+
+<script>
+
+/* ==================================================
+   API
+================================================== */
+
+const API_BASE_URL =
+
+    window.AVERYX_API_BASE_URL ||
+
+    (
+
+        location.protocol === "file:"
+
+            ? "https://averyx.onrender.com"
+
+            : ""
+
+    );
+
+
+/* ==================================================
+   STATE
+================================================== */
+
+let premiumStatus =
+    null;
+
+
+let selectedNetwork =
+    "";
+
+
+let selectedAddress =
+    "";
+
+
+/* ==================================================
+   TOKEN
+================================================== */
+
+function getToken() {
+
+    return (
+
+        localStorage.getItem(
+            "averyx_token"
+        ) ||
+
+        localStorage.getItem(
+            "token"
+        ) ||
+
+        localStorage.getItem(
+            "authToken"
+        ) ||
+
+        localStorage.getItem(
+            "jwt"
+        ) ||
+
+        ""
+
+    );
+
+}
+
+
+/* ==================================================
+   MESSAGE
+================================================== */
+
+function showMessage(
+    message,
+    type = ""
+) {
+
+    const el =
+        document.getElementById(
+            "message"
+        );
+
+
+    el.textContent =
+        message;
+
+
+    el.className =
+        "message show " +
+        type;
+
+}
+
+
+function clearMessage() {
+
+    const el =
+        document.getElementById(
+            "message"
+        );
+
+
+    el.className =
+        "message";
+
+
+    el.textContent =
+        "";
+
+}
+
+
+/* ==================================================
+   FORMAT
+================================================== */
+
+function format(value) {
+
+    const n =
+        Number(value);
+
+
+    return Number.isFinite(n)
+
+        ? n.toLocaleString(
+            undefined,
+            {
+                maximumFractionDigits: 6
+            }
+        )
+
+        : "--";
+
+}
+
+
+/* ==================================================
+   PAYMENT INTENT
+================================================== */
+
+function validIntent() {
+
+    try {
+
+        const raw =
+            sessionStorage.getItem(
+                "averyx_premium_payment_intent"
+            );
+
+
+        if (!raw) {
+
+            return false;
+
+        }
+
+
+        const data =
+            JSON.parse(raw);
+
+
+        return (
+
+            data &&
+
+            data.source ===
+                "premium" &&
+
+            Date.now() -
+
+            Number(
+                data.createdAt
+            )
+
+            <
+
+            15 * 60 * 1000
+
+        );
+
+    }
+
+    catch {
+
+        return false;
+
+    }
+
+}
+
+
+function removeIntent() {
+
+    sessionStorage.removeItem(
+        "averyx_premium_payment_intent"
+    );
+
+}
+
+
+/* ==================================================
+   QR CODE
+================================================== */
+
+function renderQR(address) {
+
+    const box =
+        document.getElementById(
+            "qrBox"
+        );
+
+
+    box.innerHTML =
+        "";
+
+
+    box.classList.remove(
+        "empty"
+    );
+
+
+    if (!address) {
+
+        box.textContent =
+            "QR unavailable";
+
+
+        box.classList.add(
+            "empty"
+        );
+
+
+        return;
+
+    }
+
+
+    if (
+        typeof QRCode ===
+        "undefined"
+    ) {
+
+        box.textContent =
+            "QR library unavailable";
+
+
+        box.classList.add(
+            "empty"
+        );
+
+
+        return;
+
+    }
+
+
+    new QRCode(
+        box,
+        {
+
+            text:
+                address,
+
+            width:
+                160,
+
+            height:
+                160,
+
+            correctLevel:
+                QRCode
+                    .CorrectLevel
+                    .M
+
+        }
+    );
+
+}
+
+
+/* ==================================================
+   SELECT NETWORK
+================================================== */
+
+function selectNetwork(network) {
+
+    const addresses =
+
+        premiumStatus
+            ?.pass
+            ?.depositAddresses ||
+
+        {};
+
+
+    const address =
+        addresses[network];
+
+
+    if (!address) {
+
+        showMessage(
+
+            "Premium payment is not currently configured for " +
+            network +
+            ". Please select another network.",
+
+            "error"
+
+        );
+
+
+        return;
+
+    }
+
+
+    clearMessage();
+
+
+    selectedNetwork =
+        network;
+
+
+    selectedAddress =
+        address;
+
+
+    document
+        .querySelectorAll(
+            ".network"
+        )
+        .forEach(
+
+            button =>
+
+                button.classList.toggle(
+
+                    "active",
+
+                    button.dataset.network ===
+                    network
+
+                )
+
+        );
+
+
+    document.getElementById(
+        "networkHint"
+    ).textContent =
+
+        "Selected network: " +
+        network;
+
+
+    document.getElementById(
+        "addressLabel"
+    ).textContent =
+
+        "Premium " +
+        network +
+        " Deposit Address";
+
+
+    document.getElementById(
+        "depositAddress"
+    ).textContent =
+        address;
+
+
+    document.getElementById(
+        "copyButton"
+    ).disabled =
+        false;
+
+
+    renderQR(
+        address
+    );
+
+}
+
+
+/* ==================================================
+   LOAD PREMIUM STATUS
+================================================== */
+
+async function loadStatus() {
+
+    const token =
+        getToken();
+
+
+    if (!token) {
+
+        showMessage(
+
+            "Authentication required. Please log in again.",
+
+            "error"
+
+        );
+
+
+        setTimeout(
+
+            () => {
+
+                location.replace(
+                    "premium.html"
+                );
+
+            },
+
+            1200
+
+        );
+
+
+        return;
+
+    }
+
+
+    const response =
+
+        await fetch(
+
+            API_BASE_URL +
+            "/api/premium/status",
+
+            {
+
+                headers: {
+
+                    Authorization:
+
+                        "Bearer " +
+                        token
+
+                }
+
+            }
+
+        );
+
+
+    const data =
+
+        await response
+            .json()
+            .catch(
+                () => ({})
+            );
+
+
+    if (
+
+        !response.ok ||
+
+        data.success === false
+
+    ) {
+
+        throw new Error(
+
+            data.message ||
+
+            "Unable to load Premium Pass information."
+
+        );
+
+    }
+
+
+    if (
+
+        data.premiumPassEnabled ===
+            false ||
+
+        data.premiumSystemEnabled ===
+            false
+
+    ) {
+
+        removeIntent();
+
+
+        location.replace(
+            "dashboard.html"
+        );
+
+
+        return;
+
+    }
+
+
+    if (
+
+        data.premium?.active ===
+        true
+
+    ) {
+
+        removeIntent();
+
+
+        location.replace(
+            "premium.html"
+        );
+
+
+        return;
+
+    }
+
+
+    premiumStatus =
+        data;
+
+
+    const pass =
+        data.pass ||
+        {};
+
+
+    document.getElementById(
+        "priceAmount"
+    ).innerHTML =
+
+        format(
+            pass.priceUSDT
+        )
+
+        +
+
+        ' <small>USDT</small>';
+
+
+    const addresses =
+
+        pass.depositAddresses ||
+        {};
+
+
+    document
+        .querySelectorAll(
+            ".network"
+        )
+        .forEach(
+
+            button => {
+
+                const available =
+                    Boolean(
+
+                        addresses[
+                            button.dataset.network
+                        ]
+
+                    );
+
+
+                button.disabled =
+                    !available;
+
+
+                button.style.opacity =
+
+                    available
+
+                        ? "1"
+
+                        : ".38";
+
+            }
+
+        );
+
+
+    const firstNetwork =
+
+        [
+
+            "BEP20",
+
+            "TRC20",
+
+            "ERC20",
+
+            "POLYGON"
+
+        ].find(
+
+            network =>
+                addresses[network]
+
+        );
+
+
+    if (firstNetwork) {
+
+        selectNetwork(
+            firstNetwork
+        );
+
+    }
+
+    else {
+
+        showMessage(
+
+            "No Premium payment address is configured. Please contact support.",
+
+            "error"
+
+        );
+
+    }
+
+}
+
+
+/* ==================================================
+   COPY ADDRESS
+================================================== */
+
+document.getElementById(
+    "copyButton"
+).addEventListener(
+
+    "click",
+
+    async () => {
+
+        if (!selectedAddress) {
+
+            return;
+
+        }
+
+
+        try {
+
+            await navigator
+                .clipboard
+                .writeText(
+                    selectedAddress
+                );
+
+
+            const button =
+                document.getElementById(
+                    "copyButton"
+                );
+
+
+            button.textContent =
+                "ADDRESS COPIED";
+
+
+            setTimeout(
+
+                () => {
+
+                    button.textContent =
+                        "COPY ADDRESS";
+
+                },
+
+                1600
+
+            );
+
+        }
+
+        catch {
+
+            showMessage(
+
+                "Unable to copy automatically. Please copy the address manually.",
+
+                "error"
+
+            );
+
+        }
+
+    }
+
+);
+
+
+/* ==================================================
+   NETWORK BUTTONS
+================================================== */
+
+document
+    .querySelectorAll(
+        ".network"
+    )
+    .forEach(
+
+        button =>
+
+            button.addEventListener(
+
+                "click",
+
+                () => {
+
+                    selectNetwork(
+                        button.dataset.network
+                    );
+
+                }
+
+            )
+
+    );
+
+
+/* ==================================================
+   BACK
+================================================== */
+
+document.getElementById(
+    "backButton"
+).addEventListener(
+
+    "click",
+
+    () => {
+
+        removeIntent();
+
+
+        location.href =
+            "premium.html";
+
+    }
+
+);
+
+
+/* ==================================================
+   PURCHASE
+================================================== */
+
+document.getElementById(
+    "submitButton"
+).addEventListener(
+
+    "click",
+
+    async () => {
+
+        clearMessage();
+
+
+        const token =
+            getToken();
+
+
+        const txHash =
+
+            document
+                .getElementById(
+                    "txHash"
+                )
+                .value
+                .trim();
+
+
+        const button =
+
+            document.getElementById(
+                "submitButton"
+            );
+
+
+        if (!selectedNetwork) {
+
+            showMessage(
+
+                "Please select a payment network.",
+
+                "error"
+
+            );
+
+
+            return;
+
+        }
+
+
+        if (!txHash) {
+
+            showMessage(
+
+                "Please enter your transaction hash.",
+
+                "error"
+
+            );
+
+
+            return;
+
+        }
+
+
+        if (!token) {
+
+            showMessage(
+
+                "Authentication required. Please log in again.",
+
+                "error"
+
+            );
+
+
+            return;
+
+        }
+
+
+        button.disabled =
+            true;
+
+
+        button.textContent =
+            "VERIFYING PAYMENT...";
+
+
+        try {
+
+            const response =
+
+                await fetch(
+
+                    API_BASE_URL +
+                    "/api/premium/purchase",
+
+                    {
+
+                        method:
+                            "POST",
+
+                        headers: {
+
+                            "Content-Type":
+                                "application/json",
+
+                            Authorization:
+
+                                "Bearer " +
+                                token
+
+                        },
+
+                        body:
+
+                            JSON.stringify({
+
+                                txHash:
+
+                                    txHash,
+
+                                network:
+
+                                    selectedNetwork
+
+                            })
+
+                    }
+
+                );
+
+
+            const data =
+
+                await response
+                    .json()
+                    .catch(
+                        () => ({})
+                    );
+
+
+            if (
+
+                !response.ok ||
+
+                data.success === false
+
+            ) {
+
+                throw new Error(
+
+                    data.message ||
+
+                    "Premium payment verification failed."
+
+                );
+
+            }
+
+
+            showMessage(
+
+                data.message ||
+
+                "Premium Pass activated successfully.",
+
+                "success"
+
+            );
+
+
+            removeIntent();
+
+
+            button.textContent =
+                "PREMIUM PASS ACTIVATED";
+
+
+            setTimeout(
+
+                () => {
+
+                    location.replace(
+                        "premium.html"
+                    );
+
+                },
+
+                1800
+
+            );
+
+        }
+
+        catch (error) {
+
+            showMessage(
+
+                error.message ||
+
+                "Unable to verify the transaction.",
+
+                "error"
+
+            );
+
+
+            button.disabled =
+                false;
+
+
+            button.textContent =
+                "VERIFY & ACTIVATE PREMIUM PASS";
+
+        }
+
+    }
+
+);
+
+
+/* ==================================================
+   INITIAL LOAD
+================================================== */
+
+document.addEventListener(
+
+    "DOMContentLoaded",
+
+    async () => {
+
+        if (!validIntent()) {
+
+            location.replace(
+                "premium.html"
+            );
+
+
+            return;
+
+        }
+
+
+        try {
+
+            await loadStatus();
+
+        }
+
+        catch (error) {
+
+            showMessage(
+
+                error.message ||
+
+                "Unable to load Premium payment information.",
+
+                "error"
+
+            );
+
+        }
+
+    }
+
+);
+
+</script>
+
+</body>
+</html>
