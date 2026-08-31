@@ -6,6 +6,47 @@ const { pool } = require("../db");
 
 
 /* ==================================================
+   CALCULATE HIGHEST UNLOCKED TIER FROM LIVE BALANCE
+================================================== */
+
+function calculateHighestUnlockedTier(balanceUSDT) {
+
+    const balance =
+        Math.max(
+            0,
+            Number(balanceUSDT) || 0
+        );
+
+    const tiers = [
+        { level: 1, deposit: 0 },
+        { level: 2, deposit: 3.5 },
+        { level: 3, deposit: 16 },
+        { level: 4, deposit: 60 },
+        { level: 5, deposit: 165 },
+        { level: 6, deposit: 550 },
+        { level: 7, deposit: 1440 }
+    ];
+
+    let highestUnlockedTier = 1;
+
+    for (const tier of tiers) {
+
+        if (
+            balance >=
+            tier.deposit
+        ) {
+            highestUnlockedTier =
+                tier.level;
+        }
+
+    }
+
+    return highestUnlockedTier;
+
+}
+
+
+/* ==================================================
    FORGOT PASSWORD - TEMPORARY RESET STORE
 ================================================== */
 
@@ -2176,6 +2217,20 @@ async function getMe(req, res) {
            RESPONSE
         ================================================== */
 
+        const balanceUSDT =
+            wallet
+                ? Number(
+                    wallet.balance_usdt
+                ) || 0
+                : 0;
+
+
+        const highestUnlockedTier =
+            calculateHighestUnlockedTier(
+                balanceUSDT
+            );
+
+
         return res.status(200).json({
 
             success: true,
@@ -2207,10 +2262,7 @@ async function getMe(req, res) {
 
             profile: {
 
-                highestUnlockedTier:
-                    profile
-                        ? profile.highest_unlocked_tier
-                        : 1,
+                highestUnlockedTier,
 
                 selectedProfileTier:
                     profile
@@ -2221,10 +2273,7 @@ async function getMe(req, res) {
 
             wallet: {
 
-                balanceUSDT:
-                    wallet
-                        ? wallet.balance_usdt
-                        : 0
+                balanceUSDT
 
             }
 
@@ -2332,7 +2381,6 @@ async function updateProfile(req, res) {
             await pool.query(
                 `
                 SELECT
-                    highest_unlocked_tier,
                     selected_profile_tier
 
                 FROM profiles
@@ -2363,12 +2411,32 @@ async function updateProfile(req, res) {
         }
 
 
+        const walletResult =
+            await pool.query(
+                `
+                SELECT
+                    balance_usdt
+
+                FROM wallets
+
+                WHERE user_id = $1
+
+                LIMIT 1
+                `,
+                [
+                    userId
+                ]
+            );
+
+
         const highestUnlocked =
-            Number(
-                profileResult
-                    .rows[0]
-                    .highest_unlocked_tier
-            ) || 1;
+            calculateHighestUnlockedTier(
+                walletResult.rows.length
+                    ? walletResult
+                        .rows[0]
+                        .balance_usdt
+                    : 0
+            );
 
 
         let selectedTier =
