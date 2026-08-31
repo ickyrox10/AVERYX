@@ -39,6 +39,10 @@ const priorityConfigRoutes =
     require("./routes/priorityConfig");
 
 
+const premiumRoutes =
+    require("./routes/premium");
+
+
 /* ==================================================
    REFERRAL ROUTES
 ================================================== */
@@ -122,6 +126,16 @@ app.use(
 app.use(
     "/api/priority",
     priorityConfigRoutes
+);
+
+
+/*
+   AVERYX PREMIUM PASS
+*/
+
+app.use(
+    "/api/premium",
+    premiumRoutes
 );
 
 
