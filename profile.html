@@ -1889,6 +1889,9 @@ body{
             const user =
                 accountData?.user || {};
 
+            const backendProfile =
+                accountData?.profile || {};
+
             const wallet =
                 walletData?.wallet ||
                 walletData?.data ||
@@ -1936,7 +1939,12 @@ body{
                     profile.uniqueId ||
                     "",
                 highestUnlockedTier:
-                    highestUnlocked
+                    highestUnlocked,
+                selectedProfileTier:
+                    backendProfile.selectedProfileTier ??
+                    backendProfile.selected_profile_tier ??
+                    profile.selectedProfileTier ??
+                    1
             };
 
         } catch (error) {
