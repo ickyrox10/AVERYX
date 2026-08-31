@@ -898,22 +898,15 @@ function normalizeStatus(data) {
 
 function updatePremiumUI(rawData) {
 
-  if (
-    !premiumEnabledFrom(
-      rawData
-    )
-  ) {
+  /*
+     Page-level access is controlled only by
+     ensurePremiumSystemEnabled().
 
-    hidePremiumEverywhere();
-
-    window.location.replace(
-      "dashboard.html"
-    );
-
-    return;
-
-  }
-
+     The Premium status response must never redirect
+     the user by itself. Different backend response
+     shapes can otherwise incorrectly send an enabled
+     user back to the dashboard.
+  */
 
   const data =
     normalizeStatus(
@@ -1370,6 +1363,12 @@ async function loadPremiumStatus() {
       );
 
     }
+
+
+    console.log(
+      "AVERYX Premium status:",
+      data
+    );
 
 
     updatePremiumUI(
