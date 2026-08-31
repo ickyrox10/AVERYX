@@ -124,7 +124,7 @@ app.use(
 */
 
 app.use(
-    "/api/priority",
+    "/api/priority-config",
     priorityConfigRoutes
 );
 
