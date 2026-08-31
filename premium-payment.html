@@ -782,9 +782,15 @@ VERIFY & ACTIVATE PREMIUM PASS
    /api/premium/... requests go to the frontend host
    instead of the Render backend.
 */
-const API_BASE_URL =
+/*
+   Premium payment must always communicate with the
+   AVERYX Render backend.
 
-    window.AVERYX_API_BASE_URL ||
+   Do not inherit a page/global API override here:
+   a wrong override can silently send this protected
+   payment flow to the frontend host.
+*/
+const API_BASE_URL =
 
     "https://averyx.onrender.com";
 
@@ -1244,6 +1250,18 @@ async function loadStatus() {
     }
 
 
+    /*
+       Do not redirect this protected payment page to
+       the dashboard based on the status response.
+
+       The page is already protected by the payment
+       intent created when the user clicks Activate.
+       A temporary, stale, or differently-shaped status
+       response must not kick the user to Dashboard.
+
+       If Premium is explicitly disabled, keep the user
+       on this page and show the reason instead.
+    */
     if (
 
         data.premiumPassEnabled ===
@@ -1254,15 +1272,9 @@ async function loadStatus() {
 
     ) {
 
-        removeIntent();
-
-
-        location.replace(
-            "dashboard.html"
+        throw new Error(
+            "AVERYX Premium Pass is currently unavailable."
         );
-
-
-        return;
 
     }
 
