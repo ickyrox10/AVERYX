@@ -35,6 +35,10 @@ const withdrawConfigRoutes =
     require("./routes/withdrawConfig");
 
 
+const priorityConfigRoutes =
+    require("./routes/priorityConfig");
+
+
 /* ==================================================
    REFERRAL ROUTES
 ================================================== */
@@ -108,6 +112,16 @@ app.use(
 app.use(
     "/api/withdraw",
     withdrawConfigRoutes
+);
+
+
+/*
+   Public AVERYX Priority System configuration
+*/
+
+app.use(
+    "/api/priority",
+    priorityConfigRoutes
 );
 
 
