@@ -1178,6 +1178,8 @@ body{
     </div>
 </div>
 
+<script src="auth-guard.js"></script>
+
 <script>
 
 /* ==================================================
@@ -2471,13 +2473,17 @@ window.addEventListener(
 
     "pageshow",
 
-    () => {
+    event => {
 
-        renderProfileHeader();
+        if(event.persisted){
 
-        renderReferralCode();
+            renderProfileHeader();
 
-        loadRecords();
+            renderReferralCode();
+
+            loadRecords();
+
+        }
 
     }
 
@@ -2541,8 +2547,6 @@ setInterval(
 
 </script>
 
-
-<script src="auth-guard.js"></script>
 </body>
 
 </html>

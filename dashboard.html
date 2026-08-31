@@ -1694,6 +1694,8 @@
 </nav>
 
 
+<script src="auth-guard.js"></script>
+
 <script>
 /*
    AVERYX Dashboard
@@ -2190,7 +2192,7 @@ async function initDashboard() {
             transactionData,
             referralData
         ] = await Promise.all([
-            apiRequest("/api/auth/me"),
+            window.AVERYX_AUTH.promise,
             apiRequest("/api/wallet/"),
             apiRequest("/api/wallet/transactions"),
             apiRequest("/api/referrals")

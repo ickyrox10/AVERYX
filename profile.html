@@ -1542,6 +1542,8 @@ body{
 </nav>
 
 
+<script src="auth-guard.js"></script>
+
 <script>
 
     /* ==================================================
@@ -1880,7 +1882,7 @@ body{
                 accountData,
                 walletData
             ] = await Promise.all([
-                apiGet("/api/auth/me"),
+                window.AVERYX_AUTH.promise,
                 apiGet("/api/wallet/")
             ]);
 
@@ -2107,9 +2109,14 @@ body{
 
     // Check authentication whenever the browser restores this page
     // through Back/Forward cache, then render only for an active session.
-    window.addEventListener("pageshow", function() {
+    window.addEventListener("pageshow", function(event) {
         if (redirectToLoginIfLoggedOut()) return;
-        renderProfile();
+
+        // Initial load already called renderProfile(); only refresh
+        // when this page is restored from the Back/Forward cache.
+        if (event.persisted) {
+            renderProfile();
+        }
     });
 
     /* ==================================================
@@ -2145,7 +2152,5 @@ body{
 
 </script>
 
-
-<script src="auth-guard.js"></script>
 </body>
 </html>

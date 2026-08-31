@@ -1053,6 +1053,8 @@
 </div>
 
 
+<script src="auth-guard.js"></script>
+
 <script>
 
 /* ==================================================
@@ -1741,16 +1743,10 @@ async function syncLiveUnlockedTiers() {
         };
 
         const [
-            accountResponse,
+            accountData,
             walletResponse
         ] = await Promise.all([
-            fetch(
-                `${API_BASE_URL}/api/auth/me`,
-                {
-                    method: "GET",
-                    headers
-                }
-            ),
+            window.AVERYX_AUTH.promise,
             fetch(
                 `${API_BASE_URL}/api/wallet/`,
                 {
@@ -1760,12 +1756,7 @@ async function syncLiveUnlockedTiers() {
             )
         ]);
 
-        if (accountResponse.ok) {
-            const accountData =
-                await accountResponse
-                    .json()
-                    .catch(() => ({}));
-
+        if (accountData && accountData.user) {
             const user =
                 accountData.user || {};
 
@@ -2182,6 +2173,5 @@ function showToast(
 </script>
 
 
-<script src="auth-guard.js"></script>
 </body>
 </html>

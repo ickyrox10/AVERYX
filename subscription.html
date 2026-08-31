@@ -2458,7 +2458,7 @@ async function initializesubscription() {
             accountData,
             walletData
         ] = await Promise.all([
-            apiGet("/api/auth/me"),
+            window.AVERYX_AUTH.promise,
             apiGet("/api/wallet/")
         ]);
 
@@ -2640,11 +2640,12 @@ let profile =
 
 renderSubscriptionProfileHeader();
 
-initializesubscription();
-
 </script>
 
 
 <script src="auth-guard.js"></script>
+<script>
+    initializesubscription();
+</script>
 </body>
 </html>

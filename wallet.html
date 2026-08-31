@@ -1432,6 +1432,8 @@ body {
 <div id="toast"></div>
 
 
+<script src="auth-guard.js"></script>
+
 <script>
 
 const API_BASE_URL =
@@ -2440,12 +2442,24 @@ document
 
 renderWalletProfile();
 
-initializeWallet();
+/*
+   Wallet data loads only after the shared authentication
+   verification has completed.
+*/
+window.AVERYX_AUTH.promise
+    .then(
+        () => initializeWallet()
+    )
+    .catch(
+        () => {
+            /*
+               Authentication failure is handled by auth-guard.js.
+            */
+        }
+    );
 
 
 </script>
 
-
-<script src="auth-guard.js"></script>
 </body>
 </html>

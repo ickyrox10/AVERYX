@@ -1415,6 +1415,7 @@ body{background:radial-gradient(circle at 82% -5%,var(--ref-glow),transparent 31
 ></div>
 
 
+<script src="auth-guard.js"></script>
 <script>
 
 /* ==================================================
@@ -1889,9 +1890,7 @@ function renderLiveHistory(
 async function loadLiveAccount() {
 
     const account =
-        await apiGet(
-            "/api/auth/me"
-        );
+        await window.AVERYX_AUTH.promise;
 
 
     const user =
@@ -2046,33 +2045,28 @@ async function initializeReferralPage() {
     );
 
 
-    try {
+    const [
+        accountResult,
+        referralResult
+    ] = await Promise.allSettled([
+        loadLiveAccount(),
+        loadReferralStats()
+    ]);
 
-        await loadLiveAccount();
-
-    } catch (
-        error
-    ) {
+    if (accountResult.status === "rejected") {
 
         console.error(
             "Live account sync failed:",
-            error
+            accountResult.reason
         );
 
     }
 
-
-    try {
-
-        await loadReferralStats();
-
-    } catch (
-        error
-    ) {
+    if (referralResult.status === "rejected") {
 
         console.error(
             "Referral stats sync failed:",
-            error
+            referralResult.reason
         );
 
     }
@@ -2089,7 +2083,11 @@ initializeReferralPage();
 
 window.addEventListener(
     "pageshow",
-    function() {
+    function(event) {
+
+        if (!event.persisted) {
+            return;
+        }
 
         profile =
             getLocalProfile();
@@ -2301,6 +2299,5 @@ document.getElementById(
 
 
 
-<script src="auth-guard.js"></script>
 </body>
 </html>
