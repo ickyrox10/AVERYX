@@ -1161,6 +1161,33 @@
         margin-top:29px;
     }
 }
+
+/* Prevent horizontal page overflow on mobile. */
+html,
+body{
+    width:100%;
+    max-width:100%;
+    overflow-x:hidden;
+}
+
+.app{
+    width:100%;
+    max-width:1180px;
+    overflow-x:hidden;
+}
+
+.topbar{
+    min-width:0;
+}
+
+.brand,
+.profile-button{
+    min-width:0;
+}
+
+.profile-button{
+    flex-shrink:1;
+}
 </style>
 
 </head>
