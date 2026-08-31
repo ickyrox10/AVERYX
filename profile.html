@@ -1305,11 +1305,6 @@ body{
                 View →
             </a>
 
-<a href="premium.html" class="nav-item" id="premiumNavItem" style="display:none;">
-    <span class="nav-icon">✦</span>
-    <span>A-Pass</span>
-</a>
-
         </div>
 
     </section>
@@ -1517,6 +1512,16 @@ body{
         Tiers
     </a>
 
+    <a
+        href="premium.html"
+        class="nav-item"
+        id="premiumNavItem"
+        style="display:none;"
+    >
+        <span class="nav-icon">✦</span>
+        A-Pass
+    </a>
+
 
     <a
         href="wallet.html"
@@ -1570,51 +1575,7 @@ body{
 
     const API_BASE_URL =
         window.AVERYX_API_BASE_URL ||
-        (
-            window.location.protocol === "file:"
-                ? "https://averyx.onrender.com"
-                : ""
-        );
-
-/* ==================================================
-   A-PASS NAVIGATION VISIBILITY
-================================================== */
-
-async function loadPremiumNavigation() {
-    const premiumNavItem = document.getElementById("premiumNavItem");
-    const bottomNav = document.querySelector(".bottom-nav");
-
-    if (!premiumNavItem || !bottomNav) return;
-
-    try {
-        const response = await fetch(
-            `${API_BASE_URL}/api/priority-config/settings`
-        );
-
-        const data = await response.json();
-
-        const enabled =
-            response.ok &&
-            data.success === true &&
-            data.prioritySystemEnabled === true;
-
-        premiumNavItem.style.display = enabled ? "" : "none";
-        bottomNav.style.gridTemplateColumns =
-            enabled ? "repeat(6, 1fr)" : "repeat(5, 1fr)";
-
-    } catch (error) {
-        console.warn(
-            "Unable to load priority system configuration:",
-            error
-        );
-
-        premiumNavItem.style.display = "none";
-        bottomNav.style.gridTemplateColumns =
-            "repeat(5, 1fr)";
-    }
-}
-
-
+        "https://averyx.onrender.com";
 
     const TIERS = [
         { level: 1, name: "The Fool", deposit: 0, daily: 0, logo: "tier-fool.png" },
@@ -2202,6 +2163,91 @@ async function loadPremiumNavigation() {
         );
 
     }
+
+
+
+/* ==================================================
+   A-PASS NAVIGATION VISIBILITY
+================================================== */
+
+async function loadPremiumNavigation() {
+
+    const premiumNavItem =
+        document.getElementById(
+            "premiumNavItem"
+        );
+
+
+    const bottomNav =
+        document.querySelector(
+            ".bottom-nav"
+        );
+
+
+    if (
+        !premiumNavItem ||
+        !bottomNav
+    ) {
+
+        return;
+
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                API_BASE_URL +
+                "/api/priority-config/settings",
+                {
+                    cache: "no-store"
+                }
+            );
+
+
+        const data =
+            await response
+                .json()
+                .catch(() => ({}));
+
+
+        const enabled =
+            response.ok &&
+            data.success === true &&
+            data.prioritySystemEnabled === true;
+
+
+        premiumNavItem.style.display =
+            enabled
+                ? ""
+                : "none";
+
+
+        bottomNav.style.gridTemplateColumns =
+            enabled
+                ? "repeat(6, minmax(0, 1fr))"
+                : "repeat(5, minmax(0, 1fr))";
+
+
+    } catch (error) {
+
+        console.warn(
+            "A-Pass navigation configuration failed:",
+            error
+        );
+
+
+        premiumNavItem.style.display =
+            "none";
+
+
+        bottomNav.style.gridTemplateColumns =
+            "repeat(5, minmax(0, 1fr))";
+
+    }
+
+}
 
 
 loadPremiumNavigation();

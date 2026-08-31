@@ -397,11 +397,6 @@ button{font:inherit}
     <span>Subscription</span>
   </a>
 
-  <a href="wallet.html" class="nav-item">
-    <span class="nav-icon">◈</span>
-    <span>Wallet</span>
-  </a>
-
   <a
     href="premium.html"
     class="nav-item active"
@@ -409,6 +404,11 @@ button{font:inherit}
   >
     <span class="nav-icon">✦</span>
     <span>A-Pass</span>
+  </a>
+
+  <a href="wallet.html" class="nav-item">
+    <span class="nav-icon">◈</span>
+    <span>Wallet</span>
   </a>
 
   <a href="records.html" class="nav-item">
@@ -429,11 +429,7 @@ button{font:inherit}
 
 const API_BASE_URL =
   window.AVERYX_API_BASE_URL ||
-  (
-    window.location.protocol === "file:"
-      ? "https://averyx.onrender.com"
-      : ""
-  );
+  "https://averyx.onrender.com";
 
 
 const TIERS = [
@@ -1184,6 +1180,65 @@ async function loadUserProfile() {
 
 
 /* ==================================================
+   PRIORITY SYSTEM AVAILABILITY
+================================================== */
+
+async function ensurePremiumSystemEnabled() {
+
+  try {
+
+    const response =
+      await fetch(
+        API_BASE_URL +
+        "/api/priority-config/settings"
+      );
+
+
+    const data =
+      await response.json();
+
+
+    const enabled =
+      response.ok &&
+      data.success === true &&
+      data.prioritySystemEnabled === true &&
+      data.averyxPremiumPass?.enabled === true;
+
+
+    if (!enabled) {
+
+      window.location.replace(
+        "dashboard.html"
+      );
+
+      return false;
+
+    }
+
+
+    return true;
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "Priority system configuration error:",
+      error
+    );
+
+    window.location.replace(
+      "dashboard.html"
+    );
+
+    return false;
+
+  }
+
+}
+
+
+/* ==================================================
    LOAD PREMIUM STATUS
 ================================================== */
 
@@ -1228,8 +1283,27 @@ async function loadPremiumStatus() {
       );
 
 
-    const data =
-      await response.json();
+    const responseText =
+      await response.text();
+
+
+    let data;
+
+    try {
+
+      data =
+        responseText
+          ? JSON.parse(responseText)
+          : {};
+
+    } catch {
+
+      throw new Error(
+        responseText ||
+        `Premium status request failed with status ${response.status}.`
+      );
+
+    }
 
 
     if (
@@ -1353,6 +1427,17 @@ document.getElementById(
 document.addEventListener(
   "DOMContentLoaded",
   async () => {
+
+    const enabled =
+      await ensurePremiumSystemEnabled();
+
+
+    if (!enabled) {
+
+      return;
+
+    }
+
 
     await loadUserProfile();
 

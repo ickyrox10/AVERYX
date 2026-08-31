@@ -1115,7 +1115,6 @@ body{
         Tiers
     </a>
 
-
     <a
         href="premium.html"
         class="nav-item"
@@ -1189,9 +1188,7 @@ body{
     </div>
 </div>
 
-<script src="auth-guard.js">
-loadPremiumNavigation();
-</script>
+<script src="auth-guard.js"></script>
 
 <script>
 
@@ -1203,69 +1200,6 @@ loadPremiumNavigation();
 const API =
     window.AVERYX_API_BASE_URL ||
     "https://averyx.onrender.com";
-
-
-/* ==================================================
-   A-PASS NAVIGATION VISIBILITY
-================================================== */
-
-async function loadPremiumNavigation() {
-
-    const premiumNavItem =
-        document.getElementById("premiumNavItem");
-
-    const bottomNav =
-        document.querySelector(".bottom-nav");
-
-    if (!premiumNavItem || !bottomNav) {
-        return;
-    }
-
-    try {
-
-        const response = await fetch(
-            `${API}/api/priority-config/settings`
-        );
-
-        const data = await response.json();
-
-        const enabled =
-            response.ok &&
-            data.success === true &&
-            data.prioritySystemEnabled === true;
-
-        if (enabled) {
-
-            premiumNavItem.style.display = "";
-
-            bottomNav.style.gridTemplateColumns =
-                "repeat(6, 1fr)";
-
-        } else {
-
-            premiumNavItem.style.display = "none";
-
-            bottomNav.style.gridTemplateColumns =
-                "repeat(5, 1fr)";
-
-        }
-
-    } catch (error) {
-
-        console.warn(
-            "Unable to load priority system configuration:",
-            error
-        );
-
-        premiumNavItem.style.display = "none";
-
-        bottomNav.style.gridTemplateColumns =
-            "repeat(5, 1fr)";
-
-    }
-
-}
-
 
 let records = [];
 
@@ -2617,6 +2551,93 @@ setInterval(
 
 );
 
+
+
+/* ==================================================
+   A-PASS NAVIGATION VISIBILITY
+================================================== */
+
+async function loadPremiumNavigation() {
+
+    const premiumNavItem =
+        document.getElementById(
+            "premiumNavItem"
+        );
+
+
+    const bottomNav =
+        document.querySelector(
+            ".bottom-nav"
+        );
+
+
+    if (
+        !premiumNavItem ||
+        !bottomNav
+    ) {
+
+        return;
+
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                API +
+                "/api/priority-config/settings",
+                {
+                    cache: "no-store"
+                }
+            );
+
+
+        const data =
+            await response
+                .json()
+                .catch(() => ({}));
+
+
+        const enabled =
+            response.ok &&
+            data.success === true &&
+            data.prioritySystemEnabled === true;
+
+
+        premiumNavItem.style.display =
+            enabled
+                ? ""
+                : "none";
+
+
+        bottomNav.style.gridTemplateColumns =
+            enabled
+                ? "repeat(6, minmax(0, 1fr))"
+                : "repeat(5, minmax(0, 1fr))";
+
+
+    } catch (error) {
+
+        console.warn(
+            "A-Pass navigation configuration failed:",
+            error
+        );
+
+
+        premiumNavItem.style.display =
+            "none";
+
+
+        bottomNav.style.gridTemplateColumns =
+            "repeat(5, minmax(0, 1fr))";
+
+    }
+
+}
+
+
+loadPremiumNavigation();
 </script>
 
 </body>
