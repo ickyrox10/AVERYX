@@ -15,7 +15,10 @@ function getBooleanEnv(name, defaultValue = false) {
         return defaultValue;
     }
 
-    return String(value).trim().toLowerCase() === "true";
+    return String(value)
+        .trim()
+        .toLowerCase() === "true";
+
 }
 
 
@@ -28,6 +31,7 @@ function getNumberEnv(name, defaultValue) {
     }
 
     return value;
+
 }
 
 
@@ -44,23 +48,33 @@ router.get("/settings", async (req, res) => {
             false
         );
 
+
         const normalWithdrawalHoldHours = getNumberEnv(
             "NORMAL_WITHDRAWAL_HOLD_HOURS",
             36
         );
 
-        const averyxPremiumPassPriceUSDT = getNumberEnv(
-            "AVERYX_PREMIUM_PASS_PRICE_USDT",
+
+        const premiumWithdrawalHoldHours = getNumberEnv(
+            "PREMIUM_WITHDRAWAL_HOLD_HOURS",
+            6
+        );
+
+
+        const premiumPassPriceUSDT = getNumberEnv(
+            "PREMIUM_PASS_PRICE_USDT",
             10
         );
 
-        const averyxPremiumPassRewardUSDT = getNumberEnv(
-            "AVERYX_PREMIUM_PASS_REWARD_USDT",
+
+        const premiumPassRewardUSDT = getNumberEnv(
+            "PREMIUM_PASS_REWARD_USDT",
             40
         );
 
-        const averyxPremiumPassTotal = getNumberEnv(
-            "AVERYX_PREMIUM_PASS_TOTAL",
+
+        const premiumPassTotal = getNumberEnv(
+            "PREMIUM_PASS_TOTAL",
             20
         );
 
@@ -69,19 +83,33 @@ router.get("/settings", async (req, res) => {
 
             success: true,
 
+
             prioritySystemEnabled,
+
 
             normalWithdrawalHoldHours,
 
+
+            premiumWithdrawalHoldHours,
+
+
             averyxPremiumPass: {
 
-                enabled: prioritySystemEnabled,
+                enabled:
+                    prioritySystemEnabled,
 
-                priceUSDT: averyxPremiumPassPriceUSDT,
 
-                rewardUSDT: averyxPremiumPassRewardUSDT,
+                priceUSDT:
+                    premiumPassPriceUSDT,
 
-                totalPasses: averyxPremiumPassTotal
+
+                rewardUSDT:
+                    premiumPassRewardUSDT,
+
+
+                totalPasses:
+                    premiumPassTotal
+
 
             }
 
@@ -93,6 +121,7 @@ router.get("/settings", async (req, res) => {
             "Priority config error:",
             error
         );
+
 
         return res.status(500).json({
 
