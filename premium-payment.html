@@ -774,19 +774,19 @@ VERIFY & ACTIVATE PREMIUM PASS
    API
 ================================================== */
 
+/*
+   Use the AVERYX backend for both local file testing
+   and the deployed frontend.
+
+   An empty base URL on the deployed site makes
+   /api/premium/... requests go to the frontend host
+   instead of the Render backend.
+*/
 const API_BASE_URL =
 
     window.AVERYX_API_BASE_URL ||
 
-    (
-
-        location.protocol === "file:"
-
-            ? "https://averyx.onrender.com"
-
-            : ""
-
-    );
+    "https://averyx.onrender.com";
 
 
 /* ==================================================

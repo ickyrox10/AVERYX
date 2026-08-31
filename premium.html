@@ -588,11 +588,21 @@ function updateProfile(user) {
     "-----";
 
 
+  /*
+     Profile.html stores the selected profile logo
+     as selectedProfileTier. Read the same value here
+     so the Premium header uses exactly the same logo
+     as the Profile page.
+  */
   const selectedLevel =
     Number(
+      savedProfile.selectedProfileTier ||
+      savedProfile.selected_profile_tier ||
       savedProfile.selectedTierLevel ||
       savedProfile.tierLevel ||
       savedProfile.selectedTier ||
+      user.selectedProfileTier ||
+      user.selected_profile_tier ||
       user.selectedTierLevel ||
       user.tierLevel ||
       1
@@ -618,14 +628,31 @@ function updateProfile(user) {
     "ID: " + uid;
 
 
+  /*
+     Profile.html renders the selected tier image.
+     Use the exact same selected profile tier here
+     unless the account explicitly provides a custom
+     avatar URL.
+  */
+  const profileAvatar =
+    savedProfile.avatar ||
+    savedProfile.profileImage ||
+    savedProfile.profile_picture ||
+    savedProfile.profilePicture ||
+    user.avatar ||
+    user.avatarUrl ||
+    user.avatar_url ||
+    user.profileImage ||
+    user.profile_image ||
+    user.profilePicture ||
+    user.profile_picture ||
+    tier.logo;
+
+
   document.getElementById(
     "profileAvatar"
   ).src =
-    savedProfile.avatar ||
-    savedProfile.profileImage ||
-    user.avatar ||
-    user.profileImage ||
-    tier.logo;
+    profileAvatar;
 
 }
 
