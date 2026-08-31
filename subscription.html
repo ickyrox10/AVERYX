@@ -836,6 +836,11 @@
             z-index: 20;
         }
 
+        .bottom-nav.premium-enabled {
+            grid-template-columns:
+                repeat(6, 1fr);
+        }
+
         .nav-item {
             min-height: 49px;
 
@@ -1362,6 +1367,22 @@
         </span>
 
         Tiers
+
+    </a>
+
+
+    <a
+        href="premium.html"
+        class="nav-item"
+        id="premiumNavItem"
+        style="display: none;"
+    >
+
+        <span class="nav-icon">
+            ✦
+        </span>
+
+        A-Pass
 
     </a>
 
@@ -2626,6 +2647,76 @@ async function initializesubscription() {
 
 }
 
+
+/* ==================================================
+   PREMIUM NAVIGATION
+================================================== */
+
+async function loadPremiumNavigation() {
+
+    const premiumNavItem =
+        document.getElementById(
+            "premiumNavItem"
+        );
+
+    const bottomNav =
+        document.querySelector(
+            ".bottom-nav"
+        );
+
+    if (!premiumNavItem || !bottomNav) {
+        return;
+    }
+
+    try {
+
+        const response = await fetch(
+            `${API_BASE_URL}/api/priority-config/settings`
+        );
+
+        const data = await response.json();
+
+        const enabled =
+            response.ok &&
+            data.success === true &&
+            data.prioritySystemEnabled === true;
+
+        if (enabled) {
+
+            premiumNavItem.style.display = "";
+
+            bottomNav.classList.add(
+                "premium-enabled"
+            );
+
+        } else {
+
+            premiumNavItem.style.display = "none";
+
+            bottomNav.classList.remove(
+                "premium-enabled"
+            );
+
+        }
+
+    } catch (error) {
+
+        console.warn(
+            "Unable to load priority system configuration:",
+            error
+        );
+
+        premiumNavItem.style.display = "none";
+
+        bottomNav.classList.remove(
+            "premium-enabled"
+        );
+
+    }
+
+}
+
+
 /* ==================================================
    START
 ================================================== */
@@ -2641,6 +2732,7 @@ renderSubscriptionProfileHeader();
 
 <script src="auth-guard.js"></script>
 <script>
+    loadPremiumNavigation();
     initializesubscription();
 </script>
 </body>
