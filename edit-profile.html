@@ -2026,7 +2026,9 @@ document.getElementById(
                                     nickname:
                                         profile.nickname,
                                     email:
-                                        profile.email
+                                        profile.email,
+                                    selectedProfileTier:
+                                        profile.selectedProfileTier
                                 })
                         }
                     );
@@ -2063,8 +2065,8 @@ document.getElementById(
             }
 
             /*
-               Keep the selected logo locally because
-               it is a visual preference.
+               Keep a local cache for faster rendering.
+               The backend remains the source of truth.
             */
             writeProfileStorage(profile);
 
