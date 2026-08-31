@@ -166,6 +166,64 @@ function isEnvTrue(value) {
 }
 
 
+
+
+/* ==================================================
+   WITHDRAWAL PRIORITY SYSTEM
+================================================== */
+
+function getPositiveEnvNumber(
+    key,
+    fallback
+) {
+
+    const value =
+        Number(
+            process.env[key]
+        );
+
+
+    if (
+        Number.isFinite(value) &&
+        value >= 0
+    ) {
+
+        return value;
+
+    }
+
+
+    return fallback;
+
+}
+
+
+function getWithdrawalPriorityConfig() {
+
+    return {
+
+        enabled:
+            isEnvTrue(
+                process.env.WITHDRAWAL_PRIORITY_SYSTEM_ENABLED
+            ),
+
+        normalHoldHours:
+            getPositiveEnvNumber(
+                "NORMAL_WITHDRAWAL_HOLD_HOURS",
+                36
+            ),
+
+        premiumHoldHours:
+            getPositiveEnvNumber(
+                "PREMIUM_WITHDRAWAL_HOLD_HOURS",
+                6
+            )
+
+    };
+
+}
+
+
 function getWithdrawalNetworkStates() {
 
     return {
@@ -2603,6 +2661,127 @@ async function createWithdrawal(
             `WITHDRAWAL-${selectedNetwork}-${shortAddress}`;
 
 
+        /* ==================================================
+           WITHDRAWAL PRIORITY MODE
+
+           When disabled, the existing withdrawal behavior
+           remains unchanged.
+
+           When enabled:
+
+           Normal user:
+           pending -> automatic worker after hold period
+
+           Premium user:
+           pending -> manual admin queue
+        ================================================== */
+
+        const priorityConfig =
+            getWithdrawalPriorityConfig();
+
+
+        let processingMode =
+            null;
+
+
+        let priorityType =
+            null;
+
+
+        let eligibleAt =
+            null;
+
+
+        let isPremiumUser =
+            false;
+
+
+        if (
+            priorityConfig.enabled
+        ) {
+
+            const premiumResult =
+                await client.query(
+                    `
+                    SELECT
+                        averyx_premium_active
+                    FROM users
+                    WHERE id = $1
+                    FOR UPDATE
+                    `,
+                    [
+                        userId
+                    ]
+                );
+
+
+            isPremiumUser =
+                premiumResult.rows.length > 0 &&
+                premiumResult.rows[0]
+                    .averyx_premium_active === true;
+
+
+            if (
+                isPremiumUser
+            ) {
+
+                processingMode =
+                    "manual";
+
+
+                priorityType =
+                    "premium";
+
+
+                /*
+                   Premium withdrawals stay in the manual
+                   admin queue. The configured hold hours
+                   represent the target service window and
+                   are stored as eligible_at for visibility,
+                   but the worker must never auto-process
+                   manual withdrawals.
+                */
+
+                eligibleAt =
+                    new Date(
+                        Date.now() +
+                        (
+                            priorityConfig
+                                .premiumHoldHours *
+                            60 *
+                            60 *
+                            1000
+                        )
+                    );
+
+
+            } else {
+
+                processingMode =
+                    "automatic";
+
+
+                priorityType =
+                    "normal";
+
+
+                eligibleAt =
+                    new Date(
+                        Date.now() +
+                        (
+                            priorityConfig
+                                .normalHoldHours *
+                            60 *
+                            60 *
+                            1000
+                        )
+                    );
+
+            }
+
+        }
+
+
         const transactionResult =
             await client.query(
                 `
@@ -2616,7 +2795,10 @@ async function createWithdrawal(
                     status,
                     reference,
                     network,
-                    to_address
+                    to_address,
+                    processing_mode,
+                    priority_type,
+                    eligible_at
                 )
                 VALUES (
                     $1,
@@ -2628,7 +2810,10 @@ async function createWithdrawal(
                     'pending',
                     $6,
                     $7,
-                    $8
+                    $8,
+                    $9,
+                    $10,
+                    $11
                 )
                 RETURNING
                     id,
@@ -2643,6 +2828,9 @@ async function createWithdrawal(
                     network,
                     from_address,
                     to_address,
+                    processing_mode,
+                    priority_type,
+                    eligible_at,
                     created_at
                 `,
                 [
@@ -2657,7 +2845,10 @@ async function createWithdrawal(
                         : null,
                     reference,
                     selectedNetwork,
-                    walletAddress
+                    walletAddress,
+                    processingMode,
+                    priorityType,
+                    eligibleAt
                 ]
             );
 
@@ -2733,7 +2924,16 @@ async function createWithdrawal(
                     walletAddress,
 
                 createdAt:
-                    transaction.created_at
+                    transaction.created_at,
+
+                processingMode:
+                    transaction.processing_mode,
+
+                priorityType:
+                    transaction.priority_type,
+
+                eligibleAt:
+                    transaction.eligible_at
 
             },
 

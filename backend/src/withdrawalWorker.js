@@ -172,7 +172,10 @@ async function getPendingWithdrawals() {
             network,
             from_address,
             to_address,
-            created_at
+            created_at,
+            processing_mode,
+            priority_type,
+            eligible_at
         FROM transactions
         WHERE
             type = 'withdrawal'
@@ -184,6 +187,13 @@ async function getPendingWithdrawals() {
             AND BTRIM(to_address) <> ''
             AND recipient_amount_usdt IS NOT NULL
             AND recipient_amount_usdt > 0
+            AND (
+                LOWER(COALESCE(processing_mode, 'automatic')) <> 'manual'
+                AND (
+                    eligible_at IS NULL
+                    OR eligible_at <= NOW()
+                )
+            )
         ORDER BY created_at ASC
         LIMIT 10
         `
@@ -219,6 +229,13 @@ async function claimNextPendingWithdrawal(targetWithdrawalId = null) {
                     AND recipient_amount_usdt IS NOT NULL
                     AND recipient_amount_usdt > 0
                     AND (
+                        LOWER(COALESCE(processing_mode, 'automatic')) <> 'manual'
+                        AND (
+                            eligible_at IS NULL
+                            OR eligible_at <= NOW()
+                        )
+                    )
+                    AND (
                         $1::bigint IS NULL
                         OR id = $1::bigint
                     )
@@ -245,7 +262,10 @@ async function claimNextPendingWithdrawal(targetWithdrawalId = null) {
                 network,
                 from_address,
                 to_address,
-                created_at
+                created_at,
+                processing_mode,
+                priority_type,
+                eligible_at
             `,
             [targetWithdrawalId]
         );
