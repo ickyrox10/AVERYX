@@ -1189,11 +1189,7 @@ body{
 
 const API =
     window.AVERYX_API_BASE_URL ||
-    (
-        window.location.protocol === "file:"
-            ? "https://averyx.onrender.com"
-            : ""
-    );
+    "https://averyx.onrender.com";
 
 let records = [];
 
