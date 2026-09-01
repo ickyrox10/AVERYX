@@ -224,6 +224,20 @@ function getWithdrawalPriorityConfig() {
 }
 
 
+function getWithdrawalServiceConfig() {
+
+    return {
+
+        enabled:
+            isEnvTrue(
+                process.env.WITHDRAWAL_SERVICE_ENABLED
+            )
+
+    };
+
+}
+
+
 function getWithdrawalNetworkStates() {
 
     return {
@@ -2359,6 +2373,34 @@ async function createWithdrawal(
         network,
         address
     } = req.body;
+
+
+    /*
+       WITHDRAWAL SERVICE MASTER SWITCH
+
+       When disabled, no new withdrawal request is
+       allowed to continue into reward settlement,
+       balance deduction, or transaction creation.
+    */
+
+    const withdrawalServiceConfig =
+        getWithdrawalServiceConfig();
+
+
+    if (
+        !withdrawalServiceConfig.enabled
+    ) {
+
+        return res.status(503).json({
+
+            success: false,
+
+            message:
+                "Withdrawal service is currently unavailable."
+
+        });
+
+    }
 
 
     /*
