@@ -1883,9 +1883,6 @@ async function purchasePremiumPass(
                 `
                 UPDATE wallets
                 SET
-                    balance_usdt =
-                        balance_usdt + $1,
-
                     withdrawable_usdt =
                         withdrawable_usdt + $1,
 
@@ -1925,7 +1922,7 @@ async function purchasePremiumPass(
                     )
                     VALUES (
                         $1,
-                        $2,
+                        0,
                         $2,
                         NOW(),
                         NOW()
