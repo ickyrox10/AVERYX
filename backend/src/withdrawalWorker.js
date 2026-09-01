@@ -1059,6 +1059,110 @@ async function processWithdrawal(withdrawal) {
 
 
 /* ==================================================
+   EXPIRE PREMIUM MANUAL WITHDRAWALS
+
+   Premium withdrawals remain manually processable while
+   pending. If the configured service window expires
+   before an admin processes the request, the withdrawal
+   automatically fails and the full reserved amount is
+   returned to the user's withdrawable balance.
+
+   TRC20 manual withdrawals are intentionally excluded.
+================================================== */
+
+async function expireOverduePremiumWithdrawals() {
+    const client = await pool.connect();
+
+    try {
+        await client.query("BEGIN");
+
+        const expiredResult = await client.query(
+            `
+            SELECT
+                id,
+                user_id,
+                amount_usdt
+            FROM transactions
+            WHERE
+                type = 'withdrawal'
+                AND LOWER(status) = 'pending'
+                AND LOWER(COALESCE(processing_mode, '')) = 'manual'
+                AND LOWER(COALESCE(priority_type, '')) = 'premium'
+                AND eligible_at IS NOT NULL
+                AND eligible_at <= NOW()
+            FOR UPDATE SKIP LOCKED
+            `
+        );
+
+        let expiredCount = 0;
+
+        for (const withdrawal of expiredResult.rows) {
+            const statusResult = await client.query(
+                `
+                UPDATE transactions
+                SET status = 'failed'
+                WHERE
+                    id = $1
+                    AND type = 'withdrawal'
+                    AND LOWER(status) = 'pending'
+                    AND tx_hash IS NULL
+                RETURNING id
+                `,
+                [withdrawal.id]
+            );
+
+            if (statusResult.rows.length === 0) {
+                continue;
+            }
+
+            const walletResult = await client.query(
+                `
+                UPDATE wallets
+                SET
+                    withdrawable_usdt = withdrawable_usdt + $1,
+                    updated_at = NOW()
+                WHERE user_id = $2
+                RETURNING id
+                `,
+                [
+                    withdrawal.amount_usdt,
+                    withdrawal.user_id
+                ]
+            );
+
+            if (walletResult.rows.length === 0) {
+                throw new Error(
+                    "User wallet not found during premium withdrawal timeout refund."
+                );
+            }
+
+            expiredCount += 1;
+
+            console.log(
+                "[Withdrawal Worker] Premium withdrawal expired and funds restored:",
+                {
+                    id: withdrawal.id,
+                    user_id: withdrawal.user_id,
+                    restoredAmount: withdrawal.amount_usdt
+                }
+            );
+        }
+
+        await client.query("COMMIT");
+
+        return expiredCount;
+
+    } catch (error) {
+        await client.query("ROLLBACK");
+        throw error;
+
+    } finally {
+        client.release();
+    }
+}
+
+
+/* ==================================================
    RUN WITHDRAWAL WORKER
 ================================================== */
 
@@ -1068,6 +1172,8 @@ async function runWithdrawalWorker() {
     }
 
     try {
+        await expireOverduePremiumWithdrawals();
+
         if (DRY_RUN) {
             const pendingWithdrawals = await getPendingWithdrawals();
 
@@ -1201,6 +1307,7 @@ async function runWithdrawalWorker() {
 
 module.exports = {
     runWithdrawalWorker,
+    expireOverduePremiumWithdrawals,
     getPendingWithdrawals,
     claimNextPendingWithdrawal,
     failWithdrawalBeforeBroadcast,
