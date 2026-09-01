@@ -679,6 +679,40 @@ button:active,
         padding:25px;
     }
 }
+
+
+/* ==================================================
+   AVERYX PRIORITY WITHDRAWAL PROMOTION
+================================================== */
+
+.priority-pass-promo {
+    display: none;
+    margin: 0 0 22px;
+    padding: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.priority-pass-promo.show {
+    display: block;
+}
+
+.priority-pass-promo h3 {
+    margin: 0 0 8px;
+}
+
+.priority-pass-promo p {
+    margin: 0 0 14px;
+    line-height: 1.55;
+}
+
+.priority-pass-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
 </style>
 
 </head>
@@ -728,6 +762,34 @@ button:active,
 
         <div class="label">
             Withdrawable Balance
+        </div>
+
+        <!-- ==================================================
+             AVERYX PRIORITY WITHDRAWAL PROMOTION
+             Hidden by default. JavaScript shows this only when
+             WITHDRAWAL_PRIORITY_SYSTEM_ENABLED is true.
+        ================================================== -->
+
+        <div
+            id="priorityPassPromo"
+            class="priority-pass-promo"
+        >
+
+            <h3>Want faster withdrawal processing?</h3>
+
+            <p>
+                Get an AVERYX Premium Pass for priority withdrawal
+                processing. Premium withdrawal requests receive
+                priority handling while the Priority System is active.
+            </p>
+
+            <a
+                href="premium.html"
+                class="priority-pass-button"
+            >
+                Get AVERYX Pass
+            </a>
+
         </div>
 
         <div class="amount">
@@ -1170,6 +1232,62 @@ function showMessage(
 
     element.className =
         `message ${type}`;
+
+}
+
+
+
+
+/* ==================================================
+   PRIORITY SYSTEM PROMOTION
+
+   The backend is the source of truth.
+   This promotional section is shown only when the
+   Withdrawal Priority System is enabled.
+================================================== */
+
+async function loadPriorityPassPromotion() {
+
+    const promo =
+        document.getElementById(
+            "priorityPassPromo"
+        );
+
+
+    if (!promo) {
+
+        return;
+
+    }
+
+
+    try {
+
+        const data =
+            await apiRequest(
+                "/api/priority/config"
+            );
+
+
+        promo.classList.toggle(
+            "show",
+            data.prioritySystemEnabled === true
+        );
+
+
+    } catch (error) {
+
+        /*
+           Fail closed: if priority configuration cannot
+           be loaded, do not show the promotion.
+           Normal withdrawal functionality remains unchanged.
+        */
+
+        promo.classList.remove(
+            "show"
+        );
+
+    }
 
 }
 
@@ -1932,6 +2050,7 @@ document.getElementById(
 );
 
 loadWallet();
+loadPriorityPassPromotion();
 
 </script>
 
