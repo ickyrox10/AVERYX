@@ -2739,8 +2739,44 @@ async function createWithdrawal(
 
 
         if (
-            priorityConfig.enabled
+            !priorityConfig.enabled
         ) {
+
+            /*
+               NORMAL MODE
+
+               Preserve the original withdrawal behavior:
+
+               - BEP20 / ERC20 / POLYGON remain automatic and
+                 immediately eligible for the worker.
+               - TRC20 remains manual as in the original flow.
+            */
+
+            priorityType =
+                "normal";
+
+
+            if (
+                selectedNetwork === "TRC20"
+            ) {
+
+                processingMode =
+                    "manual";
+
+                eligibleAt =
+                    null;
+
+            } else {
+
+                processingMode =
+                    "automatic";
+
+                eligibleAt =
+                    new Date();
+
+            }
+
+        } else {
 
             const premiumResult =
                 await client.query(
