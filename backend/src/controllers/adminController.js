@@ -34,6 +34,11 @@ function toWithdrawal(row) {
         network: row.network,
         fromAddress: row.from_address,
         toAddress: row.to_address,
+
+        processingMode: row.processing_mode || null,
+        priorityType: row.priority_type || null,
+        eligibleAt: row.eligible_at || null,
+
         createdAt: row.created_at
     };
 }
@@ -264,6 +269,9 @@ async function getAdminWithdrawals(req, res) {
                     t.network,
                     t.from_address,
                     t.to_address,
+                    t.processing_mode,
+                    t.priority_type,
+                    t.eligible_at,
                     t.created_at
                 FROM transactions t
                 LEFT JOIN users u
@@ -330,6 +338,9 @@ async function getAdminWithdrawalById(req, res) {
                     t.network,
                     t.from_address,
                     t.to_address,
+                    t.processing_mode,
+                    t.priority_type,
+                    t.eligible_at,
                     t.created_at
                 FROM transactions t
                 LEFT JOIN users u
@@ -501,6 +512,9 @@ async function completeAdminWithdrawal(req, res) {
                     network,
                     from_address,
                     to_address,
+                    processing_mode,
+                    priority_type,
+                    eligible_at,
                     created_at
                 `,
                 [
@@ -709,6 +723,9 @@ async function failAdminWithdrawal(req, res) {
                     network,
                     from_address,
                     to_address,
+                    processing_mode,
+                    priority_type,
+                    eligible_at,
                     created_at
                 `,
                 [withdrawalId]
