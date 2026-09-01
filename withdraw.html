@@ -688,10 +688,11 @@ button:active,
 .priority-pass-promo {
     display: none;
     margin: 0 0 22px;
-    padding: 18px;
+    padding: 22px;
     border: 1px solid rgba(255, 255, 255, 0.14);
     border-radius: 16px;
     background: rgba(255, 255, 255, 0.04);
+    box-shadow: 0 16px 36px rgba(0,0,0,.16);
 }
 
 .priority-pass-promo.show {
@@ -699,11 +700,11 @@ button:active,
 }
 
 .priority-pass-promo h3 {
-    margin: 0 0 8px;
+    margin: 0 0 12px;
 }
 
 .priority-pass-promo p {
-    margin: 0 0 14px;
+    margin: 0 0 12px;
     line-height: 1.55;
 }
 
@@ -712,6 +713,16 @@ button:active,
     align-items: center;
     justify-content: center;
     text-decoration: none;
+    margin-top: 4px;
+}
+
+.priority-pass-note {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255,255,255,.10);
+    font-size: 13px;
+    line-height: 1.55;
+    color: rgba(255,255,255,.72);
 }
 </style>
 
@@ -758,38 +769,47 @@ button:active,
     </div>
 
 
-    <div class="balance-card">
-
-        <div class="label">
-            Withdrawable Balance
-        </div>
-
-        <!-- ==================================================
-             AVERYX PRIORITY WITHDRAWAL PROMOTION
-             Hidden by default. JavaScript shows this only when
-             WITHDRAWAL_PRIORITY_SYSTEM_ENABLED is true.
-        ================================================== -->
-
-        <div
-            id="priorityPassPromo"
-            class="priority-pass-promo"
-        >
-
-            <h3>Want faster withdrawal processing?</h3>
-
+    <!-- Priority System section. Hidden unless enabled. -->
+    <div
+        id="priorityPassPromo"
+        class="priority-pass-promo"
+    >
+        <div id="priorityPassOffer">
+            <h3>⚡ AVERYX PREMIUM PASS</h3>
+            <p>Want faster withdrawal processing?</p>
             <p>
-                Get an AVERYX Premium Pass for priority withdrawal
-                processing. Premium withdrawal requests receive
-                priority handling while the Priority System is active.
+                Get priority withdrawal access with an AVERYX Premium Pass
+                and receive payment within approximately
+                <strong><span id="premiumWithdrawalHours">--</span> hours</strong>.
             </p>
-
             <a
                 href="premium.html"
                 class="priority-pass-button"
             >
                 Get AVERYX Pass
             </a>
+            <div class="priority-pass-note">
+                NOTE: Normal users may experience a payment delay of
+                approximately <strong><span id="normalWithdrawalHours">--</span> hours</strong>.
+            </div>
+        </div>
 
+        <div id="priorityPassActive" hidden>
+            <h3>⚡ AVERYX PASS ACTIVE</h3>
+            <p>Your Premium Pass is active.</p>
+            <p>Priority withdrawal access is enabled.</p>
+            <p>
+                We aim to process Premium withdrawals within approximately
+                <strong><span id="activePremiumWithdrawalHours">--</span> hours</strong>.
+            </p>
+        </div>
+    </div>
+
+
+    <div class="balance-card">
+
+        <div class="label">
+            Withdrawable Amount
         </div>
 
         <div class="amount">
@@ -1248,49 +1268,66 @@ function showMessage(
 
 async function loadPriorityPassPromotion() {
 
-    const promo =
-        document.getElementById(
-            "priorityPassPromo"
-        );
+    const promo = document.getElementById("priorityPassPromo");
+    const offer = document.getElementById("priorityPassOffer");
+    const active = document.getElementById("priorityPassActive");
 
-
-    if (!promo) {
-
-        return;
-
-    }
-
+    if (!promo) return;
 
     try {
+        const config = await apiRequest(
+            "/api/priority-config/settings"
+        );
 
-        const data =
-            await apiRequest(
-                "/api/priority-config/settings"
+        const priorityEnabled =
+            config.prioritySystemEnabled === true;
+
+        if (!priorityEnabled) {
+            promo.classList.remove("show");
+            return;
+        }
+
+        const premiumHours =
+            Number(config.premiumWithdrawalHoldHours);
+
+        const normalHours =
+            Number(config.normalWithdrawalHoldHours);
+
+        document.getElementById("premiumWithdrawalHours").textContent =
+            Number.isFinite(premiumHours) ? premiumHours : "--";
+
+        document.getElementById("normalWithdrawalHours").textContent =
+            Number.isFinite(normalHours) ? normalHours : "--";
+
+        document.getElementById("activePremiumWithdrawalHours").textContent =
+            Number.isFinite(premiumHours) ? premiumHours : "--";
+
+        let passActive = false;
+
+        try {
+            const premiumStatus = await apiRequest(
+                "/api/premium/status"
             );
 
+            passActive =
+                premiumStatus?.premium?.active === true;
 
-        promo.classList.toggle(
-            "show",
-            data.prioritySystemEnabled === true
-        );
+        } catch (error) {
+            /* If Premium status cannot load, safely show the offer. */
+            passActive = false;
+        }
 
+        offer.hidden = passActive;
+        active.hidden = !passActive;
+
+        promo.classList.add("show");
 
     } catch (error) {
-
-        /*
-           Fail closed: if priority configuration cannot
-           be loaded, do not show the promotion.
-           Normal withdrawal functionality remains unchanged.
-        */
-
-        promo.classList.remove(
-            "show"
-        );
-
+        /* Fail closed. Priority UI must not affect withdrawals. */
+        promo.classList.remove("show");
     }
 
 }
-
 
 async function loadWallet() {
 
