@@ -790,6 +790,20 @@ function getNextResetAfter(reset) {
 }
 
 
+function getDailyRewardReference(
+    reset
+) {
+
+    return `DAILY-REWARD-${new Date(reset)
+        .toISOString()
+        .replace(
+            /[-:.TZ]/g,
+            ""
+        )}`;
+
+}
+
+
 /* ==================================================
    SETTLE DUE DAILY REWARDS
 ================================================== */
@@ -957,6 +971,98 @@ async function settleDueRewardsForUser(
         }
 
 
+        /*
+           Immediate first reward rule.
+
+           A user may receive only one reward in a
+           global reward day. The reward day begins at
+           4:30 PM IST.
+
+           If the user has already deposited during the
+           current reward cycle but has not received a
+           reward for this cycle, credit one reward now.
+
+           dueCycles === 0 prevents double-crediting
+           when the normal settlement already includes
+           the current 4:30 PM cycle.
+        */
+
+        const currentRewardReference =
+            getDailyRewardReference(
+                currentReset
+            );
+
+
+        let activationRewardDue =
+            false;
+
+
+        if (
+            dueCycles === 0 &&
+            currentTier.daily > 0
+        ) {
+
+            const currentCycleDeposit =
+                await db.query(
+                    `
+                    SELECT id
+                    FROM transactions
+                    WHERE
+                        user_id = $1
+                        AND type = 'deposit'
+                        AND status = 'completed'
+                        AND created_at >= $2
+                    LIMIT 1
+                    `,
+                    [
+                        userId,
+                        currentReset
+                    ]
+                );
+
+
+            if (
+                currentCycleDeposit.rows.length > 0
+            ) {
+
+                const currentCycleReward =
+                    await db.query(
+                        `
+                        SELECT id
+                        FROM transactions
+                        WHERE
+                            user_id = $1
+                            AND type = 'reward'
+                            AND status = 'completed'
+                            AND reference = $2
+                        LIMIT 1
+                        `,
+                        [
+                            userId,
+                            currentRewardReference
+                        ]
+                    );
+
+
+                activationRewardDue =
+                    currentCycleReward.rows.length === 0;
+
+            }
+
+        }
+
+
+        if (activationRewardDue) {
+
+            rewardAmount =
+                roundUSDT(
+                    rewardAmount +
+                    currentTier.daily
+                );
+
+        }
+
+
         const oldWithdrawable =
             Number(
                 wallet.withdrawable_usdt
@@ -1010,12 +1116,9 @@ async function settleDueRewardsForUser(
             ) {
 
                 const reference =
-                    `DAILY-REWARD-${rewardReset
-                        .toISOString()
-                        .replace(
-                            /[-:.TZ]/g,
-                            ""
-                        )}`;
+                    getDailyRewardReference(
+                        rewardReset
+                    );
 
 
                 await db.query(
@@ -1049,6 +1152,35 @@ async function settleDueRewardsForUser(
                     );
 
             }
+
+        }
+
+
+        if (activationRewardDue) {
+
+            await db.query(
+                `
+                INSERT INTO transactions (
+                    user_id,
+                    type,
+                    amount_usdt,
+                    status,
+                    reference
+                )
+                VALUES (
+                    $1,
+                    'reward',
+                    $2,
+                    'completed',
+                    $3
+                )
+                `,
+                [
+                    userId,
+                    currentTier.daily,
+                    currentRewardReference
+                ]
+            );
 
         }
 
@@ -1989,6 +2121,23 @@ async function createDeposit(
             [newBalance, lastRewardReset, wallet.id]
         );
 
+
+        /*
+           Deposit is now committed to the transaction
+           scope, so settle the current global reward
+           cycle immediately.
+
+           This credits the first reward now when the
+           user has not already received a reward in the
+           current 4:30 PM IST reward day.
+        */
+
+        await settleDueRewardsForUser(
+            userId,
+            client
+        );
+
+
         /* ------------------------------------------
            REFERRAL REWARD
         ------------------------------------------ */
@@ -2089,7 +2238,26 @@ async function createDeposit(
         await client.query("COMMIT");
 
         const depositTransaction = transactionResult.rows[0];
-        const finalWallet = updatedWalletResult.rows[0];
+
+        const finalWalletResult =
+            await pool.query(
+                `
+                SELECT
+                    balance_usdt,
+                    withdrawable_usdt,
+                    updated_at
+                FROM wallets
+                WHERE id = $1
+                LIMIT 1
+                `,
+                [
+                    wallet.id
+                ]
+            );
+
+        const finalWallet =
+            finalWalletResult.rows[0] ||
+            updatedWalletResult.rows[0];
 
         return res.status(201).json({
             success: true,
