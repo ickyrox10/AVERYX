@@ -290,8 +290,435 @@ async function createTrc20GasQuote({ toAddress, requestedAmount }) {
     };
 }
 
+
+/* ==================================================
+   VERIFY TRC20 USDT PAYMENT
+
+   Used by manual admin approval.
+
+   Verifies a completed TRC20 USDT Transfer event against:
+   - configured TRC20 USDT contract
+   - expected recipient address
+   - exact expected recipient amount
+
+   TRC20 keeps exact amount verification because its
+   recipient amount is fixed by the withdrawal quote.
+================================================== */
+
+async function verifyTrc20UsdtPayment({
+
+    txHash,
+
+    expectedRecipientAddress,
+
+    expectedAmountUsdt
+
+}) {
+
+    if (
+        !txHash ||
+        typeof txHash !== "string"
+    ) {
+
+        throw new Error(
+            "Transaction hash is required."
+        );
+
+    }
+
+
+    if (
+        !TronWeb.isAddress(
+            expectedRecipientAddress
+        )
+    ) {
+
+        throw new Error(
+            "Expected TRC20 recipient address is invalid."
+        );
+
+    }
+
+
+    const expectedAmount =
+        Number(
+            expectedAmountUsdt
+        );
+
+
+    if (
+        !Number.isFinite(
+            expectedAmount
+        ) ||
+        expectedAmount <= 0
+    ) {
+
+        throw new Error(
+            "Expected payment amount is invalid."
+        );
+
+    }
+
+
+    const tronWeb =
+        getTronWeb();
+
+
+    const contractAddress =
+        getContractAddress();
+
+
+    let transactionInfo;
+
+
+    try {
+
+        transactionInfo =
+            await tronWeb.trx.getTransactionInfo(
+                txHash.trim()
+            );
+
+    } catch (error) {
+
+        throw new Error(
+            "Unable to read TRON transaction: " +
+            error.message
+        );
+
+    }
+
+
+    if (
+        !transactionInfo ||
+        !transactionInfo.id
+    ) {
+
+        throw new Error(
+            "Transaction was not found or is not yet confirmed."
+        );
+
+    }
+
+
+    if (
+        transactionInfo.receipt &&
+        transactionInfo.receipt.result &&
+        transactionInfo.receipt.result !==
+        "SUCCESS"
+    ) {
+
+        throw new Error(
+            "Transaction failed on-chain."
+        );
+
+    }
+
+
+    let events;
+
+
+    try {
+
+        events =
+            await tronWeb.getEventByTransactionID(
+                txHash.trim()
+            );
+
+    } catch (error) {
+
+        throw new Error(
+            "Unable to read TRC20 transfer events: " +
+            error.message
+        );
+
+    }
+
+
+    if (
+        !Array.isArray(events) ||
+        !events.length
+    ) {
+
+        throw new Error(
+            "No confirmed TRC20 transfer event was found for this transaction."
+        );
+
+    }
+
+
+    const expectedRecipientHex =
+        TronWeb.address
+            .toHex(
+                expectedRecipientAddress
+            )
+            .toLowerCase();
+
+
+    const expectedContractHex =
+        TronWeb.address
+            .toHex(
+                contractAddress
+            )
+            .toLowerCase();
+
+
+    let matchingTransfer =
+        null;
+
+
+    for (
+        const event of events
+    ) {
+
+        if (
+            String(
+                event.event_name ||
+                event.eventName ||
+                ""
+            ) !==
+            "Transfer"
+        ) {
+
+            continue;
+
+        }
+
+
+        const eventContract =
+            String(
+                event.contract_address ||
+                event.contractAddress ||
+                ""
+            )
+            .trim();
+
+
+        if (!eventContract) {
+
+            continue;
+
+        }
+
+
+        let eventContractHex;
+
+
+        try {
+
+            eventContractHex =
+                TronWeb.isAddress(
+                    eventContract
+                )
+                    ? TronWeb.address
+                        .toHex(
+                            eventContract
+                        )
+                        .toLowerCase()
+                    : eventContract
+                        .toLowerCase();
+
+        } catch {
+
+            continue;
+
+        }
+
+
+        if (
+            eventContractHex !==
+            expectedContractHex
+        ) {
+
+            continue;
+
+        }
+
+
+        const result =
+            event.result ||
+            {};
+
+
+        const toAddress =
+            result.to ||
+            result._to ||
+            result.recipient;
+
+
+        const fromAddress =
+            result.from ||
+            result._from ||
+            result.sender;
+
+
+        const rawValue =
+            result.value ??
+            result._value ??
+            result.amount;
+
+
+        if (
+            !toAddress ||
+            rawValue ===
+            undefined ||
+            rawValue ===
+            null
+        ) {
+
+            continue;
+
+        }
+
+
+        let recipientHex;
+
+
+        try {
+
+            recipientHex =
+                TronWeb.isAddress(
+                    String(toAddress)
+                )
+                    ? TronWeb.address
+                        .toHex(
+                            String(toAddress)
+                        )
+                        .toLowerCase()
+                    : String(toAddress)
+                        .toLowerCase();
+
+        } catch {
+
+            continue;
+
+        }
+
+
+        if (
+            recipientHex !==
+            expectedRecipientHex
+        ) {
+
+            continue;
+
+        }
+
+
+        let rawAmount;
+
+
+        try {
+
+            rawAmount =
+                BigInt(
+                    String(rawValue)
+                );
+
+        } catch {
+
+            continue;
+
+        }
+
+
+        const actualAmount =
+            Number(rawAmount) /
+            1_000_000;
+
+
+        if (
+            !Number.isFinite(
+                actualAmount
+            )
+        ) {
+
+            continue;
+
+        }
+
+
+        const difference =
+            Math.abs(
+                actualAmount -
+                expectedAmount
+            );
+
+
+        /*
+           TRC20 quote amounts are stored to 6 decimals.
+           A microscopic tolerance only protects against
+           JavaScript floating-point representation.
+        */
+
+        if (
+            difference >
+            0.000001 +
+            1e-12
+        ) {
+
+            continue;
+
+        }
+
+
+        matchingTransfer = {
+
+            actualAmountUsdt:
+                actualAmount,
+
+            expectedAmountUsdt:
+                expectedAmount,
+
+            differenceUsdt:
+                difference,
+
+            fromAddress:
+                fromAddress ||
+                null,
+
+            toAddress
+
+        };
+
+        break;
+
+    }
+
+
+    if (!matchingTransfer) {
+
+        throw new Error(
+            "No matching TRC20 USDT transfer was found for the expected recipient and amount."
+        );
+
+    }
+
+
+    return {
+
+        verified:
+            true,
+
+        network:
+            "TRC20",
+
+        txHash:
+            txHash.trim(),
+
+        usdtContract:
+            contractAddress,
+
+        ...matchingTransfer
+
+    };
+
+}
+
+
+
 module.exports = {
     createTrc20GasQuote,
     estimateTrc20TransferResources,
-    getTrxPriceUsdt
+    getTrxPriceUsdt,
+    verifyTrc20UsdtPayment
 };

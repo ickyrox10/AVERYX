@@ -3,6 +3,14 @@ const jwt = require("jsonwebtoken");
 
 const { pool } = require("../db");
 
+const {
+    verifyEvmUsdtPayment
+} = require("../services/gasQuoteService");
+
+const {
+    verifyTrc20UsdtPayment
+} = require("../services/tronGasQuoteService");
+
 
 function toWithdrawal(row) {
     return {
@@ -427,8 +435,13 @@ async function completeAdminWithdrawal(req, res) {
                 `
                 SELECT
                     id,
+                    user_id,
+                    amount_usdt,
+                    recipient_amount_usdt,
                     status,
-                    tx_hash
+                    tx_hash,
+                    network,
+                    to_address
                 FROM transactions
                 WHERE
                     id = $1
@@ -491,6 +504,109 @@ async function completeAdminWithdrawal(req, res) {
             });
         }
 
+        const network =
+            String(current.network || "")
+                .trim()
+                .toUpperCase();
+
+        const expectedRecipientAddress =
+            String(current.to_address || "")
+                .trim();
+
+        const expectedAmountUsdt =
+            current.recipient_amount_usdt === null
+                ? Number(current.amount_usdt)
+                : Number(current.recipient_amount_usdt);
+
+        if (!expectedRecipientAddress) {
+            await client.query("ROLLBACK");
+
+            return res.status(400).json({
+                success: false,
+                message: "Withdrawal recipient address is missing."
+            });
+        }
+
+        if (
+            !Number.isFinite(expectedAmountUsdt) ||
+            expectedAmountUsdt <= 0
+        ) {
+            await client.query("ROLLBACK");
+
+            return res.status(400).json({
+                success: false,
+                message: "Withdrawal recipient amount is invalid."
+            });
+        }
+
+        /*
+           Important:
+           The transaction must be verified before the
+           database status can change to completed.
+
+           TRC20:
+           - exact quoted recipient amount
+
+           BEP20 / ERC20 / POLYGON:
+           - expected recipient amount ± 0.10 USDT
+           - allows small manual payment differences
+        */
+
+        let verification;
+
+        try {
+            if (network === "TRC20") {
+                verification =
+                    await verifyTrc20UsdtPayment({
+                        txHash,
+                        expectedRecipientAddress,
+                        expectedAmountUsdt
+                    });
+
+            } else if (
+                network === "BEP20" ||
+                network === "ERC20" ||
+                network === "POLYGON"
+            ) {
+                verification =
+                    await verifyEvmUsdtPayment({
+                        network,
+                        txHash,
+                        expectedRecipientAddress,
+                        expectedAmountUsdt,
+                        toleranceUsdt: 0.10
+                    });
+
+            } else {
+                throw new Error(
+                    "Unsupported withdrawal network for transaction verification."
+                );
+            }
+
+        } catch (verificationError) {
+            await client.query("ROLLBACK");
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Transaction verification failed: " +
+                    verificationError.message
+            });
+        }
+
+        if (
+            !verification ||
+            verification.verified !== true
+        ) {
+            await client.query("ROLLBACK");
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Transaction verification failed."
+            });
+        }
+
         const updateResult =
             await client.query(
                 `
@@ -527,7 +643,8 @@ async function completeAdminWithdrawal(req, res) {
 
         return res.status(200).json({
             success: true,
-            message: "Withdrawal marked completed.",
+            message: "Withdrawal verified and marked completed.",
+            verification,
             withdrawal:
                 toWithdrawal(updateResult.rows[0])
         });
@@ -551,7 +668,6 @@ async function completeAdminWithdrawal(req, res) {
         client.release();
     }
 }
-
 
 /* ==================================================
    FAIL WITHDRAWAL AND RESTORE RESERVED FUNDS

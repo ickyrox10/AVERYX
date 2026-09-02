@@ -1345,6 +1345,325 @@ async function createGasQuote({
 
 
 /* ==================================================
+   VERIFY EVM USDT PAYMENT
+
+   Used by manual admin approval.
+
+   Verifies a completed USDT Transfer event against:
+   - configured network USDT contract
+   - expected recipient address
+   - expected recipient amount
+
+   Amount comparison allows a configurable tolerance
+   because manual payments can differ slightly from the
+   calculated quote due to real-world gas handling and
+   decimal rounding.
+================================================== */
+
+async function verifyEvmUsdtPayment({
+
+    network,
+
+    txHash,
+
+    expectedRecipientAddress,
+
+    expectedAmountUsdt,
+
+    toleranceUsdt = 0.10
+
+}) {
+
+    const normalizedNetwork =
+        String(network || "")
+            .trim()
+            .toUpperCase();
+
+
+    if (
+        !txHash ||
+        typeof txHash !== "string"
+    ) {
+
+        throw new Error(
+            "Transaction hash is required."
+        );
+
+    }
+
+
+    if (
+        !ethers.isAddress(
+            expectedRecipientAddress
+        )
+    ) {
+
+        throw new Error(
+            "Expected recipient address is invalid."
+        );
+
+    }
+
+
+    const expectedAmount =
+        Number(
+            expectedAmountUsdt
+        );
+
+
+    const tolerance =
+        Number(
+            toleranceUsdt
+        );
+
+
+    if (
+        !Number.isFinite(
+            expectedAmount
+        ) ||
+        expectedAmount <= 0
+    ) {
+
+        throw new Error(
+            "Expected payment amount is invalid."
+        );
+
+    }
+
+
+    if (
+        !Number.isFinite(
+            tolerance
+        ) ||
+        tolerance < 0
+    ) {
+
+        throw new Error(
+            "Payment tolerance is invalid."
+        );
+
+    }
+
+
+    const config =
+        getNetworkConfig(
+            normalizedNetwork
+        );
+
+
+    const provider =
+        getProvider(
+            normalizedNetwork
+        );
+
+
+    let receipt;
+
+
+    try {
+
+        receipt =
+            await provider.getTransactionReceipt(
+                txHash.trim()
+            );
+
+    } catch (error) {
+
+        throw new Error(
+            "Unable to read transaction: " +
+            error.message
+        );
+
+    }
+
+
+    if (!receipt) {
+
+        throw new Error(
+            "Transaction was not found or is not yet confirmed."
+        );
+
+    }
+
+
+    if (
+        Number(receipt.status) !==
+        1
+    ) {
+
+        throw new Error(
+            "Transaction failed on-chain."
+        );
+
+    }
+
+
+    const transferInterface =
+        new ethers.Interface([
+            "event Transfer(address indexed from, address indexed to, uint256 value)"
+        ]);
+
+
+    const expectedContract =
+        config.usdtContract.toLowerCase();
+
+
+    const expectedRecipient =
+        expectedRecipientAddress.toLowerCase();
+
+
+    let matchingTransfer =
+        null;
+
+
+    for (
+        const log of receipt.logs || []
+    ) {
+
+        if (
+            String(log.address || "")
+                .toLowerCase() !==
+            expectedContract
+        ) {
+
+            continue;
+
+        }
+
+
+        let parsed;
+
+
+        try {
+
+            parsed =
+                transferInterface.parseLog(
+                    log
+                );
+
+        } catch {
+
+            continue;
+
+        }
+
+
+        if (
+            !parsed ||
+            parsed.name !==
+            "Transfer"
+        ) {
+
+            continue;
+
+        }
+
+
+        const recipient =
+            String(
+                parsed.args.to
+            ).toLowerCase();
+
+
+        if (
+            recipient !==
+            expectedRecipient
+        ) {
+
+            continue;
+
+        }
+
+
+        const decimals =
+            await getUsdtDecimals(
+                provider,
+                config.usdtContract
+            );
+
+
+        const actualAmount =
+            Number(
+                ethers.formatUnits(
+                    parsed.args.value,
+                    Number(decimals)
+                )
+            );
+
+
+        const difference =
+            Math.abs(
+                actualAmount -
+                expectedAmount
+            );
+
+
+        if (
+            difference <=
+            tolerance +
+            1e-12
+        ) {
+
+            matchingTransfer = {
+
+                actualAmountUsdt:
+                    actualAmount,
+
+                expectedAmountUsdt:
+                    expectedAmount,
+
+                toleranceUsdt:
+                    tolerance,
+
+                differenceUsdt:
+                    difference,
+
+                fromAddress:
+                    parsed.args.from,
+
+                toAddress:
+                    parsed.args.to
+
+            };
+
+            break;
+
+        }
+
+    }
+
+
+    if (!matchingTransfer) {
+
+        throw new Error(
+            "No matching USDT transfer was found for the expected recipient and amount tolerance."
+        );
+
+    }
+
+
+    return {
+
+        verified:
+            true,
+
+        network:
+            normalizedNetwork,
+
+        txHash:
+            txHash.trim(),
+
+        usdtContract:
+            config.usdtContract,
+
+        ...matchingTransfer
+
+    };
+
+}
+
+
+/* ==================================================
    CREATE PUBLIC QUOTE
 
    Internal gas and margin remain hidden.
@@ -1397,6 +1716,8 @@ module.exports = {
 
     getPlatformMarginPercent,
 
-    getPlatformMarginMultiplier
+    getPlatformMarginMultiplier,
+
+    verifyEvmUsdtPayment
 
 };
