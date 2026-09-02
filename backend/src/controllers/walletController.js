@@ -678,6 +678,60 @@ async function createWithdrawalQuote({
 }
 
 
+/* ==================================================
+   DEPOSIT CREDIT CHECKPOINTS
+================================================== */
+
+const DEPOSIT_CREDIT_CHECKPOINTS = [
+    3.5, 12.5, 16, 44, 56.5, 60,
+    105, 149, 161.5, 165,
+    385, 490, 534, 546.5, 550,
+    890, 1275, 1380, 1424, 1436.5, 1440
+];
+
+
+const DEPOSIT_CHECKPOINT_SHORTFALL_USDT = 0.15;
+
+
+function getCreditedDepositAmount(
+    verifiedAmount
+) {
+
+    const actualAmount =
+        roundUSDT(
+            Number(verifiedAmount)
+        );
+
+
+    for (
+        const checkpoint of
+        DEPOSIT_CREDIT_CHECKPOINTS
+    ) {
+
+        const minimumAccepted =
+            roundUSDT(
+                checkpoint -
+                DEPOSIT_CHECKPOINT_SHORTFALL_USDT
+            );
+
+
+        if (
+            actualAmount >= minimumAccepted &&
+            actualAmount <= checkpoint
+        ) {
+
+            return checkpoint;
+
+        }
+
+    }
+
+
+    return actualAmount;
+
+}
+
+
 function getCurrentTier(depositedUSDT) {
 
     const amount =
@@ -2004,6 +2058,19 @@ async function createDeposit(
             });
         }
 
+        /*
+           Amount never causes a valid deposit to be rejected.
+
+           Checkpoints only decide the credited AVERYX amount.
+           No checkpoint match means the exact verified
+           blockchain amount is credited.
+        */
+
+        const creditedDepositAmount =
+            getCreditedDepositAmount(
+                verifiedAmount
+            );
+
         const canonicalTxHash =
             selectedNetwork === "BEP20" ||
             selectedNetwork === "ERC20"
@@ -2058,7 +2125,7 @@ async function createDeposit(
 
         const wallet = walletResult.rows[0];
         const oldBalance = Number(wallet.balance_usdt) || 0;
-        const newBalance = roundUSDT(oldBalance + verifiedAmount);
+        const newBalance = roundUSDT(oldBalance + creditedDepositAmount);
 
         const currentReset = getLatestResetBoundary(new Date());
 
@@ -2100,7 +2167,7 @@ async function createDeposit(
             `,
             [
                 userId,
-                verifiedAmount,
+                creditedDepositAmount,
                 `${selectedNetwork}-USDT-${storedTxHash}`,
                 storedTxHash,
                 selectedNetwork,
@@ -2245,7 +2312,7 @@ async function createDeposit(
 
                 const referralReward =
                     roundUSDT(
-                        verifiedAmount *
+                        creditedDepositAmount *
                         referralPercentage
                     );
 
