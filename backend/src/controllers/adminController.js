@@ -762,6 +762,177 @@ async function failAdminWithdrawal(req, res) {
 
 
 /* ==================================================
+   GET ADMIN APPROVAL WITHDRAWALS
+
+   Shows only withdrawals that require manual admin
+   attention:
+   - Premium/manual withdrawals
+   - Pending TRC20 withdrawals
+
+   Existing withdrawal APIs remain unchanged.
+================================================== */
+
+async function getAdminApprovals(req, res) {
+    try {
+        const result =
+            await pool.query(
+                `
+                SELECT
+                    t.id,
+                    t.user_id,
+                    u.nickname,
+                    u.email,
+                    t.amount_usdt,
+                    t.recipient_amount_usdt,
+                    t.gas_cost_usdt,
+                    t.margin_usdt,
+                    t.status,
+                    t.reference,
+                    t.tx_hash,
+                    t.network,
+                    t.from_address,
+                    t.to_address,
+                    t.processing_mode,
+                    t.priority_type,
+                    t.eligible_at,
+                    t.created_at,
+                    CASE
+                        WHEN UPPER(COALESCE(t.network, '')) = 'TRC20'
+                            THEN 'TRC20'
+                        WHEN LOWER(COALESCE(t.priority_type, '')) = 'premium'
+                            OR LOWER(COALESCE(t.processing_mode, '')) = 'manual'
+                            THEN 'PREMIUM'
+                        ELSE 'MANUAL'
+                    END AS approval_category
+                FROM transactions t
+                LEFT JOIN users u
+                    ON u.id = t.user_id
+                WHERE
+                    t.type = 'withdrawal'
+                    AND LOWER(t.status) = 'pending'
+                    AND (
+                        UPPER(COALESCE(t.network, '')) = 'TRC20'
+                        OR LOWER(COALESCE(t.priority_type, '')) = 'premium'
+                        OR LOWER(COALESCE(t.processing_mode, '')) = 'manual'
+                    )
+                ORDER BY t.created_at ASC
+                `
+            );
+
+        return res.status(200).json({
+            success: true,
+            approvals: result.rows.map(row => ({
+                ...toWithdrawal(row),
+                approvalCategory: row.approval_category
+            }))
+        });
+
+    } catch (error) {
+        console.error(
+            "Get admin approvals error:",
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            message: "Unable to load admin approvals."
+        });
+    }
+}
+
+
+/* ==================================================
+   GET ADMIN APPROVAL STATISTICS
+
+   Premium Requests = currently pending premium/manual
+   withdrawals.
+
+   Premium Approved = completed premium/manual
+   withdrawals.
+
+   TRC20 Requests = currently pending TRC20 withdrawals.
+
+   TRC20 Accepted = completed TRC20 withdrawals.
+================================================== */
+
+async function getAdminApprovalStats(req, res) {
+    try {
+        const result =
+            await pool.query(
+                `
+                SELECT
+                    COUNT(*) FILTER (
+                        WHERE
+                            LOWER(t.status) = 'pending'
+                            AND (
+                                LOWER(COALESCE(t.priority_type, '')) = 'premium'
+                                OR (
+                                    LOWER(COALESCE(t.processing_mode, '')) = 'manual'
+                                    AND UPPER(COALESCE(t.network, '')) <> 'TRC20'
+                                )
+                            )
+                    ) AS premium_requests,
+
+                    COUNT(*) FILTER (
+                        WHERE
+                            LOWER(t.status) = 'completed'
+                            AND (
+                                LOWER(COALESCE(t.priority_type, '')) = 'premium'
+                                OR (
+                                    LOWER(COALESCE(t.processing_mode, '')) = 'manual'
+                                    AND UPPER(COALESCE(t.network, '')) <> 'TRC20'
+                                )
+                            )
+                    ) AS premium_approved,
+
+                    COUNT(*) FILTER (
+                        WHERE
+                            LOWER(t.status) = 'pending'
+                            AND UPPER(COALESCE(t.network, '')) = 'TRC20'
+                    ) AS trc20_requests,
+
+                    COUNT(*) FILTER (
+                        WHERE
+                            LOWER(t.status) = 'completed'
+                            AND UPPER(COALESCE(t.network, '')) = 'TRC20'
+                    ) AS trc20_accepted
+
+                FROM transactions t
+                WHERE t.type = 'withdrawal'
+                `
+            );
+
+        const stats = result.rows[0] || {};
+
+        return res.status(200).json({
+            success: true,
+            stats: {
+                premiumRequests:
+                    Number(stats.premium_requests || 0),
+                premiumApproved:
+                    Number(stats.premium_approved || 0),
+                trc20Requests:
+                    Number(stats.trc20_requests || 0),
+                trc20Accepted:
+                    Number(stats.trc20_accepted || 0)
+            }
+        });
+
+    } catch (error) {
+        console.error(
+            "Get admin approval stats error:",
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            message: "Unable to load admin approval statistics."
+        });
+    }
+}
+
+
+/* ==================================================
    GET ALL DEPOSITS - READ ONLY
 ================================================== */
 
@@ -1148,6 +1319,8 @@ module.exports = {
     adminLogin,
     getAdminWithdrawals,
     getAdminWithdrawalById,
+    getAdminApprovals,
+    getAdminApprovalStats,
     completeAdminWithdrawal,
     failAdminWithdrawal,
     getAdminDeposits,

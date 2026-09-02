@@ -6,6 +6,8 @@ const {
     getAdminWithdrawalById,
     completeAdminWithdrawal,
     failAdminWithdrawal,
+    getAdminApprovals,
+    getAdminApprovalStats,
     getAdminDeposits,
     getAdminDepositById,
     getAdminUsers,
@@ -56,6 +58,20 @@ router.patch(
     "/withdrawals/:id/fail",
     authenticateAdmin,
     failAdminWithdrawal
+);
+
+
+/* Protected admin approval management */
+router.get(
+    "/approvals",
+    authenticateAdmin,
+    getAdminApprovals
+);
+
+router.get(
+    "/approvals/stats",
+    authenticateAdmin,
+    getAdminApprovalStats
 );
 
 /* Protected admin deposit monitoring - read-only */
