@@ -128,7 +128,11 @@ const TIERS = [
    REFERRAL CONFIGURATION
 ================================================== */
 
-const REFERRAL_PERCENTAGE = 0.05;
+const REFERRAL_LEVELS = [
+    0.15,
+    0.05,
+    0.03
+];
 
 
 /* ==================================================
@@ -2139,100 +2143,234 @@ async function createDeposit(
 
 
         /* ------------------------------------------
-           REFERRAL REWARD
+           MULTI-LEVEL REFERRAL REWARD
+
+           Paid only on the user's first completed
+           deposit:
+
+           Level 1 → 15%
+           Level 2 → 5%
+           Level 3 → 3%
         ------------------------------------------ */
 
-        const referralResult = await client.query(
-            `
-            SELECT referred_by
-            FROM users
-            WHERE id = $1
-            LIMIT 1
-            `,
-            [userId]
-        );
-
-        if (
-            referralResult.rows.length > 0 &&
-            referralResult.rows[0].referred_by
-        ) {
-            const referrerId = referralResult.rows[0].referred_by;
-            const referralReward = roundUSDT(
-                verifiedAmount * REFERRAL_PERCENTAGE
+        const completedDepositCountResult =
+            await client.query(
+                `
+                SELECT COUNT(*)::int AS total
+                FROM transactions
+                WHERE
+                    user_id = $1
+                    AND type = 'deposit'
+                    AND status = 'completed'
+                `,
+                [
+                    userId
+                ]
             );
 
-            if (referralReward > 0) {
-                const referralReference =
-                    `REFERRAL-REWARD-${transactionResult.rows[0].id}`;
 
-                const existingReward = await client.query(
-                    `
-                    SELECT id
-                    FROM transactions
-                    WHERE user_id = $1
-                    AND type = 'referral'
-                    AND reference = $2
-                    LIMIT 1
-                    `,
-                    [referrerId, referralReference]
-                );
+        const completedDepositCount =
+            Number(
+                completedDepositCountResult
+                    .rows[0]
+                    .total
+            ) || 0;
 
-                if (existingReward.rows.length === 0) {
-                    const referrerWalletResult = await client.query(
+
+        if (
+            completedDepositCount === 1
+        ) {
+
+            const referralReference =
+                `REFERRAL-REWARD-${transactionResult.rows[0].id}`;
+
+
+            let currentReferredUserId =
+                userId;
+
+
+            for (
+                let levelIndex = 0;
+                levelIndex < REFERRAL_LEVELS.length;
+                levelIndex += 1
+            ) {
+
+                const referrerResult =
+                    await client.query(
                         `
-                        SELECT id, withdrawable_usdt
-                        FROM wallets
-                        WHERE user_id = $1
-                        FOR UPDATE
+                        SELECT referred_by
+                        FROM users
+                        WHERE id = $1
+                        LIMIT 1
                         `,
-                        [referrerId]
+                        [
+                            currentReferredUserId
+                        ]
                     );
 
-                    if (referrerWalletResult.rows.length > 0) {
-                        const referrerWallet = referrerWalletResult.rows[0];
 
-                        const newReferrerWithdrawable = roundUSDT(
-                            (Number(referrerWallet.withdrawable_usdt) || 0) +
-                            referralReward
-                        );
+                if (
+                    referrerResult.rows.length === 0 ||
+                    !referrerResult.rows[0].referred_by
+                ) {
 
+                    break;
+
+                }
+
+
+                const referrerId =
+                    referrerResult.rows[0].referred_by;
+
+
+                /*
+                   Prevent malformed referral chains from
+                   looping back to the depositor.
+                */
+
+                if (
+                    referrerId === userId
+                ) {
+
+                    break;
+
+                }
+
+
+                const referralPercentage =
+                    REFERRAL_LEVELS[
+                        levelIndex
+                    ];
+
+
+                const referralReward =
+                    roundUSDT(
+                        verifiedAmount *
+                        referralPercentage
+                    );
+
+
+                if (
+                    referralReward > 0
+                ) {
+
+                    const existingReward =
                         await client.query(
                             `
-                            UPDATE wallets
-                            SET
-                                withdrawable_usdt = $1,
-                                updated_at = NOW()
-                            WHERE id = $2
-                            `,
-                            [newReferrerWithdrawable, referrerWallet.id]
-                        );
-
-                        await client.query(
-                            `
-                            INSERT INTO transactions (
-                                user_id,
-                                type,
-                                amount_usdt,
-                                status,
-                                reference
-                            )
-                            VALUES (
-                                $1,
-                                'referral',
-                                $2,
-                                'completed',
-                                $3
-                            )
+                            SELECT id
+                            FROM transactions
+                            WHERE
+                                user_id = $1
+                                AND type = 'referral'
+                                AND reference = $2
+                            LIMIT 1
                             `,
                             [
                                 referrerId,
-                                referralReward,
                                 referralReference
                             ]
                         );
+
+
+                    if (
+                        existingReward.rows.length === 0
+                    ) {
+
+                        const referrerWalletResult =
+                            await client.query(
+                                `
+                                SELECT
+                                    id,
+                                    withdrawable_usdt
+                                FROM wallets
+                                WHERE user_id = $1
+                                FOR UPDATE
+                                `,
+                                [
+                                    referrerId
+                                ]
+                            );
+
+
+                        if (
+                            referrerWalletResult.rows.length > 0
+                        ) {
+
+                            const referrerWallet =
+                                referrerWalletResult.rows[0];
+
+
+                            const newReferrerWithdrawable =
+                                roundUSDT(
+                                    (
+                                        Number(
+                                            referrerWallet
+                                                .withdrawable_usdt
+                                        ) || 0
+                                    ) +
+                                    referralReward
+                                );
+
+
+                            await client.query(
+                                `
+                                UPDATE wallets
+                                SET
+                                    withdrawable_usdt = $1,
+                                    updated_at = NOW()
+                                WHERE id = $2
+                                `,
+                                [
+                                    newReferrerWithdrawable,
+                                    referrerWallet.id
+                                ]
+                            );
+
+
+                            await client.query(
+                                `
+                                INSERT INTO transactions (
+                                    user_id,
+                                    type,
+                                    amount_usdt,
+                                    status,
+                                    reference
+                                )
+                                VALUES (
+                                    $1,
+                                    'referral',
+                                    $2,
+                                    'completed',
+                                    $3
+                                )
+                                `,
+                                [
+                                    referrerId,
+                                    referralReward,
+                                    referralReference
+                                ]
+                            );
+
+                        }
+
                     }
+
                 }
+
+
+                /*
+                   Move one level upward:
+
+                   Depositor → Level 1 referrer
+                   Level 1 → Level 2 referrer
+                   Level 2 → Level 3 referrer
+                */
+
+                currentReferredUserId =
+                    referrerId;
+
             }
+
         }
 
         await client.query("COMMIT");
