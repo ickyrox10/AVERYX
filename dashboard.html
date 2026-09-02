@@ -1638,27 +1638,55 @@ body{
             </div>
 
             <div class="referral-title">
-                Grow Your Rewards
-            </div>
-
-            <div class="referral-description">
-                Earn 5% of qualifying deposits made
-                by referred users.
+                Earn W Friends
             </div>
 
             <div class="referral-bottom">
 
-                <div
-                    class="referral-code"
-                    id="referralCode"
-                >
-                    —
+                <div class="referral-code">
+                    LEVEL 1
+                </div>
+
+                <div class="referral-rate">
+                    15%
+                </div>
+
+            </div>
+
+            <div class="referral-description">
+                When you directly refer someone, you'll get 15% of their first deposit.
+            </div>
+
+            <div class="referral-bottom">
+
+                <div class="referral-code">
+                    LEVEL 2
                 </div>
 
                 <div class="referral-rate">
                     5%
                 </div>
 
+            </div>
+
+            <div class="referral-description">
+                When your friend refers someone, you'll get 5% of their first deposit.
+            </div>
+
+            <div class="referral-bottom">
+
+                <div class="referral-code">
+                    LEVEL 3
+                </div>
+
+                <div class="referral-rate">
+                    3%
+                </div>
+
+            </div>
+
+            <div class="referral-description">
+                When your friend's friend refers someone, you'll get 3% of their first deposit.
             </div>
 
         </a>
@@ -1689,17 +1717,6 @@ body{
     >
         <span class="nav-icon">◇</span>
         Tiers
-    </a>
-
-
-    <a
-        href="premium.html"
-        class="nav-item"
-        id="premiumNavItem"
-        style="display: none;"
-    >
-        <span class="nav-icon">✦</span>
-        A-Pass
     </a>
 
 
@@ -1744,60 +1761,6 @@ body{
 const API_BASE_URL =
     window.AVERYX_API_BASE_URL ||
     "https://averyx.onrender.com";
-
-
-/* ==================================================
-   A-PASS NAVIGATION VISIBILITY
-   Controlled by WITHDRAWAL_PRIORITY_SYSTEM_ENABLED
-================================================== */
-
-async function loadPremiumNavigation() {
-
-    const premiumNavItem =
-        document.getElementById("premiumNavItem");
-
-    const bottomNav =
-        document.querySelector(".bottom-nav");
-
-    if (!premiumNavItem || !bottomNav) {
-        return;
-    }
-
-    try {
-
-        const response = await fetch(
-            `${API_BASE_URL}/api/priority-config/settings`
-        );
-
-        const data = await response.json();
-
-        const enabled =
-            response.ok &&
-            data.success === true &&
-            data.prioritySystemEnabled === true;
-
-        premiumNavItem.style.display =
-            enabled ? "flex" : "none";
-
-        bottomNav.style.gridTemplateColumns =
-            enabled
-                ? "repeat(6, 1fr)"
-                : "repeat(5, 1fr)";
-
-    } catch (error) {
-
-        console.warn(
-            "Unable to load priority system configuration:",
-            error
-        );
-
-        premiumNavItem.style.display = "none";
-
-        bottomNav.style.gridTemplateColumns =
-            "repeat(5, 1fr)";
-
-    }
-}
 
 const TIERS = [
     { level: 1, name: "The Fool", deposit: 0, daily: 0, logo: "tier-fool.png" },
@@ -2590,8 +2553,6 @@ window.addEventListener(
         }
     }
 );
-
-loadPremiumNavigation();
 
 initDashboard();
 </script>
